@@ -39,7 +39,9 @@ public class UI {
 			System.out.println("You will now be prompted for the details on each fret:");
 
 			for(int i = 0; i < numFrets; i++){
-				fretArr[i] = new UI.Fret();
+
+				fretArr[i] = new Fret();
+
 				System.out.printf("%s %d%s\n","Fret", i ,":");
 				System.out.println("|\tInput Note:");
 				fretArr[i].setNote(sc.next());
@@ -55,27 +57,6 @@ public class UI {
 		return fretArr;
 	}
 
-	public class Fret{
-		private Parser.note note;
-		private long delay;
-		public Fret(){}
-
-		public Parser.note getNote(){
-			return note;
-		}
-
-		public void setNote(String n){
-			//TODO
-		}
-
-		public long getDelay(){
-			return delay;
-		}
-
-		public void setDelay(long d){
-			delay = d;
-		}
-	}
 
 	public static void main(String args[]){
 		try{
