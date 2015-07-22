@@ -18,7 +18,17 @@ public class Parser {
 
 	 public static final int NOTE_ON = 0x90;
 	    public static final int NOTE_OFF = 0x80;
-	    public static final String[] NOTE_NAMES = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+//	    public static final String[] NOTE_NAMES = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+
+		public enum note {
+			C, CSharp,
+			DFlat, D, DSharp,
+			EFlat, E, ESharp,
+			F, FSharp,
+			GFlat, G, GSharp,
+			AFlat, A, ASharp,
+			BFlat, B
+		}
 
 	public static void main(String[] args) {
 		if (args.length < 1){
