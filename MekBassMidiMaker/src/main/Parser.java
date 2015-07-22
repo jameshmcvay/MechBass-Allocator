@@ -88,14 +88,14 @@ public class Parser {
 		                        int key = sm.getData1();
 		                        int octave = (key / 12)-1;
 		                        int note = key % 12;
-		                        String noteName = NOTEz_NAMES[note];
+		                        String noteName = Parser.note.values()[note].name();
 		                        int velocity = sm.getData2();
 		                        System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
 		                    } else if (sm.getCommand() == NOTE_OFF) {
 		                        int key = sm.getData1();
 		                        int octave = (key / 12)-1;
 		                        int note = key % 12;
-		                        String noteName = NOTE_NAMES[note];
+		                        String noteName = Parser.note.values()[note].name();
 		                        int velocity = sm.getData2();
 		                        System.out.println("Note off, " + noteName + octave + " key=" + key + " velocity: " + velocity);
 		                    }
