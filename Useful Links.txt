@@ -1,0 +1,10 @@
+http://www.ccarh.org/courses/253/handout/smf/: Outline of the Standard MIDI File Structure.
+http://www.onicos.com/staff/iz/formats/midi-event.html: MIDI Event Table.
+http://www.mobilefish.com/tutorials/midi/midi_quickguide_specification.html: MIDI Specification.
+https://www.csie.ntu.edu.tw/~r92092/ref/midi/: (ANOTHER) Outline of the Standard MIDI File Structure.
+https://docs.oracle.com/javase/8/docs/api/index.html?javax/sound/midi/package-summary.html: Java Documentation for javax.sound.midi package.
+https://docs.oracle.com/javase/8/docs/api/javax/sound/midi/MidiSystem.html: Java documentation for “MidiSystem.”
+http://www.midi.org/techspecs/gm1sound.php: The Midi Sounds
+https://stackoverflow.com/questions/3850688/reading-midi-files-in-java: Reading MIDI files in Java.
+https://docs.oracle.com/javase/tutorial/sound/overview-MIDI.html: Java Tutorial – MIDI Package.
+http://string-functions.com/hex-string.aspx: Hexadecimal ? String Converter
