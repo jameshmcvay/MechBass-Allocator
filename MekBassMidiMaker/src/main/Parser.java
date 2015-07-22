@@ -32,7 +32,9 @@ public class Parser {
 
 	public static void main(String[] args) {
 		if (args.length < 1){
+
 			return;
+
 		}
 		else{
 			File midiFile = new File(args[0].toString());
