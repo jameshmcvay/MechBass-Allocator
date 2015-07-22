@@ -2,11 +2,11 @@ package ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.rmi.UnexpectedException;
 import java.util.Scanner;
 
 import javax.swing.*;
 
-import main.Parser;
 /**
  * Catch all class for activating UI on the fly, typically expect static fire and forget methods
  *
@@ -43,15 +43,25 @@ public class UI {
 				fretArr[i] = new Fret();
 
 				System.out.printf("%s %d%s\n","Fret", i ,":");
-				System.out.println("|\tInput Note:");
+				System.out.print("|\tInput Note:");
+				try{
 				fretArr[i].setNote(sc.next());
-
-				System.out.println("|\tInput Delay:");
+				}
+				catch(UnexpectedException e){
+					System.out.println("Exception: " + e);
+					System.out.println("Enter a valid Note:");
+					fretArr[i].setNote(sc.next());
+				}
+				System.out.print("|\tInput Delay:");
 				fretArr[i].setDelay(sc.nextLong());
 
 			}
 
 			sc.close();
+		}
+
+		for(Fret f : fretArr){
+			System.out.println(f.toString());
 		}
 
 		return fretArr;
