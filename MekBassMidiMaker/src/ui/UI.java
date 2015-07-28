@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.rmi.UnexpectedException;
 import java.util.Scanner;
 
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.Sequence;
 import javax.swing.*;
 
 /**
@@ -67,6 +69,9 @@ public class UI {
 		return fretArr;
 	}
 
+	public static void saveMIDI(Sequence midiSeq, String saveFile) throws IOException {
+		MidiSystem.write(midiSeq, 1, new File(saveFile));
+	}
 
 	public static void main(String args[]){
 		try{
