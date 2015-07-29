@@ -17,7 +17,7 @@ public class TrackSplitter {
 		this.seq = sequence;
 		this.trackCount = trackCount;
 		this.bassTrack = bassTrack;
-		this.output = new Sequence(seq.getDivisionType(), seq.getResolution(), trackCount);
+		this.output = new Sequence(seq.getDivisionType(), seq.getResolution(), trackCount+1);
 	}
 
 	public Sequence getNewSequence(){
