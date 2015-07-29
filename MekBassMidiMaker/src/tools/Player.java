@@ -38,7 +38,7 @@ public class Player {
 //		seq.start();
 //		System.out.println(startTime+" : "+endTime+" Giving a play time of "+(endTime-startTime));
 //		try {
-//			Thread.sleep((endTime-startTime)/1000 + 1);
+//			Thread.sleep((endTime-startTime));
 //		} catch (InterruptedException e) {
 //			System.err.println("Thread Interupted error");
 //		}
@@ -54,8 +54,8 @@ public class Player {
 		}
 		setPoints(s);
 		System.out.println("Starting playback");
-		seq.setLoopStartPoint(startTime);
-		seq.setLoopEndPoint(endTime);
+		seq.setLoopStartPoint(20000);
+		seq.setLoopEndPoint(23000);
 		seq.start();
 		System.out.println(startTime+" : "+endTime+" Giving a play time of "+(endTime-startTime));
 	}
@@ -68,10 +68,11 @@ public class Player {
 
 	public static void main(String[] args) {
 		Player p = new Player();
-		File midFile = new File("resources/Twinkle_Twinkle_in_octaves.mid");
+		File midFile = new File("resources/stairway.mid");
 		try {
 			Sequence s = MidiSystem.getSequence(midFile);
 			p.play(s);
+			System.out.println("Done");
 		} catch (InvalidMidiDataException e) {
 			System.err.println("File is an invalid midi file");
 		} catch (IOException e) {
