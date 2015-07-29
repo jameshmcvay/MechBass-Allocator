@@ -1,6 +1,7 @@
 package ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.FileHandler;
 
@@ -16,6 +17,10 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.Sequence;
+import javax.swing.*;
 
 /**
  * Catch all class for activating UI on the fly, typically expect static fire and forget methods
@@ -74,5 +79,10 @@ public class UI extends Application {
 	public static void main(String[] args){
 		launch(args);
 	}
+
+	public static void saveMIDI(Sequence midiSeq, String saveFile) throws IOException {
+		MidiSystem.write(midiSeq, 1, new File(saveFile));
+	}
+
 
 }
