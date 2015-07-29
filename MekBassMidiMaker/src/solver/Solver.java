@@ -40,22 +40,34 @@ public class Solver {
 					if (shrtmsg.getData2()!=0){
 						// find the right string
 						int note = shrtmsg.getData1();
-						List<MekString> rightStrings = new ArrayList<MekString>();
-						for (MekString ms: strings){
-							if (note > ms.lowNote && note < ms.highNote) {
-								rightStrings.add(ms);
+						List<Integer> rightStrings = new ArrayList<Integer>();
+						for (int j = 0; j < strings.length; j++){
+							if (note > strings[j].lowNote && note < strings[j].highNote && lastNote[j] == -1) {
+								rightStrings.add(j);
 							}
 						}
-						// we now have a list of strings which can theoretically play the note, one or more may be occupied
-
-
-						// put it there
-
-						// put it in last note for that string
+						// we now have a list of strings which can theoretically play the note. we assign it to
+						//the string that was played the longest time ago.
+						//TODO: figure out which is closer to the middle
+						long minTime = Long.MAX_VALUE;
+						int useString = -1;
+						for(Integer j : rightStrings){
+							if (stringTimes[j] < minTime){
+								minTime = stringTimes[j];
+								useString = j;
+							}
+						}
+						if(useString >= 0 && useString < strings.length){
+							// put it there if it is valid
+							moveEvent(tr,seq.getTracks()[useString+1],tr.get(i));
+							// put it in last note for that string
+							lastNote[useString] = note;
+						}
 						break;
 					}
 					// if the if was false, then it is actually a note off
 				case NOTE_OFF:
+
 					break;
 					default:
 				}
