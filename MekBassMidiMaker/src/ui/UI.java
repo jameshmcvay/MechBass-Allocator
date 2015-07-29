@@ -1,11 +1,21 @@
 package ui;
 
 import java.io.File;
-import java.io.IOException;
-import java.rmi.UnexpectedException;
-import java.util.Scanner;
+import java.util.List;
+import java.util.logging.FileHandler;
 
-import javax.swing.*;
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
 
 /**
  * Catch all class for activating UI on the fly, typically expect static fire and forget methods
@@ -13,68 +23,56 @@ import javax.swing.*;
  * @author macdondyla1, oswaldgreg
  *
  */
-public class UI {
-	/**
-	 * Opens the JFileChooser Dialog http://docs.oracle.com/javase/7/docs/api/javax/swing/JFileChooser.html from swing.
-	 *
-	 * @return The File object of the file selected
-	 */
-	public static File FileChooser(){
-		JFileChooser fiChoo = new JFileChooser();
-		fiChoo.showOpenDialog(null);
-		return fiChoo.getSelectedFile();
-	}
+public class UI extends Application {
+	//The file to be modified
+	private File currentMIDI = null;
+	@Override
+	public void start(Stage stage) throws Exception {
 
-	public static Fret[] StartUpParams(boolean useGUI) throws IOException{
-		Fret[] fretArr = null;
-		if(useGUI){}
-		else{
-			System.out.println("How many Strings would you like to use?");
-			Scanner sc = new Scanner(System.in);
+		//the outside bounds of the screen
+		Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
 
-			int numFrets = sc.nextInt();
+		//set the stages bounds to that of the screen
+		stage.setX(screenBounds.getMinX());
+		stage.setY(screenBounds.getMinY());
+		stage.setWidth(screenBounds.getWidth());
+		stage.setHeight(screenBounds.getHeight());
 
-			fretArr = new Fret[numFrets];
+		//a layout manager
+		GridPane grid = new GridPane();
+		grid.setAlignment(Pos.TOP_LEFT); //bind the layout to top left
+		grid.setVgap(10); //10px vertical gap between elems
+		grid.setHgap(10); //10px horizontal gap between elems
+		//Grid edge padding
+		grid.setPadding(new Insets(10, 10, 10, 10));
 
-			System.out.println("You will now be prompted for the details on each fret:");
+		//Contains scene graph, in this case it essentially acts as an
+		//interface between grid and stage
+		Scene scene = new Scene(grid);
 
-			for(int i = 0; i < numFrets; i++){
-
-				fretArr[i] = new Fret();
-
-				System.out.printf("%s %d%s\n","Fret", i ,":");
-				System.out.print("|\tInput Note:");
-				try{
-				fretArr[i].setNote(sc.next());
-				}
-				catch(UnexpectedException e){
-					System.out.println("Exception: " + e);
-					System.out.println("Enter a valid Note:");
-					fretArr[i].setNote(sc.next());
-				}
-				System.out.print("|\tInput Delay:");
-				fretArr[i].setDelay(sc.nextLong());
-
+		//Create a new button
+		Button selectFile = new Button("Open MIDI");
+		//On being clicked, the button opens a file selection dialog
+		selectFile.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				//new file choice dialog
+				FileChooser chooseFileDialog =  new FileChooser();
+				//set a title for the dialog
+				chooseFileDialog.setTitle("Select MIDI File");
+				//assign the chosen file to be the MIDI we're working on.
+				currentMIDI = chooseFileDialog.showOpenDialog(stage);
+				System.out.println(currentMIDI.getName());
 			}
+		});
 
-			sc.close();
-		}
-
-		for(Fret f : fretArr){
-			System.out.println(f.toString());
-		}
-
-		return fretArr;
+		grid.add(selectFile, 0, 0);
+		stage.setScene(scene);
+		stage.show();
 	}
 
-
-	public static void main(String args[]){
-		try{
-			StartUpParams(false);
-		}
-		catch(IOException e){
-			System.err.println(e);
-		}
+	public static void main(String[] args){
+		launch(args);
 	}
 
 }
