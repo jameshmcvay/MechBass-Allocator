@@ -27,25 +27,7 @@ public class Player {
 		seq.setLoopCount(1);
 	}
 
-//	public void play(Sequence s) {
-//		try {
-//			seq.setSequence(s);
-//		} catch (InvalidMidiDataException e) {
-//			System.err.println("Invalid midi data encountered");
-//		}
-//		setPoints(s);
-//		System.out.println("Starting playback");
-//		seq.start();
-//		System.out.println(startTime+" : "+endTime+" Giving a play time of "+(endTime-startTime));
-//		try {
-//			Thread.sleep((endTime-startTime));
-//		} catch (InterruptedException e) {
-//			System.err.println("Thread Interupted error");
-//		}
-//		seq.stop();
-//		System.out.println("Stopped");
-//	}
-//
+
 	public void play(Sequence s) {
 		try {
 			seq.setSequence(s);
@@ -54,11 +36,33 @@ public class Player {
 		}
 		setPoints(s);
 		System.out.println("Starting playback");
-		seq.setLoopStartPoint(20000);
-		seq.setLoopEndPoint(23000);
+
+		seq.setTickPosition(startTime);
 		seq.start();
 		System.out.println(startTime+" : "+endTime+" Giving a play time of "+(endTime-startTime));
+		try {
+			Thread.sleep((endTime-startTime));
+		} catch (InterruptedException e) {
+			System.err.println("Thread Interupted error");
+		}
+		seq.stop();
+		seq.close();
+		System.out.println("Stopped");
 	}
+//
+//	public void play(Sequence s) {
+//		try {
+//			seq.setSequence(s);
+//		} catch (InvalidMidiDataException e) {
+//			System.err.println("Invalid midi data encountered");
+//		}
+//		setPoints(s);
+//		System.out.println("Starting playback");
+//		seq.setLoopStartPoint(startTime);
+//		seq.setLoopEndPoint(endTime);
+//		seq.start();
+//		System.out.println(startTime+" : "+endTime+" Giving a play time of "+(endTime-startTime));
+//	}
 
 
 	private void setPoints(Sequence s){
