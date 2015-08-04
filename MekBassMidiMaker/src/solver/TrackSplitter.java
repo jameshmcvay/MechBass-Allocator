@@ -26,7 +26,7 @@ public class TrackSplitter {
 		int pos = 0;
 		do {
 			output.getTracks()[0].add(inTrack.get(pos));
-		} while ((++pos)<inTrack.size()); // this may be off by one, wait for indexoutofbounds
+		} while ((++pos)<inTrack.size());
 		// pass to solver
 
 		return output;
