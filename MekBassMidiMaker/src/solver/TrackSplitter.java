@@ -17,7 +17,7 @@ public class TrackSplitter {
 		this.seq = sequence;
 		this.trackCount = trackCount;
 		this.bassTrack = bassTrack;
-		this.output = new Sequence(seq.getDivisionType(), seq.getResolution(), trackCount);
+		this.output = new Sequence(seq.getDivisionType(), seq.getResolution(), trackCount+1);
 	}
 
 	public Sequence getNewSequence(){
@@ -26,7 +26,7 @@ public class TrackSplitter {
 		int pos = 0;
 		do {
 			output.getTracks()[0].add(inTrack.get(pos));
-		} while ((pos++)<inTrack.size()); // this may be off by one, wait for indexoutofbounds
+		} while ((++pos)<inTrack.size()); // this may be off by one, wait for indexoutofbounds
 		// pass to solver
 
 		return output;
