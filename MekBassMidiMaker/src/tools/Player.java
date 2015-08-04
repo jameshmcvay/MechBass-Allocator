@@ -27,7 +27,7 @@ public class Player {
 		}
 
 		seq.setLoopCount(1);
-	
+
 	}
 	public void play(Sequence s) {
 		try {
@@ -38,7 +38,7 @@ public class Player {
 		setPoints(s);
 		System.out.println("Starting playback");
 
-		seq.setTickPosition(startTime);
+		seq.setTickPosition(1000);
 		seq.start();
 		System.out.println(startTime+" : "+endTime+" Giving a play time of "+(endTime-startTime));
 		try {
@@ -67,8 +67,9 @@ public class Player {
 
 
 	private void setPoints(Sequence s){
-		startTime = Timing.getMinTime(s);
-		endTime = Timing.getMaxTime(s);
+		System.err.println("using magic numbers in setpoints");
+		startTime = 20000;
+		endTime = 23000;
 	}
 
 	public static void main(String[] args) {
