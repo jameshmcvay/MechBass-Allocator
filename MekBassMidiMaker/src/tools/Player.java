@@ -7,48 +7,52 @@ import javax.sound.midi.*;
 
 public class Player {
 
-	private Sequencer seq;
+	Sequencer seq;
 
-	private long startTime;
-	private long endTime;
-
-	public Player() {
+	/**
+	 * Use me to play a track from the beginning
+	 */
+	public Player(Sequence s) {
 		try {
-			seq = MidiSystem.getSequencer();
-
-			if (seq == null) {
+			if (s == null) {
 				System.err.println("Sequencer not avaliable");
 				return;
 			} else {
+
+				seq = MidiSystem.getSequencer();
 				seq.open();
+				seq.setSequence(s);
+				seq.setLoopCount(1);
 			}
-		} catch (MidiUnavailableException e) {
+		} catch (MidiUnavailableException | InvalidMidiDataException e) {
 			System.err.println("Sequencer not avaliable");
 		}
 
-		seq.setLoopCount(1);
-
 	}
-	public void play(Sequence s) {
-		try {
-			seq.setSequence(s);
-		} catch (InvalidMidiDataException e) {
-			System.err.println("Invalid midi data encountered");
-		}
-		setPoints(s);
+
+	public void play() {
 		System.out.println("Starting playback");
 
 		seq.setTickPosition(1000);
 		seq.start();
-		System.out.println(startTime+" : "+endTime+" Giving a play time of "+(endTime-startTime));
-		try {
-			Thread.sleep((endTime-startTime));
-		} catch (InterruptedException e) {
-			System.err.println("Thread Interupted error");
+//		System.out.println(startTime+" : "+endTime+" Giving a play time of "+(endTime-startTime));
+//		try {
+//			Thread.sleep((seq.getMicrosecondLength()));
+//			System.out.printf("start: %d, end: %d \n", seq.getLoopStartPoint(),seq.getLoopEndPoint());
+//		} catch (InterruptedException e) {
+//			System.err.println("Thread Interupted error");
+//		}
+
+	}
+
+
+	public boolean stop(){
+		if(seq.isRunning()){
+			seq.stop();
+			return true;
 		}
-		seq.stop();
-		seq.close();
-		System.out.println("Stopped");
+		return false;
+
 	}
 //
 //	public void play(Sequence s) {
@@ -66,18 +70,13 @@ public class Player {
 //	}
 
 
-	private void setPoints(Sequence s){
-		System.err.println("using magic numbers in setpoints");
-		startTime = 20000;
-		endTime = 23000;
-	}
-
 	public static void main(String[] args) {
-		Player p = new Player();
+
 		File midFile = new File("resources/stairway.mid");
 		try {
 			Sequence s = MidiSystem.getSequence(midFile);
-			p.play(s);
+			Player p = new Player(s);
+			p.play();
 
 			System.out.println("Done");
 
