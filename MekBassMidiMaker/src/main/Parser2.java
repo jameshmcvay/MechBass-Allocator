@@ -108,11 +108,11 @@ public class Parser2 {
 	                        // After that, Print the details.
 	                        //System.out.println("Channel " + channel + ": " + command + ", " +
 	                        //noteName + octave + " key=" + key + " velocity: " + velocity);
-						} else if (sm.getCommand() == ShortMessage.PROGRAM_CHANGE){
+	                    } else if (smString.startsWith("C") || smString.startsWith("c")){
 							//System.out.println("@" + event.getTick() + "(SHORT_MESSAGE)");
 							//System.out.println(smString);
 							//System.out.println(sm.getData1());
-							instrumentChanges.add(Parser.VOICES[sm.getData1()] + " (" + sm.getData1() + ")");
+							instrumentChanges.add("" + sm.getData1());
 							//System.out.println();
 						}
 					}
@@ -155,12 +155,12 @@ public class Parser2 {
 
 	public enum note {
 		C, CSharp,
-		D, DSharp,
-		E,
+		DFlat, D, DSharp,
+		EFlat, E, ESharp,
 		F, FSharp,
-		G, GSharp,
-		A, ASharp,
-		B
+		GFlat, G, GSharp,
+		AFlat, A, ASharp,
+		BFlat, B
 	}
 
 	public static void main(String[] args) {

@@ -8,6 +8,7 @@ import javax.sound.midi.*;
 public class Player {
 
 	private Sequencer seq;
+
 	private long startTime;
 	private long endTime;
 
@@ -24,10 +25,10 @@ public class Player {
 		} catch (MidiUnavailableException e) {
 			System.err.println("Sequencer not avaliable");
 		}
+
 		seq.setLoopCount(1);
+	
 	}
-
-
 	public void play(Sequence s) {
 		try {
 			seq.setSequence(s);
@@ -76,7 +77,9 @@ public class Player {
 		try {
 			Sequence s = MidiSystem.getSequence(midFile);
 			p.play(s);
+
 			System.out.println("Done");
+
 		} catch (InvalidMidiDataException e) {
 			System.err.println("File is an invalid midi file");
 		} catch (IOException e) {
