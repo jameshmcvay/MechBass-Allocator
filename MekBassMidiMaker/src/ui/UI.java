@@ -2,84 +2,106 @@ package ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.rmi.UnexpectedException;
-import java.util.Scanner;
 
+import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
-import javax.swing.*;
 
+import tools.Player;
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.StackPane;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 /**
- * Catch all class for activating UI on the fly, typically expect static fire and forget methods
+ * Container class for the UI
  *
  * @author macdondyla1, oswaldgreg
  *
  */
-public class UI {
-	/**
-	 * Opens the JFileChooser Dialog http://docs.oracle.com/javase/7/docs/api/javax/swing/JFileChooser.html from swing.
-	 *
-	 * @return The File object of the file selected
-	 */
-	public static File FileChooser(){
-		JFileChooser fiChoo = new JFileChooser();
-		fiChoo.showOpenDialog(null);
-		return fiChoo.getSelectedFile();
-	}
+public class UI extends Application {
 
-	public static Fret[] StartUpParams(boolean useGUI) throws IOException{
-		Fret[] fretArr = null;
-		if(useGUI){}
-		else{
-			System.out.println("How many Strings would you like to use?");
-			Scanner sc = new Scanner(System.in);
+	Sequence curMIDI;//the File we're currently modifying
 
-			int numFrets = sc.nextInt();
 
-			fretArr = new Fret[numFrets];
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+		//-----Create the set of buttons to be added to the graphics pane-------
+		Button playBtn = new Button();
+		playBtn.setText("Play");
 
-			System.out.println("You will now be prompted for the details on each fret:");
+		playBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {play();}});
 
-			for(int i = 0; i < numFrets; i++){
+		Button stpBtn = new Button();
+		stpBtn.setText("Stop");
 
-				fretArr[i] = new Fret();
+		stpBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event){Player.stop();}});
 
-				System.out.printf("%s %d%s\n","Fret", i ,":");
-				System.out.print("|\tInput Note:");
-				try{
-				fretArr[i].setNote(sc.next());
-				}
-				catch(UnexpectedException e){
-					System.out.println("Exception: " + e);
-					System.out.println("Enter a valid Note:");
-					fretArr[i].setNote(sc.next());
-				}
-				System.out.print("|\tInput Delay:");
-				fretArr[i].setDelay(sc.nextLong());
+		Button loadBtn = new Button();
+		loadBtn.setText("Load");
 
+		loadBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event){
+					setCurMIDI();
 			}
+		});
+		//Initialise the console
+		TextArea console =  new TextArea();
+//		console.
 
-			sc.close();
-		}
+		//window manager
+		GridPane root = new GridPane();
+		//Spacing
+		root.setHgap(3);
+		root.setVgap(3);
+		//add the window elements
+		root.add(playBtn,1,1);
+	    root.add(stpBtn,2,1);
+	    root.add(loadBtn, 3, 1);
 
-		for(Fret f : fretArr){
-			System.out.println(f.toString());
-		}
-
-		return fretArr;
+	    //window bounds
+	    Scene scene =  new Scene(root,1600,1200);
+	    primaryStage.setTitle("Google");
+	    primaryStage.setScene(scene);
+	    primaryStage.show();
 	}
 
-	public static void saveMIDI(Sequence midiSeq, String saveFile) throws IOException {
-		MidiSystem.write(midiSeq, 1, new File(saveFile));
+//	protected void
+
+	//--------------Button methods----------
+	//Play the MIDI
+	protected void play() {
+			if(curMIDI != null)
+				Player.play(curMIDI);
+	}
+
+	//Load a new Sequence
+	protected void setCurMIDI(){
+		try {
+			FileChooser fiChoo =  new FileChooser();
+			fiChoo.setTitle("Select the MIDI File to be converted.");
+			File fi = fiChoo.showOpenDialog(null);
+			curMIDI = MidiSystem.getSequence(fi);
+		} catch (InvalidMidiDataException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String args[]){
-		try{
-			StartUpParams(false);
-		}
-		catch(IOException e){
-			System.err.println(e);
-		}
+		launch(args);
 	}
+
+
 
 }
