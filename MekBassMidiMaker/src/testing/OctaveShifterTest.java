@@ -62,7 +62,7 @@ public class OctaveShifterTest {
 			PrintWriter writer = new PrintWriter("TTIO_Output.txt", "UTF-8");
 			Track[] tracks = sequence.getTracks();
 			int trackNo = tracks.length;
-			writer.write("Number of Tracks = " + trackNo + Character.LINE_SEPARATOR);
+			writer.write("Number of Tracks = " + trackNo + System.lineSeparator());
 
 			// Set a counting variable
 			int trackNumber = 0;
@@ -70,7 +70,7 @@ public class OctaveShifterTest {
 			// FOR EVERY TRACK...
 			for (Track t : tracks){
 				// ... Print out some basic information (Track Number and the Size of the track)
-				writer.write("Track " + trackNumber++ + ": size = " + t.size() + "\n");
+				writer.write("Track " + trackNumber++ + ": size = " + t.size() + System.lineSeparator());
 
 				String instrumentName = "Undefined";
 				String track_SequenceName = "Undefined";
@@ -107,13 +107,13 @@ public class OctaveShifterTest {
 						}
 					}
 				}
-				writer.write("Number of Channels: " + channels + ",\n" +
-					"Track Name: " + track_SequenceName + ",\n" + 
-					"STARTING Instrument Name: " + instrumentName + ",\n" + 
+				writer.write("Number of Channels: " + channels + ","  + System.lineSeparator() + 
+					"Track Name: " + track_SequenceName + "," + System.lineSeparator() + 
+					"STARTING Instrument Name: " + instrumentName + "," + System.lineSeparator() + 
 					"All Instruments used: ");
 				for (String s : instrumentChanges)
-					writer.write("\t" + s);
-				writer.write("\n");
+					writer.write("\t" + s + System.lineSeparator());
+				writer.write(System.lineSeparator());
 			}
 			
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
@@ -145,16 +145,16 @@ public class OctaveShifterTest {
 			// This is a META MESSAGE; convert the message and print basic information.
 			// This information is WHEN the event happens, what kind of message it is and what TYPE it is.
 			MetaMessage mm = (MetaMessage) message;
-			writer.write("@" + event.getTick() + "(META_MESSAGE)");
-			writer.write(String.format("%02x", Byte.parseByte(((Integer) mm.getType()).toString())));
+			writer.write("@" + event.getTick() + "(META_MESSAGE)" + System.lineSeparator());
+			writer.write(String.format("%02x", Byte.parseByte(((Integer) mm.getType()).toString())) + System.lineSeparator());
 
 			String mmString = String.format("%02x", Integer.parseInt(((Integer) mm.getType()).toString()));
 
 			// Print the Message data, plus a new line
 			try {
-				writer.write(new String(mm.getData(), "UTF-8"));
+				writer.write(new String(mm.getData(), "UTF-8") + System.lineSeparator());
 			} catch (UnsupportedEncodingException e) {
-				writer.write("??? Data could not be encoded ???");
+				writer.write("??? Data could not be encoded ???" + System.lineSeparator());
 				e.printStackTrace();
 			}
 			for (Byte b : mm.getData()){
@@ -216,12 +216,12 @@ public class OctaveShifterTest {
 					command = "Note off";
 				// After that, Print the details.
 				writer.write("Channel " + channel + ": " + command + ", " +
-						noteName + octave + " key=" + key + " velocity: " + velocity);
+						noteName + octave + " key=" + key + " velocity: " + velocity + System.lineSeparator());
 			} else if (sm.getCommand() == ShortMessage.PROGRAM_CHANGE){
-				writer.write("@" + event.getTick() + "(SHORT_MESSAGE)");
-				writer.write(smString);
-				writer.write(sm.getData1());
-				writer.write("\n");
+				writer.write("@" + event.getTick() + "(SHORT_MESSAGE)" + System.lineSeparator());
+				writer.write(smString + System.lineSeparator());
+				writer.write(sm.getData1() + System.lineSeparator());
+				writer.write(System.lineSeparator());
 			}
 			for (Byte b : sm.getMessage()){
 				bytes.add(b);
