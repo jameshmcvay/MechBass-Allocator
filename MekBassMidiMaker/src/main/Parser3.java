@@ -168,7 +168,7 @@ public class Parser3 {
 	private Sequencer sequencer;
 	private Sequence sequence;
 	private Track[] tracks;
-	private ArrayList<ArrayList<Byte>> bytelists = new ArrayList<>();
+	private ArrayList<ArrayList<Integer>> bytelists = new ArrayList<>();
 	
 	private boolean ready = false;
 	
@@ -190,6 +190,7 @@ public class Parser3 {
 	public Parser3(String fileName){
 		midiFile = new File(fileName);
 		setUpParser();
+		parse();
 	}
 	
 	/**
@@ -385,7 +386,7 @@ public class Parser3 {
 	 * REQUIRES: N/A
 	 * ENSURES: The user can receive the List of List of Bytes.
 	 * */
-	public ArrayList<ArrayList<Byte>> getByteLists(){
+	public ArrayList<ArrayList<Integer>> getByteLists(){
 		return bytelists;
 	}
 	
@@ -397,7 +398,7 @@ public class Parser3 {
 	 * CONSTRUCTORS/setFile METHODS.
 	 * 
 	 * I consider this method "safe", with the caveat that the file has been
-	 * properly specified, is a MIDI file, and has not changed.
+	 * properly specified and has not changed.
 	 * 
 	 * IF THIS METHOD IS *NOT* CALLED ON IT'S OWN, 
 	 * I CANNOT GUARANTEE IT'S BEHAVIOUR.
@@ -449,6 +450,15 @@ public class Parser3 {
 	}
 	
 	public void parse(){
+		try {
+			MidiSystem.getMidiFileFormat(midiFile).getType();
+		} catch (InvalidMidiDataException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		if (!ready){
 			System.out.println("The parser is not ready. "
 			+ "Please specify a proper file to load data.");
@@ -477,7 +487,7 @@ public class Parser3 {
 				MidiMessage message = event.getMessage();
 
 				if (message instanceof MetaMessage) {
-					ArrayList<Byte> byteList = parseMetaMessage(message, event);
+					ArrayList<Integer> byteList = parseMetaMessage(message, event);
 					bytelists.add(byteList);
 					MetaMessage mm = (MetaMessage) message;
 					String mmString = String.format("%02x", Integer.parseInt(((Integer) mm.getType()).toString()));
@@ -500,11 +510,10 @@ public class Parser3 {
 
 				}
 				else if (message instanceof ShortMessage) {
-					ArrayList<Byte> byteList = parseShortMessage(message, event);
+					ArrayList<Integer> byteList = parseShortMessage(message, event);
 					bytelists.add(byteList);
 					
 					ShortMessage sm = (ShortMessage) message;
-					String smString = String.format("%02x", Integer.parseInt(((Integer) sm.getStatus()).toString()));
 
 					if (sm.getCommand() == ShortMessage.PROGRAM_CHANGE){
 						instrumentChanges.add(Parser3.VOICES[sm.getData1()] + " (" + sm.getData1() + ")");
@@ -536,17 +545,15 @@ public class Parser3 {
 	 * 		(i.e. message must be an instance of MetaMessage).
 	 * ENSURES: a list of all the bytes in the message that has been passed.
 	 * */
-	public ArrayList<Byte> parseMetaMessage(MidiMessage message, MidiEvent event){
+	public ArrayList<Integer> parseMetaMessage(MidiMessage message, MidiEvent event){
 		if (message instanceof MetaMessage) {
-			ArrayList<Byte> bytes = new ArrayList<>();
+			ArrayList<Integer> bytes = new ArrayList<>();
 
 			// This is a META MESSAGE; convert the message and print basic information.
 			// This information is WHEN the event happens, what kind of message it is and what TYPE it is.
 			MetaMessage mm = (MetaMessage) message;
 			System.out.println("@" + event.getTick() + "(META_MESSAGE)");
 			System.out.println(String.format("%02x", Byte.parseByte(((Integer) mm.getType()).toString())));
-
-			String mmString = String.format("%02x", Integer.parseInt(((Integer) mm.getType()).toString()));
 
 			// Print the Message data, plus a new line
 			try {
@@ -555,8 +562,9 @@ public class Parser3 {
 				System.out.println("??? Data could not be encoded ???");
 				e.printStackTrace();
 			}
+			bytes.add(mm.getStatus());
 			for (Byte b : mm.getData()){
-				bytes.add(b);
+				bytes.add((int) (b & 0xFF));
 			}
 			return bytes;
 		}
@@ -581,14 +589,14 @@ public class Parser3 {
 	 * 		(i.e. message must be an instance of ShortMessage).
 	 * ENSURES: a list of all the bytes in the message that has been passed.
 	 * */
-	public ArrayList<Byte> parseShortMessage(MidiMessage message, MidiEvent event){
+	public ArrayList<Integer> parseShortMessage(MidiMessage message, MidiEvent event){
 		if (!(message instanceof ShortMessage) || !message.equals(event.getMessage())){
 			throw new IllegalArgumentException("An error occured - Please check:\n"
 					+ "That the MidiMessage that was passed in is an instance of ShortMessage,\n"
 					+ "That the MidiMessage came from the supplied event");
 		}
 		else {
-			ArrayList<Byte> bytes = new ArrayList<>();
+			ArrayList<Integer> bytes = new ArrayList<>();
 
 			// This is a SHORT MESSAGE; convert the message and print basic information.
 			// This information is WHEN the event happens, what kind of message it is,
@@ -622,7 +630,7 @@ public class Parser3 {
 				System.out.println();
 			}
 			for (Byte b : sm.getMessage()){
-				bytes.add(b);
+				bytes.add((int) (b & 0xFF));
 			}
 			return bytes;
 		}
