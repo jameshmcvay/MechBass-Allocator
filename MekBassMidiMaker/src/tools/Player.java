@@ -4,81 +4,67 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.sound.midi.*;
-
+/**
+ * This class creates a MIDI player for a given sequence obtains from the java MIDI Library.
+ * @author Dylan Macdonald, Patrick Bayers
+ *
+ */
 public class Player {
-
-	Sequencer seq;
+	static private Sequencer seq;
 
 	/**
-	 * Use me to play a track from the beginning
+	 * Start audio output. Loops once.
 	 */
-	public Player(Sequence s) {
+	public static void play(Sequence s) {
+		play(s,0);
+	}
+
+	/**
+	 * Start audio playback from a given point along the track.
+	 */
+	public static void play(Sequence s, long microSeconds){
+		assert(s != null);
 		try {
-			if (s == null) {
-				System.err.println("Sequencer not avaliable");
-				return;
-			} else {
+			seq = MidiSystem.getSequencer();
+			seq.open();
+			seq.setSequence(s);
+			seq.setMicrosecondPosition(microSeconds);
 
-				seq = MidiSystem.getSequencer();
-				seq.open();
-				seq.setSequence(s);
-				seq.setLoopCount(1);
-			}
+			seq.start();
 		} catch (MidiUnavailableException | InvalidMidiDataException e) {
-			System.err.println("Sequencer not avaliable");
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-
 	}
 
-	public void play() {
-		System.out.println("Starting playback");
-
-		seq.setTickPosition(1000);
-		seq.start();
-//		System.out.println(startTime+" : "+endTime+" Giving a play time of "+(endTime-startTime));
-//		try {
-//			Thread.sleep((seq.getMicrosecondLength()));
-//			System.out.printf("start: %d, end: %d \n", seq.getLoopStartPoint(),seq.getLoopEndPoint());
-//		} catch (InterruptedException e) {
-//			System.err.println("Thread Interupted error");
-//		}
-
-	}
-
-
-	public boolean stop(){
+	/**
+	 * Cease audio playback. Does not release system resources
+	 * @return Whether the sequencer was stopped
+	 */
+	public static boolean stop(){
 		if(seq.isRunning()){
 			seq.stop();
 			return true;
 		}
 		return false;
-
 	}
-//
-//	public void play(Sequence s) {
-//		try {
-//			seq.setSequence(s);
-//		} catch (InvalidMidiDataException e) {
-//			System.err.println("Invalid midi data encountered");
-//		}
-//		setPoints(s);
-//		System.out.println("Starting playback");
-//		seq.setLoopStartPoint(startTime);
-//		seq.setLoopEndPoint(endTime);
-//		seq.start();
-//		System.out.println(startTime+" : "+endTime+" Giving a play time of "+(endTime-startTime));
-//	}
 
+	/**
+	 * Release system resources taken by the sequencer
+	 */
+	public static void release(){
+		if(seq.isRunning()){
+			seq.stop();
+		}
+		seq.close();
+	}
 
 	public static void main(String[] args) {
 
 		File midFile = new File("resources/stairway.mid");
 		try {
 			Sequence s = MidiSystem.getSequence(midFile);
-			Player p = new Player(s);
-			p.play();
-
-			System.out.println("Done");
+			play(s,400000000);
 
 		} catch (InvalidMidiDataException e) {
 			System.err.println("File is an invalid midi file");

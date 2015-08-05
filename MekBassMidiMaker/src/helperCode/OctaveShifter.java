@@ -143,9 +143,10 @@ public class OctaveShifter {
 		File f =  new File("resources/stairway.mid");
 		try {
 			Sequence s = MidiSystem.getSequence(f);
+//			shiftOctave(s, -1);
+//			shiftOctave(s, 1);
 
-			Player p = new Player(shiftOctave(s, -3));
-			p.play(400000);
+			Player.play(s);
 
 		} catch (InvalidMidiDataException | IOException e) {
 			// TODO Auto-generated catch block
