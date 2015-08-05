@@ -19,11 +19,17 @@ import tools.Player;
  */
 public class SplitAndSolve {
 
-	public SplitAndSolve(Sequence seq, int tracks){
-		for(int bass = 9; bass < 10; bass++){
+
+	/**
+	 *
+	 * @param seq
+	 * @param tracks
+	 * @param bass
+	 */
+	public SplitAndSolve(Sequence seq, int tracks,int bass){
 		try{
-			TrackSplitter split = new TrackSplitter(seq,tracks,bass);
-			Sequence out = Solver.solve(split.getNewSequence());
+			Sequence out = TrackSplitter.split(seq,tracks,bass);
+			out = Solver.solve(out);
 			int moved = 0;
 			for(int i = 1; i<=tracks; i++){
 				moved += out.getTracks()[i].size();
@@ -31,17 +37,11 @@ public class SplitAndSolve {
 			System.out.printf("Converting Track %d\n", bass);
 			System.out.printf("Found %d moved events\n", moved);
 			System.out.printf("Found %d unmoved events\n",out.getTracks()[0].size());
-			//Player play = new Player();
-			//play.play(out);
+			Player.play(out);
 		}
 		catch(InvalidMidiDataException e){
 			e.printStackTrace();
 		}
-	}
-
-//	public static Sequence trunc(Sequence seq){
-//
-//	}
 
 	}
 
@@ -65,7 +65,7 @@ public class SplitAndSolve {
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-		SplitAndSolve sAndS =  new SplitAndSolve(sequence,4);
+		SplitAndSolve sAndS =  new SplitAndSolve(sequence,4,1);
 
 	}
 }
