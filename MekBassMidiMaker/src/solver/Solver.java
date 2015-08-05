@@ -20,6 +20,11 @@ public class Solver {
 	private static int[] lastNote;
 	private static int lastString = -1;
 
+	/**
+	 *
+	 * @param seq
+	 * @return
+	 */
 	static Sequence solve(Sequence seq){
 		// array of long for strings representing timestamp of most recent finished note
 		stringTimes = new long[strings.length];
@@ -109,9 +114,13 @@ public class Solver {
 						i--;
 					}
 					else{
-						System.out.printf("Metamessage not moved\n");
+						System.out.printf("other event not moved\n");
 					}
 				}
+			}
+			else{
+				moveEvent(tr,seq.getTracks()[1],tr.get(i));
+				i--;
 			}
 		}
 
