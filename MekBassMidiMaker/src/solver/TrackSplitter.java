@@ -28,7 +28,7 @@ public class TrackSplitter {
 			output.getTracks()[0].add(inTrack.get(pos));
 		} while ((++pos)<inTrack.size());
 		// pass to solver
-
+		System.out.printf("Missed %d events? of %d\n", inTrack.size()-output.getTracks()[0].size(), inTrack.size() );
 		return output;
 	}
 

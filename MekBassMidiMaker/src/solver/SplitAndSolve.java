@@ -20,7 +20,7 @@ import tools.Player;
 public class SplitAndSolve {
 
 	public SplitAndSolve(Sequence seq, int tracks){
-		for(int bass = 0; bass < seq.getTracks().length;bass++){
+		for(int bass = 9; bass < 10; bass++){
 		try{
 			TrackSplitter split = new TrackSplitter(seq,tracks,bass);
 			Sequence out = Solver.solve(split.getNewSequence());
@@ -38,6 +38,10 @@ public class SplitAndSolve {
 			e.printStackTrace();
 		}
 	}
+
+//	public static Sequence trunc(Sequence seq){
+//
+//	}
 
 	}
 
