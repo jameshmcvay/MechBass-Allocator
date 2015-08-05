@@ -62,7 +62,7 @@ public class OctaveShifterTest {
 			PrintWriter writer = new PrintWriter("TTIO_Output.txt", "UTF-8");
 			Track[] tracks = sequence.getTracks();
 			int trackNo = tracks.length;
-			writer.write("Number of Tracks = " + trackNo);
+			writer.write("Number of Tracks = " + trackNo + Character.LINE_SEPARATOR);
 
 			// Set a counting variable
 			int trackNumber = 0;
