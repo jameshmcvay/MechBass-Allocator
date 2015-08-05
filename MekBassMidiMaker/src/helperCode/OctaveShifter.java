@@ -72,10 +72,13 @@ public class OctaveShifter {
 								sm.getData1() + (tempShift * 12) <= 127){
 							try {
 								sm.setMessage(sm.getCommand(), sm.getChannel(), 
-								sm.getData1(), sm.getData2());
+								sm.getData1() + (tempShift * 12), sm.getData2());
 							} catch (InvalidMidiDataException e) {
 								e.printStackTrace();
-								System.out.println("Well shit. Something done goofed son.");
+								System.out.println("Well shit. Something done goofed son.\n"
+										+ "I *EXPECTED* to make a change to a ShortMessage where "
+										+ "the command was NOTE_OFF, NOTE_ON or POLY_PRESSURE (Pitch "
+										+ "Bend).\nINSTEAD, I made a STUPID change!");
 							}
 						}
 						else if ((sm.getData1() + (tempShift * 12) < 0 || 
@@ -88,10 +91,12 @@ public class OctaveShifter {
 											sm.getData1() + (tempShift * 12) <= 127){
 										try {
 											sm.setMessage(sm.getCommand(), sm.getChannel(), 
-											sm.getData1(), sm.getData2());
+											sm.getData1() + (tempShift * 12), sm.getData2());
 										} catch (InvalidMidiDataException e) {
-											e.printStackTrace();
-											System.out.println("Well shit. Something done goofed son.");
+											System.out.println("Well shit. Something done goofed son.\n"
+													+ "I *EXPECTED* to make a change to a ShortMessage where "
+													+ "the command was NOTE_OFF, NOTE_ON or POLY_PRESSURE (Pitch "
+													+ "Bend).\nINSTEAD, I made a STUPID change!");
 										}
 									}
 									else tempShift--;
