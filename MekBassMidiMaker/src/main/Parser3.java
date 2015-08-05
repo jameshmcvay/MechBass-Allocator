@@ -168,33 +168,201 @@ public class Parser3 {
 	private Sequencer sequencer;
 	private Sequence sequence;
 	private Track[] tracks;
+	private ArrayList<ArrayList<Byte>> bytelists = new ArrayList<>();
 	
+	private boolean ready = false;
+	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * A constructor that allows the user to pass in the path of the
+	 * file they want.
+	 * 
+	 * I consider this method "safe" because the Parser is just being created.
+	 * That said, PLEASE ensure the string you pass in is a filepath to a MIDI
+	 * file, or the Parser3 will NOT work.
+	 * 
+	 * REQUIRES: A String containing a valid filepath to a MIDI file.
+	 * ENSURES: A new instance of Parser3 that will actually do 
+	 * 		semi-coherent things (assuming, of course, that the MIDI file is
+	 * 		written in a semi-coherent way).
+	 * */
 	public Parser3(String fileName){
 		midiFile = new File(fileName);
 		setUpParser();
 	}
 	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * A constructor that allows the user to pass in a file.
+	 * 
+	 * I consider this method "(Potentially) unsafe" because, 
+	 * although the Parser is just being created, if the File object
+	 * changes WITHOUT the "setUpParser()" method being called, the 
+	 * behaviour is undefined. Setting the File object to final so that
+	 * it can't be changed *MIGHT* help.
+	 * 
+	 * REQUIRES: A File object of a MIDI file.
+	 * ENSURES: A new instance of Parser3 that will actually do 
+	 * 		semi-coherent things (assuming, of course, that the MIDI file is
+	 * 		written in a semi-coherent way, AND the file doesn't change).
+	 * */
+	public Parser3(File file){
+		midiFile = file;
+		setUpParser();
+	}
+	
+	/**
+	 * Returns the file.
+	 * 
+	 * I consider this method "ABSOLUTELY safe" because the Parser 
+	 * just returns the file it's using.
+	 * 
+	 * REQUIRES: N/A
+	 * ENSURES: The user can receive the file the parser is currently using. 
+	 * */
 	public File getFile(){
 		return midiFile;
 	}
 	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Allows the user to set the file, then automatically sets the parser
+	 * up as if it was just constructed.
+	 * 
+	 * I consider this method "(Potentially) unsafe" because, 
+	 * although the Parser will be almost like new, if the File object
+	 * changes WITHOUT the "setUpParser()" method being called, the 
+	 * behaviour is undefined. Setting the File object to final so that
+	 * it can't be changed *MIGHT* help.
+	 * 
+	 * REQUIRES: A File object of a MIDI file.
+	 * ENSURES: The file the parser uses gets changed, and a method will make
+	 * 		the parser practically "as-new", and ready to parse the new MIDI 
+	 * 		(assuming, of course, the file doesn't change).
+	 * */
 	public void setFile(String fileName){
 		midiFile = new File(fileName);
 		setUpParser();
 	}
 	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Allows the user to set the file, then automatically sets the parser
+	 * up as if it was just constructed.
+	 * 
+	 * I consider this method "(Potentially) unsafe" because, 
+	 * although the Parser will be almost like new, if the File object
+	 * changes WITHOUT the "setUpParser()" method being called, the 
+	 * behaviour is undefined. Setting the File object to final so that
+	 * it can't be changed *MIGHT* help.
+	 * 
+	 * REQUIRES: A File object of a MIDI file.
+	 * ENSURES: The file the parser uses gets changed, and a method will make
+	 * 		the parser practically "as-new", and ready to parse the new MIDI 
+	 * 		(assuming, of course, the file doesn't change).
+	 * */
+	public void setFile(File file){
+		midiFile = file;
+		setUpParser();
+	}
+	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Returns the Sequencer the parser is using.
+	 * 
+	 * I consider this method "ABSOLUTELY safe" because the Parser 
+	 * just returns the Sequencer it's using.
+	 * 
+	 * REQUIRES: N/A
+	 * ENSURES: The user can receive the Sequencer the parser is currently using.
+	 * */
 	public Sequencer getSequencer(){
 		return sequencer;
 	}
 	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Allows the user to set the Sequencer the parser is using.
+	 * 
+	 * I consider this method "ABSOLUTELY UNSAFE" - in fact, I can't see any
+	 * immediate benefit to using it. That said, there may be a reason this must
+	 * be done.
+	 * 
+	 * REQUIRES: A Sequencer and 5 shots of absinthe (maybe an extra 2 for luck).
+	 * ENSURES: The user can change the sequencer the parse is using 
+	 * 		(because YOLO bruh).
+	 * */
+	public void setSequencer(Sequencer s){
+		sequencer = s;
+	}
+	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Returns the Sequence the parser is using.
+	 * 
+	 * I consider this method "ABSOLUTELY safe" because the Parser 
+	 * just returns the Sequence it's using.
+	 * 
+	 * REQUIRES: N/A
+	 * ENSURES: The user can receive the Sequence the parser is currently using.
+	 * */
 	public Sequence getSequence(){
 		return sequence;
 	}
 	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Allows the user to set the Sequence the parser is using.
+	 * 
+	 * I consider this method "ABSOLUTELY UNSAFE" - in fact, I can't see any
+	 * immediate benefit to using it. That said, there may be a reason this must
+	 * be done.
+	 * 
+	 * REQUIRES: A Sequence and 5 shots of absinthe (maybe an extra 2 for luck).
+	 * ENSURES: The user can change the sequence the parse is using 
+	 * 		(because YOLO bruh).
+	 * */
+	public void setSequence(Sequence s){
+		sequence = s;
+	}
+	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Returns the Tracks from the Sequence the parser is using.
+	 * 
+	 * I consider this method "ABSOLUTELY safe" because the Parser 
+	 * just returns the Tracks it's using.
+	 * 
+	 * REQUIRES: N/A
+	 * ENSURES: The user can receive the Tracks the parser is currently using.
+	 * */
 	public Track[] getTracks(){
 		return tracks;
 	}
 	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Returns a specific Track from the sequence the parser is using, 
+	 * assuming the supplied integer is between 0 and tracks.length.
+	 * 
+	 * I consider this method "ABSOLUTELY safe" because the Parser 
+	 * just returns the specified Track from the sequence it's using,
+	 * assuming the supplied integer is between 0 and tracks.length.
+	 * 
+	 * REQUIRES: An integer between 0 and tracks.length.
+	 * ENSURES: The user can receive the specified Track from the sequence
+	 * 		the parser is currently using.
+	 * */
 	public Track getTrack(int i){
 		if (i < 0 || i >= tracks.length)
 			throw new IndexOutOfBoundsException(
@@ -205,32 +373,87 @@ public class Parser3 {
 			return tracks[i];
 	}
 	
+	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Returns the list of bytelists the Parser stored for the user.
+	 * 
+	 * I consider this method "safe" because the Parser just returns 
+	 * the list of lists. But PLEASE don't change them...
+	 * 
+	 * REQUIRES: N/A
+	 * ENSURES: The user can receive the List of List of Bytes.
+	 * */
+	public ArrayList<ArrayList<Byte>> getByteLists(){
+		return bytelists;
+	}
+	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Sets the parser up to parse the MIDI file. 
+	 * THIS METHOD *WILL* FAIL IF INAPPROPRIATE INPUTS WE USED FOR
+	 * CONSTRUCTORS/setFile METHODS.
+	 * 
+	 * I consider this method "safe", with the caveat that the file has been
+	 * properly specified, is a MIDI file, and has not changed.
+	 * 
+	 * IF THIS METHOD IS *NOT* CALLED ON IT'S OWN, 
+	 * I CANNOT GUARANTEE IT'S BEHAVIOUR.
+	 * 
+	 * REQUIRES: The File the Parser is using MUST be a valid MIDI file.
+	 * ENSURES: The Parser will be set up and ready to parse the MIDI file.
+	 * */
 	public void setUpParser(){
+		ready = false;
+		boolean problem = false;
 		// Set the sequencer - the thing that allows MIDI files to be played
 		try {
 			sequencer = MidiSystem.getSequencer();
-		} catch (MidiUnavailableException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		} catch (MidiUnavailableException e) {
+			System.out.println("There is a problem with this MIDI file!");
+			problem = true;
+			e.printStackTrace();
 		}
 		// Set the sequence to be examined to the midiFile...
 		try {
 			sequencer.setSequence(MidiSystem.getSequence(midiFile));
 		} catch (InvalidMidiDataException e) {
 			// TODO Auto-generated catch block
+			System.out.println("There is a problem with this MIDI file!");
+			problem = true;
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// ... And store the sequence.
-		sequence = sequencer.getSequence();
-
+		try{
+			sequence = sequencer.getSequence();
+			tracks = sequence.getTracks();
+		}
+		catch (NullPointerException e){
+			System.out.println("There is a problem with this MIDI file!");
+			problem = true;
+			e.printStackTrace();
+		}
 		// Store the tracks and the number of tracks, printing the number.
-		Track[] tracks = sequence.getTracks();
+		bytelists.clear();
+		
+		if (ready == problem){
+			// if there are no problems...
+			ready = true;
+			// the parser is READY!
+		}
 	}
 	
 	public void parse(){
+		if (!ready){
+			System.out.println("The parser is not ready. "
+			+ "Please specify a proper file to load data.");
+			return;
+		}
 		int trackNo = tracks.length;
 		System.out.println("Number of Tracks = " + trackNo);
 		
@@ -255,7 +478,7 @@ public class Parser3 {
 
 				if (message instanceof MetaMessage) {
 					ArrayList<Byte> byteList = parseMetaMessage(message, event);
-					
+					bytelists.add(byteList);
 					MetaMessage mm = (MetaMessage) message;
 					String mmString = String.format("%02x", Integer.parseInt(((Integer) mm.getType()).toString()));
 					if (mmString.equals("03"))
@@ -278,7 +501,8 @@ public class Parser3 {
 				}
 				else if (message instanceof ShortMessage) {
 					ArrayList<Byte> byteList = parseShortMessage(message, event);
-
+					bytelists.add(byteList);
+					
 					ShortMessage sm = (ShortMessage) message;
 					String smString = String.format("%02x", Integer.parseInt(((Integer) sm.getStatus()).toString()));
 
