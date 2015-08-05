@@ -21,9 +21,10 @@ public class Solver {
 	private static int lastString = -1;
 
 	/**
-	 *
-	 * @param seq
-	 * @return
+	 * Takes a Sequence, and splits it up into a pre-defined number of tracks, dropping notes that do not fit within the 
+	 * constraints of the tracks, specified previously by the user. 
+	 * @param seq The Sequence to be bodged
+	 * @return The New Sequence
 	 */
 	static Sequence solve(Sequence seq){
 		// array of long for strings representing timestamp of most recent finished note
