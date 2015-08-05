@@ -11,10 +11,16 @@ import tools.Player;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -27,7 +33,8 @@ import javafx.stage.Stage;
 public class UI extends Application {
 
 	Sequence curMIDI;//the File we're currently modifying
-
+	double height = 1200;
+	double width = 1600;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -55,22 +62,29 @@ public class UI extends Application {
 					setCurMIDI();
 			}
 		});
+
 		//Initialise the console
 		TextArea console =  new TextArea();
-//		console.
+		console.setPrefColumnCount(100);
+		console.setPrefRowCount(10);
+		console.setWrapText(true);
+		console.setPrefWidth(width-(width * .01));
+		System.out.println(width-(width * .01));
+		console.setPrefHeight(height/3);
 
 		//window manager
-		GridPane root = new GridPane();
-		//Spacing
-		root.setHgap(3);
-		root.setVgap(3);
+		FlowPane root =  new FlowPane();
+		root.setOrientation(Orientation.VERTICAL);
+		root.setHgap(width * .01);
+		root.setPadding(new Insets(1, 1, 1, 1));
+		FlowPane buttonPanel =  new FlowPane();
+		buttonPanel.getChildren().addAll(playBtn, stpBtn, loadBtn);
+		FlowPane consolePanel = new FlowPane(Orientation.VERTICAL, console);
+		consolePanel.setAlignment(Pos.CENTER);
 		//add the window elements
-		root.add(playBtn,1,1);
-	    root.add(stpBtn,2,1);
-	    root.add(loadBtn, 3, 1);
+		root.getChildren().addAll(buttonPanel,consolePanel);
 
-	    //window bounds
-	    Scene scene =  new Scene(root,1600,1200);
+	    Scene scene =  new Scene(root,width,height);
 	    primaryStage.setTitle("Google");
 	    primaryStage.setScene(scene);
 	    primaryStage.show();
