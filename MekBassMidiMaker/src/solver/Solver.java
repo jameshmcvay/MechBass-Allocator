@@ -31,6 +31,7 @@ public class Solver {
 		// loop through
 		for (int i=0; i<tr.size(); ++i){
 			MidiMessage midmsg = tr.get(i).getMessage();
+			System.out.printf("%d %d: ",i,tr.get(i).getTick());
 			// check what type of message it is
 			if (midmsg instanceof ShortMessage){
 				ShortMessage shrtmsg = (ShortMessage) midmsg;
@@ -43,7 +44,7 @@ public class Solver {
 						int note = shrtmsg.getData1();
 						List<Integer> rightStrings = new ArrayList<Integer>();
 						for (int j = 0; j < strings.length; j++){
-							if (note > strings[j].lowNote && note < strings[j].highNote && lastNote[j] == -1) {
+							if (note >= strings[j].lowNote && note <= strings[j].highNote && lastNote[j] == -1) {
 								rightStrings.add(j);
 							}
 						}
@@ -61,9 +62,19 @@ public class Solver {
 						if(useString >= 0 && useString < strings.length){
 							// put it there if it is valid
 							moveEvent(tr,seq.getTracks()[useString+1],tr.get(i));
+							i--;
+							System.out.printf("Note %d moved\n", note);
 							// put it in last note for that string
 							lastNote[useString] = note;
 							lastString = useString;
+						}
+						else{
+							if (useString == -1){
+								System.out.printf("Note %d not moved, No string available.\n", note);
+							}
+							else if (useString > strings.length){
+								System.out.printf("Note %d not moved, string num too high, this shouldn't occur.\n", note);
+							}
 						}
 						break;
 					}
@@ -74,10 +85,15 @@ public class Solver {
 					for (int j=0; j < strings.length; ++j){
 						if (lastNote[j]==note) useString=j;
 					}
-					if (useString==-1) break; // if the note wasn't played, dont do anything with it
+					if (useString==-1){
+						System.out.printf("Note off %d not stopped, not played first\n", note);
+						break; // if the note wasn't played, dont do anything with it
+					}
 					// now we have the correct string
 					// so we add the noteoff to the correct track
 					moveEvent(tr,seq.getTracks()[useString+1],tr.get(i));
+					i--;
+					System.out.printf("Note off %d moved\n", note);
 
 					// and set the other stuff to nothing
 					lastNote[useString] = -1;
@@ -90,6 +106,10 @@ public class Solver {
 					if (lastString >= 0) {
 						// add it to that
 						moveEvent(tr,seq.getTracks()[lastString+1],tr.get(i));
+						i--;
+					}
+					else{
+						System.out.printf("Metamessage not moved\n");
 					}
 				}
 			}
