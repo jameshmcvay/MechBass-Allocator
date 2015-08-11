@@ -44,7 +44,7 @@ public class Cleaner {
 		for(int i = 0; i < seq.getTracks().length; i++){
 			Track cur = seq.getTracks()[i];
 			//check that each note on doesn't conflict with the previous note off
-			for(int j = cur.size(); j == 0; --j){
+			for(int j = cur.size()-1; j == 0; --j){
 				MidiMessage midNoteOn = cur.get(j).getMessage();
 				if (midNoteOn instanceof ShortMessage){
 					ShortMessage noteOn = (ShortMessage) midNoteOn;
@@ -55,12 +55,13 @@ public class Cleaner {
 							int note1 = noteOn.getData1();
 							//find the previous note off
 							MidiMessage midNoteOff;
-							for(int k = j; k == 0; --k){
+							for(int k = j-1; k == 0; --k){
 								midNoteOff = cur.get(k).getMessage();
 								if(midNoteOff instanceof ShortMessage){
 									ShortMessage noteOff = (ShortMessage) midNoteOff;
 									if(noteOff.getCommand() == NOTE_OFF){
-										
+										int note2 = noteOff.getData1();
+										if(strings[i].conflicting(note1, note2, cur.get(k).getTick() - cur.get(j).getTick())) conflicts++;
 									}
 								}
 							}
