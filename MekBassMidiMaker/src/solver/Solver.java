@@ -28,12 +28,12 @@ public class Solver {
 	private static int lastString = -1;
 
 	/**
-	 * Takes a Sequence, and splits it up into a pre-defined number of tracks, dropping notes that do not fit within the 
-	 * constraints of the tracks, specified previously by the user. 
+	 * Takes a Sequence, and splits it up into a pre-defined number of tracks, dropping notes that do not fit within the
+	 * constraints of the tracks, specified previously by the user.
 	 * @param seq The Sequence to be bodged
 	 * @return The New Sequence
 	 */
-	static Sequence solve(Sequence seq){
+	public static Sequence solve(Sequence seq){
 		// array of long for strings representing timestamp of most recent finished note
 		stringTimes = new long[strings.length];
 		lastNote = new int[strings.length];
@@ -141,7 +141,7 @@ public class Solver {
 	 * @param to The Track to add the event to
 	 * @param event The event
 	 */
-	static void moveEvent(Track from, Track to, MidiEvent event){
+	private static void moveEvent(Track from, Track to, MidiEvent event){
 		to.add(event);
 		from.remove(event);
 	}
