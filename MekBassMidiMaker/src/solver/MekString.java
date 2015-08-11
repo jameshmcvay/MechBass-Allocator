@@ -61,7 +61,7 @@ public class MekString {
 	 * @param note2
 	 * @return
 	 */
-	public boolean conflicting(int note1,int note2,int duration){
+	public boolean conflicting(int note1,int note2, long duration){
 		if(addIntervals(note1-lowNote,note2-lowNote)< duration) return true;
 		return false;
 	}
