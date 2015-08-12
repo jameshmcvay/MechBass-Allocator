@@ -3,6 +3,7 @@ package solver;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Sequence;
@@ -44,7 +45,8 @@ public class Solver {
 		// loop through
 		for (int i=0; i<tr.size(); ++i){
 			MidiMessage midmsg = tr.get(i).getMessage();
-			System.out.printf("%d %d: ",i,tr.get(i).getTick());
+//			System.out.println(tr.get(i).getTick());
+			//ystem.out.printf("%d %d: ",i,tr.get(i).getTick());
 			// check what type of message it is
 			if (midmsg instanceof ShortMessage){
 				ShortMessage shrtmsg = (ShortMessage) midmsg;
@@ -74,17 +76,17 @@ public class Solver {
 						// put it there if it is valid
 						moveEvent(tr,seq.getTracks()[useString+1],tr.get(i));
 						i--;
-						System.out.printf("Note %d moved\n", note);
+						//ystem.out.printf("Note %d moved\n", note);
 						// put it in last note for that string
 						lastNote[useString] = note;
 						lastString = useString;
 					}
 					else{
 						if (useString == -1){
-							System.out.printf("Note %d not moved, No string available.\n", note);
+							//ystem.out.printf("Note %d not moved, No string available.\n", note);
 						}
 						else if (useString > strings.length){				
-							System.out.printf("Note %d not moved, string num too high, this shouldn't occur.\n", note);
+							//ystem.out.printf("Note %d not moved, string num too high, this shouldn't occur.\n", note);
 						}
 					}
 					break;
@@ -96,19 +98,26 @@ public class Solver {
 						if (lastNote[j]==note) useString=j;
 					}
 					if (useString==-1){
-						System.out.printf("Note off %d not stopped, not played first\n", note);
+						//ystem.out.printf("Note off %d not stopped, not played first\n", note);
 						break; // if the note wasn't played, dont do anything with it
 					}
 					// now we have the correct string
 					// so we add the noteoff to the correct track
 					moveEvent(tr,seq.getTracks()[useString+1],tr.get(i));
 					i--;
-					System.out.printf("Note off %d moved\n", note);
+					//ystem.out.printf("Note off %d moved\n", note);
 
 					// and set the other stuff to nothing
 					lastNote[useString] = -1;
 					stringTimes[useString] = tr.get(i).getTick();
 					lastString = -1;
+					break;
+				case PROGRAM_CHANGE:
+					for (int j = 1; j <= strings.length; j++){
+						seq.getTracks()[j].add(tr.get(i));
+					}
+					tr.remove(tr.get(i));
+					i--;
 					break;
 				case PITCH_BEND:
 					default:
@@ -119,13 +128,26 @@ public class Solver {
 						i--;
 					}
 					else{
-						System.out.printf("other event not moved\n");
+						//ystem.out.printf("other event not moved\n");
 					}
 				}
 			}
 			else{
-				moveEvent(tr,seq.getTracks()[1],tr.get(i));
-				i--;
+//				moveEvent(tr,seq.getTracks()[1],tr.get(i));
+//				i--;
+				MetaMessage m = (MetaMessage) midmsg;
+				if (m.getType() == 0x51){
+					System.out.print(tr.get(i).getTick() + " tempo");
+					for (int me: m.getMessage()){
+						System.out.print(" 0x" + Integer.toHexString((int)(me & 0xFF)));
+					}
+					System.out.println();
+				}
+				if (m.getType() == 0x2f) break;
+				System.out.printf("0x%x\n", m.getType());
+				for (int j = 1; j <= strings.length; j++){
+					seq.getTracks()[j].add(tr.get(i));
+				}
 			}
 		}
 

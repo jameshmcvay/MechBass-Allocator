@@ -1,6 +1,8 @@
 package solver;
 
 import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MetaMessage;
+import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.Track;
 
@@ -28,6 +30,24 @@ public class TrackSplitter {
 		do {
 			output.getTracks()[0].add(inTrack.get(pos));
 		} while ((++pos)<inTrack.size());
+		
+		
+		for (int j=0; j<seq.getTracks().length; ++j){
+			Track tr = seq.getTracks()[j];
+			if (j==bassTrack) continue;
+
+			for (int i=0; i<tr.size(); ++i){
+				MidiMessage midmsg = tr.get(i).getMessage();
+				if (midmsg instanceof MetaMessage){
+					MetaMessage m = (MetaMessage) midmsg;
+					if (m.getType() == 0x51 || m.getType() == 0x06){
+						output.getTracks()[0].add(tr.get(i));
+					}
+				}
+			}
+		}
+		
+		
 		// pass to solver
 		System.out.printf("Missed %d events? of %d\n", inTrack.size()-output.getTracks()[0].size(), inTrack.size() );
 		return output;
