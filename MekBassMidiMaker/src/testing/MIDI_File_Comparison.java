@@ -5,6 +5,9 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.util.ArrayList;
 
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.Sequence;
+
 import main.Parser3;
 
 import org.junit.After;
@@ -14,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import solver.Solver;
+import solver.TrackSplitter;
 
 public class MIDI_File_Comparison {
 
@@ -28,7 +32,14 @@ public class MIDI_File_Comparison {
 	
 	@Test
 	public void test() {
-		test_parser.setSequence(Solver.solve(test_parser.getSequence()));
+		Sequence testSequence = null;
+		try {
+			testSequence = TrackSplitter.split(test_parser.getSequence(), 4, 0);
+		} catch (InvalidMidiDataException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		test_parser.setSequence(Solver.solve(testSequence));
 		test_parser.quietParse();
 		parser.quietParse();
 		ArrayList<Long> actualTicks = parser.getTicks();
@@ -42,7 +53,7 @@ public class MIDI_File_Comparison {
 			System.out.print("Original Hysteria Track Timestamp: " + 
 					actualTicks.get(i));
 			System.out.println("\tAllocated Hysteria Track Timestamp: " + 
-					actualTicks.get(i));
+					testTicks.get(i));
 			if (!actualTicks.get(i).equals(testTicks.get(i))){
 				errors++;
 				System.out.println("\t\tERROR# " + errors);

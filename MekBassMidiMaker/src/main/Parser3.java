@@ -851,7 +851,7 @@ public class Parser3 {
 			return;
 		}
 		else{
-			new Parser3(args[0].toString());
+			new Parser3(args[0].toString()).parse();
 		}
 	}
 
