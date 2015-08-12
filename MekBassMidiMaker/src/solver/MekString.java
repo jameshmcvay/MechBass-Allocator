@@ -25,9 +25,9 @@ public class MekString {
 	 * The Interval (in μs) between adjacent frets.<br>
 	 * The time between the first and second frets would be in index 0
 	 */
-	public final int[] interval;
+	public final long[] interval;
 
-	public MekString(int low, int high, int[] time){
+	public MekString(int low, int high, long[] time){
 		this.lowNote = low;
 		this.highNote = high;
 		this.interval = time;
@@ -38,7 +38,7 @@ public class MekString {
 		this.lowNote = low;
 		this.highNote = high;
 		this.noteRange = highNote - lowNote;
-		this.interval = new int[this.noteRange];
+		this.interval = new long[this.noteRange];
 	}
 
 	/**
@@ -47,8 +47,8 @@ public class MekString {
 	 * @param stop
 	 * @return Sum of intervals
 	 */
-	public int addIntervals(int start, int stop){
-		int ret = 0;
+	public long addIntervals(int start, int stop){
+		long ret = 0;
 		for(int i = start; i < stop; i++){ //not inclusive as start and stop represent notes and interval is between them
 			ret += interval[i];
 		}
@@ -64,5 +64,12 @@ public class MekString {
 	public boolean conflicting(int note1,int note2, long duration){
 		if(addIntervals(note1-lowNote,note2-lowNote)< duration) return true;
 		return false;
+	}
+	
+	/**
+	 * 
+	 */
+	public long difference(int note1, int note2){
+		return addIntervals(note1-lowNote,note2-lowNote);
 	}
 }
