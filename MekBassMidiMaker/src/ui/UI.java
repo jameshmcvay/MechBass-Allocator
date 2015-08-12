@@ -7,6 +7,7 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
+import solver.Solver;
 import tools.Player;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -69,6 +70,18 @@ public class UI extends Application {
 			}
 		});
 
+		Button solveBtn = new Button();
+		solveBtn.setText("Solve");
+
+		solveBtn.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				solve();
+
+			}
+		});
+
 		//Initialise the console
 		textConsole =  new TextArea();
 		textConsole.setPrefColumnCount(100);
@@ -87,7 +100,7 @@ public class UI extends Application {
 
 		FlowPane buttonPanel =  new FlowPane();
 		buttonPanel.setPadding(new Insets(3, 0, 0, 3));
-		buttonPanel.getChildren().addAll(playBtn, stpBtn, loadBtn);
+		buttonPanel.getChildren().addAll(playBtn, stpBtn, loadBtn, solveBtn);
 
 		//Canvas
 		Canvas canvas = new Canvas();
@@ -122,7 +135,12 @@ public class UI extends Application {
 	    primaryStage.show();
 	}
 
-    private void drawShapes(GraphicsContext gc) {
+    protected void solve() {
+    	if(curMIDI != null)
+    		curMIDI = Solver.solve(curMIDI);
+	}
+
+	private void drawShapes(GraphicsContext gc) {
     	gc.setFill(Color.BLANCHEDALMOND);
     	gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
     	gc.setFill(Color.GREEN);
