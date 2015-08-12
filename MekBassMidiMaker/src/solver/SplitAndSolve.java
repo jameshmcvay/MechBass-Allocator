@@ -37,7 +37,18 @@ public class SplitAndSolve {
 			System.out.printf("Converting Track %d\n", bass);
 			System.out.printf("Found %d moved events\n", moved);
 			System.out.printf("Found %d unmoved events\n",out.getTracks()[0].size());
-			Player.play(out);
+//			seq.deleteTrack(seq.getTracks()[bass]);
+//			out.deleteTrack(out.getTracks()[0]);
+			
+			
+			try {
+				MidiSystem.write(out, 1, new File("out.mid"));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			Player.release();
 		}
 		catch(InvalidMidiDataException e){
 			e.printStackTrace();
