@@ -42,7 +42,7 @@ public class Player {
 	 * @return Whether the sequencer was stopped
 	 */
 	public static boolean stop(){
-		if(seq.isRunning()){
+		if(seq != null && seq.isRunning()){
 			seq.stop();
 			return true;
 		}
@@ -53,6 +53,9 @@ public class Player {
 	 * Release system resources taken by the sequencer
 	 */
 	public static void release(){
+		if(seq == null){
+			return;
+		}
 		if(seq.isRunning()){
 			seq.stop();
 		}
