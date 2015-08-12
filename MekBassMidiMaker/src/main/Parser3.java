@@ -28,7 +28,6 @@ public class Parser3 {
 	public static final int NOTE_ON = 0x90;
 	public static final int NOTE_OFF = 0x80;
 	public static final int PROGRAM_CHANGE = 0xC0;
-	//	    public static final String[] NOTE_NAMES = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 
 	public static final String[] VOICES = {
 		"UNDEFINED",
@@ -494,12 +493,9 @@ public class Parser3 {
 	 * REQUIRES: N/A.
 	 * ENSURES: Returns the list of ticks in the short messages in the MIDI file.
 	 * */
-
 	public ArrayList<Long> getTicks() {
 		return ticks;
-	}
-
-	
+	}	
 
 	/**
 	 * author: Dean Newberry
@@ -613,7 +609,6 @@ public class Parser3 {
 						}
 						instrumentChanges.add(instrumentName);
 					}
-
 				}
 				else if (message instanceof ShortMessage) {
 					ArrayList<Integer> byteList = parseShortMessage(message, event, true);

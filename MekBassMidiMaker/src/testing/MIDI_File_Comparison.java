@@ -10,10 +10,6 @@ import javax.sound.midi.Sequence;
 
 import main.Parser3;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import solver.Solver;
@@ -34,7 +30,7 @@ public class MIDI_File_Comparison {
 	public void test() {
 		Sequence testSequence = null;
 		try {
-			testSequence = TrackSplitter.split(test_parser.getSequence(), 4, 0);
+			testSequence = TrackSplitter.split(test_parser.getSequence(), 4, 1);
 		} catch (InvalidMidiDataException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -63,5 +59,4 @@ public class MIDI_File_Comparison {
 		if (errors > errorTolerance)
 			fail("Too many errors (based on an acceptable error rate of 5%): " + errors);
 	}
-
 }
