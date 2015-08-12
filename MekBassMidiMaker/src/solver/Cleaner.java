@@ -7,6 +7,8 @@ import static javax.sound.midi.ShortMessage.PITCH_BEND;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
@@ -28,6 +30,36 @@ public class Cleaner {
 	 */
 	public static Sequence clean(Sequence seq){
 		seq.deleteTrack(seq.getTracks()[0]);
+		return seq;
+	}
+	
+	/**
+	 * Turns all note ons with velocity 0 into note offs.
+	 * @param seq
+	 * @return
+	 */
+	public static Sequence fixStupidity(Sequence seq){
+		try{
+			for(int i = 0; i < seq.getTracks().length; i++){
+				Track cur = seq.getTracks()[i];
+				//check that each note on doesn't conflict with the previous note off
+				for(int j = cur.size()-1; j == 0; --j){
+					MidiMessage midmsg = cur.get(j).getMessage();
+					if (midmsg instanceof ShortMessage){
+						ShortMessage shrtmsg = (ShortMessage) midmsg;
+						if(shrtmsg.getCommand() == NOTE_ON && shrtmsg.getData2() == 0){
+							ShortMessage noteOff = new ShortMessage(NOTE_OFF, shrtmsg.getChannel(), shrtmsg.getData1(), shrtmsg.getData2());
+							MidiEvent event = new MidiEvent(noteOff,cur.get(j).getTick());
+							if(cur.remove(cur.get(j))) cur.add(event);
+						}
+					}
+				}	
+			}
+			
+		}
+		catch(InvalidMidiDataException e){
+			e.printStackTrace();
+		}
 		return seq;
 	}
 	
