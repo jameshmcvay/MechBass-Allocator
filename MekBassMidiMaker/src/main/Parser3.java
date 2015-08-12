@@ -10,8 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.List;
-
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
@@ -168,7 +166,16 @@ public class Parser3 {
 	private Sequencer sequencer;
 	private Sequence sequence;
 	private Track[] tracks;
+	
+	// unnecessary?
 	private ArrayList<ArrayList<Integer>> bytelists = new ArrayList<>();
+	
+	// MIDI File Stuffs
+	private ArrayList<String> trackNames = new ArrayList<>();
+	private ArrayList<ArrayList<String>> trackInstruments = new ArrayList<>();
+	
+	// A helper list that stores the ticks of all the events
+	private ArrayList<Long> ticks = new ArrayList<>();
 	
 	private boolean ready = false;
 	
@@ -296,7 +303,7 @@ public class Parser3 {
 	 * be done.
 	 * 
 	 * REQUIRES: A Sequencer and 5 shots of absinthe (maybe an extra 2 for luck).
-	 * ENSURES: The user can change the sequencer the parse is using 
+	 * ENSURES: The user can change the sequencer the parser is using 
 	 * 		(because YOLO bruh).
 	 * */
 	public void setSequencer(Sequencer s){
@@ -327,8 +334,10 @@ public class Parser3 {
 	 * immediate benefit to using it. That said, there may be a reason this must
 	 * be done.
 	 * 
+	 * HOWEVER, this CAN be used to test the Solver. So that's something I guess...
+	 * 
 	 * REQUIRES: A Sequence and 5 shots of absinthe (maybe an extra 2 for luck).
-	 * ENSURES: The user can change the sequence the parse is using 
+	 * ENSURES: The user can change the sequence the parser is using 
 	 * 		(because YOLO bruh).
 	 * */
 	public void setSequence(Sequence s){
@@ -393,8 +402,110 @@ public class Parser3 {
 	/**
 	 * author: Dean Newberry
 	 * 
+	 * Gets the ArrayList of names for each track.
+	 * The index of the name corresponds to the index of the track.
+	 *
+	 * REQUIRES: N/A.
+	 * ENSURES: Returns the ArrayList of track names.
+	 * */
+	public ArrayList<String> getTrackNames() {
+		return trackNames;
+	}
+	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Gets the name of the track at the specified index.
+	 * The index of the name corresponds to the index of the track.
+	 *
+	 * REQUIRES: "i" must be between 0 and the size of the TrackName list.
+	 * ENSURES: Returns name of the track at index "i".
+	 * */
+	public String getTrackName(int i) {
+		if (i < 0 || i >= trackNames.size())
+			throw new IndexOutOfBoundsException("'i' is out of bounds. You "
+					+ "specifed " + i + ", but the acceptable range is 0 - "
+					+ (trackNames.size()-1) + ".");
+		return trackNames.get(i);
+	}
+	
+	
+/**
+	 * author: Dean Newberry
+	 * 
+	 * Gets the List of Lists of instruments that are used in the MIDI file.
+	 * The FIRST corresponds to the index of the track, the SECOND index 
+	 * corresponds to the instrument.
+	 *
+	 * REQUIRES: N/A.
+	 * ENSURES: Returns the list of lists of instruments used in the MIDI file.
+	 * */
+	public ArrayList<ArrayList<String>> getTrackInstruments() {
+		return trackInstruments;
+	}
+
+	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Gets the List of instruments that are used in the specified track.
+	 * The index of the returned list corresponds to the instrument.
+	 *
+	 * REQUIRES: "i" must be between 0 and the size of the TrackInstruments list.
+	 * ENSURES: Returns the list of instruments used in the track at index "i".
+	 * */
+	public ArrayList<String> getTrackInstruments(int i) {
+		if (i < 0 || i >= trackInstruments.size())
+			throw new IndexOutOfBoundsException("'i' is out of bounds. You "
+					+ "specifed " + i + ", but the acceptable range is 0 - "
+					+ (trackInstruments.size()-1) + ".");
+		return trackInstruments.get(i);
+	}
+	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Gets the instrument from the specified track and index.
+	 * This method is probably unnecessary, but is here for completion.
+	 *
+	 * REQUIRES: "i" must be between 0 and the size of the TrackInstruments list.
+	 * ENSURES: Returns the list of instruments used in the track at index "i".
+	 * */
+	public String getTrackInstrument(int i, int o) {
+		if (i < 0 || i >= trackInstruments.size())
+			throw new IndexOutOfBoundsException("'i' is out of bounds. You "
+					+ "specifed " + i + ", but the acceptable range is 0 - "
+					+ (trackInstruments.size()-1) + ".");
+		if (o < 0 || o >= trackInstruments.get(i).size())
+			throw new IndexOutOfBoundsException("'o' is out of bounds. You "
+					+ "specifed " + o + ", but the acceptable range is 0 - "
+					+ (trackInstruments.get(i).size()-1) + ".");
+		return trackInstruments.get(i).get(o);
+	}
+	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Gets the List of the "ticks" of all the short messages in the MIDI file.
+	 * These "ticks" are basically the timestamps of when the events occur.
+	 * 
+	 * Strictly speaking, this method should only be needed for testing purposes.
+	 *
+	 * REQUIRES: N/A.
+	 * ENSURES: Returns the list of ticks in the short messages in the MIDI file.
+	 * */
+
+	public ArrayList<Long> getTicks() {
+		return ticks;
+	}
+
+	
+
+	/**
+	 * author: Dean Newberry
+	 * 
 	 * Sets the parser up to parse the MIDI file. 
-	 * THIS METHOD *WILL* FAIL IF INAPPROPRIATE INPUTS WE USED FOR
+	 * THIS METHOD *WILL* FAIL IF INAPPROPRIATE INPUTS WERE USED FOR
 	 * CONSTRUCTORS/setFile METHODS.
 	 * 
 	 * I consider this method "safe", with the caveat that the file has been
@@ -439,8 +550,12 @@ public class Parser3 {
 			problem = true;
 			e.printStackTrace();
 		}
-		// Store the tracks and the number of tracks, printing the number.
 		bytelists.clear();
+		trackNames.clear();
+		for (ArrayList<String> al : trackInstruments)
+			al.clear();
+		trackInstruments.clear();
+		ticks.clear();
 		
 		if (ready == problem){
 			// if there are no problems...
@@ -450,15 +565,6 @@ public class Parser3 {
 	}
 	
 	public void parse(){
-		try {
-			MidiSystem.getMidiFileFormat(midiFile).getType();
-		} catch (InvalidMidiDataException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 		if (!ready){
 			System.out.println("The parser is not ready. "
 			+ "Please specify a proper file to load data.");
@@ -478,7 +584,7 @@ public class Parser3 {
 			String instrumentName = "Undefined";
 			String track_SequenceName = "Undefined";
 			int channels = 0;
-			List<String> instrumentChanges = new ArrayList<>();
+			ArrayList<String> instrumentChanges = new ArrayList<>();
 
 			for (int i=0; i < t.size(); i++) {
 				// GO THROUGH ALL THE EVENTS...
@@ -487,7 +593,7 @@ public class Parser3 {
 				MidiMessage message = event.getMessage();
 
 				if (message instanceof MetaMessage) {
-					ArrayList<Integer> byteList = parseMetaMessage(message, event);
+					ArrayList<Integer> byteList = parseMetaMessage(message, event, true);
 					bytelists.add(byteList);
 					MetaMessage mm = (MetaMessage) message;
 					String mmString = String.format("%02x", Integer.parseInt(((Integer) mm.getType()).toString()));
@@ -510,7 +616,7 @@ public class Parser3 {
 
 				}
 				else if (message instanceof ShortMessage) {
-					ArrayList<Integer> byteList = parseShortMessage(message, event);
+					ArrayList<Integer> byteList = parseShortMessage(message, event, true);
 					bytelists.add(byteList);
 					
 					ShortMessage sm = (ShortMessage) message;
@@ -527,9 +633,77 @@ public class Parser3 {
 			for (String s : instrumentChanges)
 				System.out.println("\t" + s);
 			System.out.println();
+			trackNames.add(track_SequenceName);
+			trackInstruments.add(instrumentChanges);
 		}
 	}
 
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * This is a carbon copy of the parse method, except there is NO printing
+	 * (EXCEPT for error messages and the warning that prints to let the user know
+	 * the parser isn't ready).
+	 * */
+	public void quietParse(){
+		if (!ready){
+			System.out.println("The parser is not ready. "
+			+ "Please specify a proper file to load data.");
+			return;
+		}
+		
+		// FOR EVERY TRACK...
+		for (Track t : tracks){
+			// ... Print out some basic information (Track Number and the Size of the track)
+			String instrumentName = "Undefined";
+			String track_SequenceName = "Undefined";
+			ArrayList<String> instrumentChanges = new ArrayList<>();
+
+			for (int i=0; i < t.size(); i++) {
+				// GO THROUGH ALL THE EVENTS...
+				MidiEvent event = t.get(i);
+				// ... And get the messages at each one.
+				MidiMessage message = event.getMessage();
+
+				if (message instanceof MetaMessage) {
+					ArrayList<Integer> byteList = parseMetaMessage(message, event, false);
+					bytelists.add(byteList);
+					MetaMessage mm = (MetaMessage) message;
+					String mmString = String.format("%02x", Integer.parseInt(((Integer) mm.getType()).toString()));
+					if (mmString.equals("03"))
+						try {
+							track_SequenceName = new String(mm.getData(), "UTF-8");
+						} catch (UnsupportedEncodingException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					if (mmString.equals("04")){
+						try {
+							instrumentName = new String(mm.getData(), "UTF-8");
+						} catch (UnsupportedEncodingException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						instrumentChanges.add(instrumentName);
+					}
+
+				}
+				else if (message instanceof ShortMessage) {
+					ArrayList<Integer> byteList = parseShortMessage(message, event, false);
+					bytelists.add(byteList);
+					
+					ShortMessage sm = (ShortMessage) message;
+
+					if (sm.getCommand() == ShortMessage.PROGRAM_CHANGE){
+						instrumentChanges.add(Parser3.VOICES[sm.getData1()] + " (" + sm.getData1() + ")");
+					}
+				}
+			}
+			trackNames.add(track_SequenceName);
+			trackInstruments.add(instrumentChanges);
+		}
+	}
+	
 	/**
 	 * author: Dean Newberry
 	 *
@@ -539,28 +713,30 @@ public class Parser3 {
 	 *
 	 * @param message - a MidiMessage.
 	 * @param event - the MidiEvent the MidiMessage came from. Mainly used for the "tick" data printout.
+	 * @param quietMode 
 	 * @returns A list of every single byte in the message that was passed.
 	 *
 	 * REQUIRES: a MidiEvent and the corresponding MidiMessage that is compatible with MetaMessage methods 
 	 * 		(i.e. message must be an instance of MetaMessage).
 	 * ENSURES: a list of all the bytes in the message that has been passed.
 	 * */
-	public ArrayList<Integer> parseMetaMessage(MidiMessage message, MidiEvent event){
+	public ArrayList<Integer> parseMetaMessage(MidiMessage message, MidiEvent event, boolean verbose){
 		if (message instanceof MetaMessage) {
 			ArrayList<Integer> bytes = new ArrayList<>();
 
 			// This is a META MESSAGE; convert the message and print basic information.
 			// This information is WHEN the event happens, what kind of message it is and what TYPE it is.
 			MetaMessage mm = (MetaMessage) message;
-			System.out.println("@" + event.getTick() + "(META_MESSAGE)");
-			System.out.println(String.format("%02x", Byte.parseByte(((Integer) mm.getType()).toString())));
-
-			// Print the Message data, plus a new line
-			try {
-				System.out.println(new String(mm.getData(), "UTF-8"));
-			} catch (UnsupportedEncodingException e) {
-				System.out.println("??? Data could not be encoded ???");
-				e.printStackTrace();
+			if (verbose){
+				System.out.println("@" + event.getTick() + "(META_MESSAGE)");
+				System.out.println(String.format("%02x", Byte.parseByte(((Integer) mm.getType()).toString())));
+				// Print the Message data, plus a new line
+				try {
+					System.out.println(new String(mm.getData(), "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					System.out.println("??? Data could not be encoded ???");
+					e.printStackTrace();
+				}
 			}
 			bytes.add(mm.getStatus());
 			for (Byte b : mm.getData()){
@@ -583,13 +759,14 @@ public class Parser3 {
 	 *
 	 * @param message - a MidiMessage.
 	 * @param event - the MidiEvent the MidiMessage came from. Mainly used for the "tick" data printout.
+	 * @param c 
 	 * @returns A list of every single byte in the message that was passed.
 	 *
 	 * REQUIRES: a MidiEvent and the corresponding MidiMessage that is compatible with ShortMessage methods 
 	 * 		(i.e. message must be an instance of ShortMessage).
 	 * ENSURES: a list of all the bytes in the message that has been passed.
 	 * */
-	public ArrayList<Integer> parseShortMessage(MidiMessage message, MidiEvent event){
+	public ArrayList<Integer> parseShortMessage(MidiMessage message, MidiEvent event, boolean verbose){
 		if (!(message instanceof ShortMessage) || !message.equals(event.getMessage())){
 			throw new IllegalArgumentException("An error occured - Please check:\n"
 					+ "That the MidiMessage that was passed in is an instance of ShortMessage,\n"
@@ -605,33 +782,37 @@ public class Parser3 {
 			// NOTE_ON, NOTE_OFF, PROGRAM_CHANGE (i.e. instrument change).
 			ShortMessage sm = (ShortMessage) message;
 			String smString = String.format("%02x", Integer.parseInt(((Integer) sm.getStatus()).toString()));
-
-			// If the command is NOTE_ON or NOTE_OFF...
-			if (sm.getCommand() == NOTE_ON || sm.getCommand() == NOTE_OFF) {
-				// Setup a String variable for the command, then record details of the command.
-				String command;
-				int channel = sm.getChannel();
-				int key = sm.getData1();
-				int octave = (key / 12)-1;
-				int note = key % 12;
-				String noteName = getNoteName(note);
-				int velocity = sm.getData2();
-				if (sm.getCommand() == NOTE_ON)
-					command = "Note on";
-				else
-					command = "Note off";
-				// After that, Print the details.
-				System.out.println("Channel " + channel + ": " + command + ", " +
-						noteName + octave + " key=" + key + " velocity: " + velocity);
-			} else if (sm.getCommand() == ShortMessage.PROGRAM_CHANGE){
-				System.out.println("@" + event.getTick() + "(SHORT_MESSAGE)");
-				System.out.println(smString);
-				System.out.println(sm.getData1());
-				System.out.println();
+			if (verbose){
+				// If the command is NOTE_ON or NOTE_OFF...
+				if (sm.getCommand() == NOTE_ON || sm.getCommand() == NOTE_OFF) {
+					// Setup a String variable for the command, then record details of the command.
+					String command;
+					int channel = sm.getChannel();
+					int key = sm.getData1();
+					int octave = (key / 12)-1;
+					int note = key % 12;
+					String noteName = getNoteName(note);
+					int velocity = sm.getData2();
+					if (sm.getCommand() == NOTE_ON)
+						command = "Note on";
+					else
+						command = "Note off";
+					// After that, Print the details.
+					System.out.println("Channel " + channel + ": " + command + ", " +
+							noteName + octave + " key=" + key + " velocity: " + velocity);
+				} else if (sm.getCommand() == ShortMessage.PROGRAM_CHANGE){
+					System.out.println("@" + event.getTick() + "(SHORT_MESSAGE)");
+					System.out.println(smString);
+					System.out.println(sm.getData1());
+					System.out.println();
+				}
 			}
 			for (Byte b : sm.getMessage()){
 				bytes.add((int) (b & 0xFF));
 			}
+			
+			ticks.add(event.getTick());
+			
 			return bytes;
 		}
 	}
