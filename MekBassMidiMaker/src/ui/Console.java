@@ -1,5 +1,7 @@
 package ui;
 
+import helperCode.OctaveShifter;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -11,19 +13,22 @@ import javax.sound.midi.Sequence;
 
 import javafx.scene.control.TextArea;
 import solver.Solver;
+import solver.TrackSplitter;
 import tools.Player;
 
 public class Console {
 
 	boolean guiMode;
-	Sequence curMIDI;
 	TextArea area;
 	BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 	String input = "i";
+	UI ui;
+	Sequence curMIDI;
 
-	public Console(boolean gui, TextArea text) {
+	public Console(boolean gui, TextArea text, UI ui) {
 		guiMode = gui;
 		area = text;
+		this.ui = ui;
 	}
 
 	public Console(boolean gui) {
@@ -76,6 +81,15 @@ public class Console {
 			return;
 		}
 
+		if(input.equals("stop")){
+			playerStop();
+			return;
+		}
+
+		if(input.equals("octUp")){
+			OctaveShifter.shiftOctave(curMIDI, 3);
+		}
+
 	}
 
 	protected void output(String text) {
@@ -83,16 +97,6 @@ public class Console {
 			area.setText(text+" \n");
 		else
 			System.out.println(text);
-	}
-
-	protected void solve() {
-		if (curMIDI != null)
-			curMIDI = Solver.solve(curMIDI);
-	}
-
-	protected void play() {
-		if (curMIDI != null)
-			Player.play(curMIDI);
 	}
 
 	protected boolean setCurMIDI(String path) {
@@ -113,21 +117,30 @@ public class Console {
 		return false;
 	}
 
-	public static void main(String args[]) {
-		Console c = new Console(false);
-		c.startTerminalInput();
-	}
-
-	public void stop() {
-		playerStop();
-		playerRelease();
-	}
-
-	public void playerRelease() {
+	public static void playerRelease(){
 		Player.release();
 	}
 
-	public void playerStop() {
+	public void playerStop(){
 		Player.stop();
+	}
+
+	protected void play() {
+	    if(curMIDI != null)
+		Player.play(curMIDI);
+	}
+
+	protected void solve() {
+	   	if(curMIDI != null)
+	   		try {
+	            curMIDI = TrackSplitter.split(curMIDI, 4, 2);
+	        } catch (InvalidMidiDataException e) {
+	            e.printStackTrace();
+	        }
+		}
+
+	public static void main(String args[]) {
+		Console c = new Console(false);
+		c.startTerminalInput();
 	}
 }

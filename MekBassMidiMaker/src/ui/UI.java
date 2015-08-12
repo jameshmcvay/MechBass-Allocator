@@ -2,13 +2,14 @@ package ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Clock;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Random;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
-import solver.Solver;
 import solver.TrackSplitter;
 import tools.Player;
 import javafx.application.Application;
@@ -16,7 +17,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -43,7 +43,7 @@ public class UI extends Application {
 	double width = 1200;
 	double height = 900;
 
-
+	Console console;
 	TextArea textConsole = null; //the console
 
     //Contains launches the application, for all intents and purposes, this is the contructor
@@ -128,25 +128,37 @@ public class UI extends Application {
 			}
 		});
 
+	    //TODO Make GUILISE
+	    console =  new Console(true, textConsole, this);
 
 	    primaryStage.setTitle("Google");
 	    primaryStage.setScene(scene);
 	    primaryStage.show();
 	}
-        int value;
-    protected void solve() {
-    	if(curMIDI != null)
-            try {
-                    curMIDI = TrackSplitter.split(curMIDI, 4, value);
-            } catch (InvalidMidiDataException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-            }
+
+	protected void solve() {
+		console.solve();
+
 	}
 
+	protected void playerStop() {
+		console.playerStop();
+
+	}
+
+	protected void play() {
+		console.play();
+
+	}
+
+
+
 	private void drawShapes(GraphicsContext gc) {
-            gc.setFill(Color.BLANCHEDALMOND);
+			Random rand =  new Random();
+
+            gc.setFill(Color.color(rand.nextDouble(), rand.nextDouble(), rand.nextDouble()));
             gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
+
             gc.setFill(Color.GREEN);
             gc.setStroke(Color.BLUE);
             gc.setLineWidth(5);
@@ -170,12 +182,7 @@ public class UI extends Application {
 	}
 
 	//--------------Button methods----------
-	//Play the MIDI
-	protected void play() {
-	    if(curMIDI != null)
-		Player.play(curMIDI);
-	}
-
+	File lastFileLocation;
 	//Load a new Sequence
 	protected void setCurMIDI(){
 		try {
@@ -183,12 +190,18 @@ public class UI extends Application {
 			fiChoo.setTitle("Select the MIDI File to be converted.");
 
 			//Assign the selected file to fi and convert it to a MIDI
+			if(lastFileLocation != null){
+				fiChoo.setInitialDirectory(lastFileLocation);
+			}
+
 			File fi = fiChoo.showOpenDialog(null);
-			if(fi != null)
-				curMIDI = MidiSystem.getSequence(fi);
+
+			if(fi != null){
+				lastFileLocation = fi.getCanonicalFile().getParentFile();
+				console.curMIDI = MidiSystem.getSequence(fi);
+			}
 
 		} catch (InvalidMidiDataException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -199,22 +212,16 @@ public class UI extends Application {
 
 	@Override
 	public void stop(){
-		playerStop();
-		playerRelease();
+		console.playerStop();
+		console.playerRelease();
 	}
 
-	public void playerRelease(){
-		Player.release();
-	}
 
-	public void playerStop(){
-		Player.stop();
-	}
 
 	private void handleKeyEvent(KeyEvent event){
 		switch (event.getCode() +"") { //added to the empty string for implicit conversion
 		case "ENTER":
-			System.out.println("You pressed enter! Good on you!");
+			console.Parse(textConsole.getText());
             break;
 
 		default:
