@@ -17,7 +17,9 @@ import javax.sound.midi.Track;
 /**
  *
  * @author Andrew Palmer
- *
+ */
+
+/**
  *cleaner cuts the excess events after solving and adds pre-positioning.
  */
 public class Cleaner {
@@ -149,7 +151,7 @@ public class Cleaner {
 								else{
 									System.out.printf("%d: note %d to close to preceeding note.", cur.get(j).getTick() ,note1);
 								}
-								}
+							}
 						}
 					}
 				}
