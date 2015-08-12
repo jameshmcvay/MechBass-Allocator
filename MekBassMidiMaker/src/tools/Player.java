@@ -16,7 +16,9 @@ public class Player {
 	 * Start audio output. Loops once.
 	 */
 	public static void play(Sequence s) {
+	    if(seq == null){
 		play(s,0);
+	    }
 	}
 
 	/**

@@ -2,12 +2,14 @@ package ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Clock;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
 import solver.Solver;
+import solver.TrackSplitter;
 import tools.Player;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -26,6 +28,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
 /**
  * Container class for the UI
  *
@@ -43,53 +46,49 @@ public class UI extends Application {
 
 	TextArea textConsole = null; //the console
 
+    //Contains launches the application, for all intents and purposes, this is the contructor
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		//-----Create the set of buttons to be added to the graphics pane-------
-		Button playBtn = new Button();
+	    Button playBtn = new Button();//The play button
 		playBtn.setText("Play");
 
-		playBtn.setOnAction(new EventHandler<ActionEvent>() {
+		playBtn.setOnAction(new EventHandler<ActionEvent>() {//on push events
+			//call to play
 			@Override
 			public void handle(ActionEvent event) {play();}});
 
-		Button stpBtn = new Button();
+		Button stpBtn = new Button();//The Stop Button
 		stpBtn.setText("Stop");
 
-		stpBtn.setOnAction(new EventHandler<ActionEvent>() {
+		stpBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
+			//Call to playerStop
 			@Override
 			public void handle(ActionEvent event){playerStop();}});
 
-		Button loadBtn = new Button();
+		Button loadBtn = new Button();//The load Button
 		loadBtn.setText("Load");
 
-		loadBtn.setOnAction(new EventHandler<ActionEvent>() {
+		loadBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
+			//call to setCurrMIDI
 			@Override
-			public void handle(ActionEvent event){
-					setCurMIDI();
-			}
-		});
+			public void handle(ActionEvent event){setCurMIDI();}});
 
-		Button solveBtn = new Button();
+		Button solveBtn = new Button();//The Solve Button
 		solveBtn.setText("Solve");
 
 		solveBtn.setOnAction(new EventHandler<ActionEvent>() {
-
+			//Call to solve
 			@Override
-			public void handle(ActionEvent event) {
-				solve();
-
-			}
-		});
+			public void handle(ActionEvent event) {solve();}});
 
 		//Initialise the console
-		textConsole =  new TextArea();
+		textConsole = new TextArea();
 		textConsole.setPrefColumnCount(100);
 		textConsole.setPrefRowCount(10);
 		textConsole.setWrapText(true);
-		textConsole.setPrefWidth(width-(width * .01));
-//		System.out.println(width-(width * .01));
-		textConsole.setPrefHeight(height/2.1);
+		textConsole.setPrefWidth(width - (width * .01));
+		textConsole.setPrefHeight(height / 2.1);
 
 		//window manager
 		FlowPane root =  new FlowPane();
@@ -134,44 +133,47 @@ public class UI extends Application {
 	    primaryStage.setScene(scene);
 	    primaryStage.show();
 	}
-
+        int value;
     protected void solve() {
     	if(curMIDI != null)
-    		curMIDI = Solver.solve(curMIDI);
+            try {
+                    curMIDI = TrackSplitter.split(curMIDI, 4, value);
+            } catch (InvalidMidiDataException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+            }
 	}
 
 	private void drawShapes(GraphicsContext gc) {
-    	gc.setFill(Color.BLANCHEDALMOND);
-    	gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
-    	gc.setFill(Color.GREEN);
-		gc.setStroke(Color.BLUE);
-		gc.setLineWidth(5);
-		gc.strokeLine(40, 10, 10, 40);
-		gc.fillOval(10, 60, 30, 30);
-		gc.strokeOval(60, 60, 30, 30);
-		gc.fillRoundRect(110, 60, 30, 30, 10, 10);
-		gc.strokeRoundRect(160, 60, 30, 30, 10, 10);
-		gc.fillArc(10, 110, 30, 30, 45, 240, ArcType.OPEN);
-		gc.fillArc(60, 110, 30, 30, 45, 240, ArcType.CHORD);
-		gc.fillArc(110, 110, 30, 30, 45, 240, ArcType.ROUND);
-		gc.strokeArc(10, 160, 30, 30, 45, 240, ArcType.OPEN);
-		gc.strokeArc(60, 160, 30, 30, 45, 240, ArcType.CHORD);
-		gc.strokeArc(110, 160, 30, 30, 45, 240, ArcType.ROUND);
-		gc.fillPolygon(new double[]{10, 40, 10, 40},
-		                 new double[]{210, 210, 240, 240}, 4);
-		gc.strokePolygon(new double[]{60, 90, 60, 90},
-		                   new double[]{210, 210, 240, 240}, 4);
-		gc.strokePolyline(new double[]{110, 140, 110, 140},
-		                    new double[]{210, 210, 240, 240}, 4);
+            gc.setFill(Color.BLANCHEDALMOND);
+            gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
+            gc.setFill(Color.GREEN);
+            gc.setStroke(Color.BLUE);
+            gc.setLineWidth(5);
+            gc.strokeLine(40, 10, 10, 40);
+            gc.fillOval(10, 60, 30, 30);
+            gc.strokeOval(60, 60, 30, 30);
+            gc.fillRoundRect(110, 60, 30, 30, 10, 10);
+            gc.strokeRoundRect(160, 60, 30, 30, 10, 10);
+            gc.fillArc(10, 110, 30, 30, 45, 240, ArcType.OPEN);
+            gc.fillArc(60, 110, 30, 30, 45, 240, ArcType.CHORD);
+            gc.fillArc(110, 110, 30, 30, 45, 240, ArcType.ROUND);
+            gc.strokeArc(10, 160, 30, 30, 45, 240, ArcType.OPEN);
+            gc.strokeArc(60, 160, 30, 30, 45, 240, ArcType.CHORD);
+            gc.strokeArc(110, 160, 30, 30, 45, 240, ArcType.ROUND);
+            gc.fillPolygon(new double[]{10, 40, 10, 40},
+                             new double[]{210, 210, 240, 240}, 4);
+            gc.strokePolygon(new double[]{60, 90, 60, 90},
+                               new double[]{210, 210, 240, 240}, 4);
+            gc.strokePolyline(new double[]{110, 140, 110, 140},
+                                new double[]{210, 210, 240, 240}, 4);
 	}
-
-//	protected void
 
 	//--------------Button methods----------
 	//Play the MIDI
 	protected void play() {
-			if(curMIDI != null)
-				Player.play(curMIDI);
+	    if(curMIDI != null)
+		Player.play(curMIDI);
 	}
 
 	//Load a new Sequence
@@ -199,7 +201,6 @@ public class UI extends Application {
 	public void stop(){
 		playerStop();
 		playerRelease();
-
 	}
 
 	public void playerRelease(){
@@ -213,8 +214,8 @@ public class UI extends Application {
 	private void handleKeyEvent(KeyEvent event){
 		switch (event.getCode() +"") { //added to the empty string for implicit conversion
 		case "ENTER":
-
-			break;
+			System.out.println("You pressed enter! Good on you!");
+            break;
 
 		default:
 			break;
