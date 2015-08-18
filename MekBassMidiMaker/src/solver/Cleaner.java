@@ -84,7 +84,8 @@ public class Cleaner {
 					ShortMessage noteOn = (ShortMessage) midNoteOn;
 					// check what kind of command it is (note on/off, etc)
 					if(noteOn.getCommand() == NOTE_ON){
-						// check whether or not it is actually a note on...
+						// check whether or not it is actually a note on or prepos
+						// Possibly just check that each prepos is followed by the same note?
 						if (noteOn.getData2()!=1){
 							int note1 = noteOn.getData1();
 							//find the previous note off
@@ -158,5 +159,13 @@ public class Cleaner {
 			}
 		}
 		return seq;
+	}
+	
+	public static void delayNote(Sequence seq, MekString str, int event, long delay){
+		
+	}
+	
+	public static void dropNote(Sequence seq, MekString str, int event){
+		
 	}
 }
