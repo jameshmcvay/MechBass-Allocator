@@ -2,6 +2,7 @@ package ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Random;
@@ -129,7 +130,10 @@ public class UI extends Application {
 		});
 
 	    //TODO Make GUILISE
-	    console =  new Console(true, textConsole, this);
+	    console =  new Console(textConsole, this);
+	    PrintStream ps = new PrintStream(console, true);
+	    System.setOut(ps);
+	    System.setErr(ps);
 
 	    primaryStage.setTitle("Google");
 	    primaryStage.setScene(scene);
