@@ -72,7 +72,7 @@ public class Cleaner {
 	 * @param strings - the information on notes played by and intervals on the strings
 	 * @return the number of conflicting notes
 	 */
-	public static int scanTimings(Sequence seq, int inter, MekString[] strings){
+	public static int scanTimings(Sequence seq, MekString[] strings){
 		int conflicts = 0;
 		//for each track
 		for(int i = 0; i < seq.getTracks().length; i++){
