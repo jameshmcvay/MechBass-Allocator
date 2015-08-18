@@ -1,12 +1,11 @@
 package ui;
 
 import helperCode.OctaveShifter;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
+import java.io.OutputStream;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
@@ -16,7 +15,7 @@ import solver.Solver;
 import solver.TrackSplitter;
 import tools.Player;
 
-public class Console {
+public class Console extends OutputStream{
 
 	boolean guiMode;
 	TextArea area;
@@ -30,11 +29,8 @@ public class Console {
 		this.slave = slave;
 	}
 
-	public Console(boolean gui) {
-		guiMode = gui;
-		if (guiMode) {
-
-		}
+	public Console() {
+		guiMode = false;
 	}
 
 	protected void startTerminalInput() {
@@ -96,15 +92,18 @@ public class Console {
 	}
 
 	protected void output(String text) {
-		if (getGUIMode())
-			area.setText(text+" \n");
-		else
-			System.out.println(text);
+			System.out.print(text + "\n");
 	}
 
 
 	public static void main(String args[]) {
-		Console c = new Console(false);
+		Console c = new Console();
 		c.startTerminalInput();
+	}
+
+	@Override
+	public void write(int i) throws IOException {
+		area.appendText(String.valueOf((char) i));
+
 	}
 }

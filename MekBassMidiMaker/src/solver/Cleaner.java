@@ -72,7 +72,7 @@ public class Cleaner {
 	 * @param strings - the information on notes played by and intervals on the strings
 	 * @return the number of conflicting notes
 	 */
-	public static int scanTimings(Sequence seq, int inter, MekString[] strings){
+	public static int scanTimings(Sequence seq, MekString[] strings){
 		int conflicts = 0;
 		//for each track
 		for(int i = 0; i < seq.getTracks().length; i++){
@@ -84,7 +84,8 @@ public class Cleaner {
 					ShortMessage noteOn = (ShortMessage) midNoteOn;
 					// check what kind of command it is (note on/off, etc)
 					if(noteOn.getCommand() == NOTE_ON){
-						// check whether or not it is actually a note on...
+						// check whether or not it is actually a note on or prepos
+						// Possibly just check that each prepos is followed by the same note?
 						if (noteOn.getData2()!=1){
 							int note1 = noteOn.getData1();
 							//find the previous note off
@@ -158,5 +159,13 @@ public class Cleaner {
 			}
 		}
 		return seq;
+	}
+	
+	public static void delayNote(Sequence seq, MekString str, int event, long delay){
+		
+	}
+	
+	public static void dropNote(Sequence seq, MekString str, int event){
+		
 	}
 }

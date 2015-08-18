@@ -59,15 +59,19 @@ public class MekString {
 	 * Checks if two notes on the string are conflicting
 	 * @param note1
 	 * @param note2
-	 * @return
+	 * @param duration - the time between note1 finishing and note 2 starting
+	 * @return the 
 	 */
 	public boolean conflicting(int note1,int note2, long duration){
-		if(addIntervals(note1-lowNote,note2-lowNote)< duration) return true;
+		if(addIntervals(note1-lowNote,note2-lowNote) > duration) return true;
 		return false;
 	}
 	
 	/**
-	 * 
+	 * Checks the minimum time between two notes
+	 * @param note1
+	 * @param note2
+	 * @return the min time between note1 and note2
 	 */
 	public long difference(int note1, int note2){
 		return addIntervals(note1-lowNote,note2-lowNote);

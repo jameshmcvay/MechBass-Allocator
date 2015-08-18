@@ -2,6 +2,7 @@ package ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Random;
@@ -132,7 +133,12 @@ public class UI extends Application {
 	    //TODO Make GUILISE
 	    slave = new Slave();
 	    slave.setUI(this);
-		slave.setConsole(new Console(Boolean.parseBoolean(args[0]),getConsoleTextArea(),slave));
+	    Console console = new Console(Boolean.parseBoolean(args[0]),getConsoleTextArea(),slave);
+		slave.setConsole(console);
+
+	    PrintStream ps = new PrintStream(console, true);
+	    System.setOut(ps);
+	    System.setErr(ps);
 
 	    primaryStage.setTitle("Google");
 	    primaryStage.setScene(scene);

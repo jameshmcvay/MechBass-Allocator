@@ -65,86 +65,88 @@ public class OctaveShifter {
 	public static Sequence shiftOctave(Sequence seq, int shift){
 		for (Track t : seq.getTracks()){
 			for (int i=0; i < t.size(); i++) {
-				MidiEvent event = t.get(i);
-				MidiMessage message = event.getMessage();
-				if (message instanceof ShortMessage) {
-					ShortMessage sm = (ShortMessage) message;
-					if (sm.getCommand() == ShortMessage.NOTE_OFF||
-						sm.getCommand() == ShortMessage.NOTE_ON	||
-						sm.getCommand() == ShortMessage.POLY_PRESSURE){
-						boolean warnUser = false;
-						int tempShift = shift;
-						if (sm.getData1() + (tempShift * 12) >= 0 &&
-								sm.getData1() + (tempShift * 12) <= 127){
-							try {
-								sm.setMessage(sm.getCommand(), sm.getChannel(),
-								sm.getData1() + (tempShift * 12), sm.getData2());
-							} catch (InvalidMidiDataException e) {
-								e.printStackTrace();
-								System.out.println("Well shit. Something done goofed son.\n"
-										+ "I *EXPECTED* to make a change to a ShortMessage where "
-										+ "the command was NOTE_OFF, NOTE_ON or POLY_PRESSURE (Pitch "
-										+ "Bend).\nINSTEAD, I made a STUPID change!");
-							}
-						}
-						else if ((sm.getData1() + (tempShift * 12) < 0 ||
-								sm.getData1() + (tempShift * 12) > 127)){
-							warnUser = true;
-							if (tempShift > 0){
-								tempShift--;
-								while(tempShift > 0){
-									if (sm.getData1() + (tempShift * 12) >= 0 &&
-											sm.getData1() + (tempShift * 12) <= 127){
-										try {
-											sm.setMessage(sm.getCommand(), sm.getChannel(),
-											sm.getData1() + (tempShift * 12), sm.getData2());
-										} catch (InvalidMidiDataException e) {
-											System.out.println("Well shit. Something done goofed son.\n"
-													+ "I *EXPECTED* to make a change to a ShortMessage where "
-													+ "the command was NOTE_OFF, NOTE_ON or POLY_PRESSURE (Pitch "
-													+ "Bend).\nINSTEAD, I made a STUPID change!");
-										}
-									}
-									else tempShift--;
-								}
-							}
-							else{
-								while(tempShift < 0){
-									tempShift++;
-									if (sm.getData1() + (tempShift * 12) >= 0 &&
-											sm.getData1() + (tempShift * 12) <= 127){
-										try {
-											sm.setMessage(sm.getCommand(), sm.getChannel(),
-											sm.getData1(), sm.getData2());
-										} catch (InvalidMidiDataException e) {
-											e.printStackTrace();
-											System.out.println("Well shit. Something done goofed son.");
-										}
-									}
-									else tempShift++;
-								}
-							}
-						}
-						if (warnUser){
-							System.out.printf("!!!\tWARNING! FAILED TO SHIFT NOTE "
-							+ "%d OCTAVES! SHIFTED THE NOTE %d OCTAVES INSTEAD!\t!!!",
-							shift, tempShift);
-							//TODO kill me
-							break;
-						}
-					}
-				}
+				shift_A_Note(seq, shift, t, i);
 			}
 		}
 		return seq;
 	}
 
+	private static void shift_A_Note(Sequence seq, int shift, Track t, int i){
+		MidiEvent event = t.get(i);
+		MidiMessage message = event.getMessage();
+		if (message instanceof ShortMessage) {
+			ShortMessage sm = (ShortMessage) message;
+			if (sm.getCommand() == ShortMessage.NOTE_OFF||
+				sm.getCommand() == ShortMessage.NOTE_ON	||
+				sm.getCommand() == ShortMessage.POLY_PRESSURE){
+				boolean warnUser = false;
+				int tempShift = shift;
+				if (sm.getData1() + (tempShift * 12) >= 0 &&
+						sm.getData1() + (tempShift * 12) <= 127){
+					try {
+						sm.setMessage(sm.getCommand(), sm.getChannel(),
+						sm.getData1() + (tempShift * 12), sm.getData2());
+					} catch (InvalidMidiDataException e) {
+						e.printStackTrace();
+						System.out.println("I *EXPECTED* to make a change to a "
+								+ "ShortMessage where the command was NOTE_OFF, "
+								+ "NOTE_ON or POLY_PRESSURE (Pitch Bend).");
+					}
+				}
+				else if ((sm.getData1() + (tempShift * 12) < 0 ||
+						sm.getData1() + (tempShift * 12) > 127)){
+					warnUser = true;
+					if (tempShift > 0){
+						while(tempShift > 0){
+							tempShift--;
+							if (sm.getData1() + (tempShift * 12) >= 0 &&
+									sm.getData1() + (tempShift * 12) <= 127){
+								try {
+									sm.setMessage(sm.getCommand(), sm.getChannel(),
+									sm.getData1() + (tempShift * 12), sm.getData2());
+									break;
+								} catch (InvalidMidiDataException e) {
+									System.out.println("I *EXPECTED* to make a change to a "
+											+ "ShortMessage where the command was NOTE_OFF, "
+											+ "NOTE_ON or POLY_PRESSURE (Pitch Bend).");
+								}
+							}
+						}
+					}
+					else{
+						while(tempShift < 0){
+							tempShift++;
+							if (sm.getData1() + (tempShift * 12) >= 0 &&
+									sm.getData1() + (tempShift * 12) <= 127){
+								try {
+									sm.setMessage(sm.getCommand(), sm.getChannel(),
+									sm.getData1() + (tempShift * 12), sm.getData2());
+									break;
+								} catch (InvalidMidiDataException e) {
+									e.printStackTrace();
+									System.out.println("I *EXPECTED* to make a change to a "
+											+ "ShortMessage where the command was NOTE_OFF, "
+											+ "NOTE_ON or POLY_PRESSURE (Pitch Bend).");
+								}
+							}
+						}
+					}
+				}
+				if (warnUser){
+					System.out.printf("!!!\tWARNING! FAILED TO SHIFT NOTE "
+					+ "%d OCTAVES! SHIFTED THE NOTE %d OCTAVES INSTEAD!\n!!!",
+					shift, tempShift);
+				}
+			}
+		}
+	}
+
 	public static void main(String args[]){
-		File f =  new File("resources/stairway.mid");
+		File f =  new File("resources/DragonForce_Through-the-Fire-and-Flames.mid");
 		try {
 			Sequence s = MidiSystem.getSequence(f);
-//			shiftOctave(s, -1);
-//			shiftOctave(s, 1);
+//			shiftOctave(s, -3);
+			shiftOctave(s, 100);
 
 			Player.play(s);
 
