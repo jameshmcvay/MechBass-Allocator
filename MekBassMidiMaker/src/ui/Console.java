@@ -22,13 +22,12 @@ public class Console {
 	TextArea area;
 	BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 	String input = "i";
-	UI ui;
-	Sequence curMIDI;
+	Slave slave;
 
-	public Console(boolean gui, TextArea text, UI ui) {
+	public Console(boolean gui, TextArea text,Slave slave) {
 		guiMode = gui;
 		area = text;
-		this.ui = ui;
+		this.slave = slave;
 	}
 
 	public Console(boolean gui) {
@@ -59,85 +58,50 @@ public class Console {
 			output("No File Specified");
 		else if (input.startsWith("open")) {
 			input = input.substring(4).trim();
-			if(setCurMIDI(input)) output("Successfully open file");
+			if(slave.setCurMIDI(input)) output("Successfully open file");
 			else output("Failed to open file");
 			return;
 		}
 
 		if (input.equals("solve")) {
-			solve();
+			slave.solve();
 			return;
 		}
 		else if(input.startsWith("solve")){
 			input = input.substring(5).trim();
-			if(setCurMIDI(input)) output("Successfully open file");
+			if(slave.setCurMIDI(input)) output("Successfully open file");
 			else output("Failed to open file");
-			solve();
+			slave.solve();
 			output("successfully solved");
 		}
 
 		if (input.equals("play")) {
-			play();
+			slave.play();
 			return;
 		}
 
 		if(input.equals("stop")){
-			playerStop();
+			slave.playerStop();
 			return;
 		}
 
 		if(input.equals("octUp")){
-			OctaveShifter.shiftOctave(curMIDI, 3);
+			Slave.octaveUp();
 		}
 
 	}
 
+	protected boolean getGUIMode(){
+		return guiMode;
+	}
+
 	protected void output(String text) {
-		if (guiMode)
+		if (getGUIMode())
 			area.setText(text+" \n");
 		else
 			System.out.println(text);
 	}
 
-	protected boolean setCurMIDI(String path) {
-		try {
-			File fi = new File(path);
-			if (fi != null){
-				curMIDI = MidiSystem.getSequence(fi);
-				return true;
-			}
-		} catch (IOException e) {
-			output("The file was not found");
-			return false;
-		}
-		catch (InvalidMidiDataException e) {
-			output("Failed to convert to a sequence");
-			return false;
-		}
-		return false;
-	}
-
-	public static void playerRelease(){
-		Player.release();
-	}
-
-	public void playerStop(){
-		Player.stop();
-	}
-
-	protected void play() {
-	    if(curMIDI != null)
-		Player.play(curMIDI);
-	}
-
-	protected void solve() {
-	   	if(curMIDI != null)
-	   		try {
-	            curMIDI = TrackSplitter.split(curMIDI, 4, 2);
-	        } catch (InvalidMidiDataException e) {
-	            e.printStackTrace();
-	        }
-		}
 
 	public static void main(String args[]) {
 		Console c = new Console(false);

@@ -42,11 +42,12 @@ public class UI extends Application {
 	//4:3 screen ratio
 	double width = 1200;
 	double height = 900;
+	protected static String args[];
 
-	Console console;
+	Slave slave;
 	TextArea textConsole = null; //the console
 
-    //Contains launches the application, for all intents and purposes, this is the contructor
+	//Contains launches the application, for all intents and purposes, this is the contructor
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		//-----Create the set of buttons to be added to the graphics pane-------
@@ -129,7 +130,9 @@ public class UI extends Application {
 		});
 
 	    //TODO Make GUILISE
-	    console =  new Console(true, textConsole, this);
+	    slave = new Slave();
+	    slave.setUI(this);
+		slave.setConsole(new Console(Boolean.parseBoolean(args[0]),getConsoleTextArea(),slave));
 
 	    primaryStage.setTitle("Google");
 	    primaryStage.setScene(scene);
@@ -137,17 +140,17 @@ public class UI extends Application {
 	}
 
 	protected void solve() {
-		console.solve();
+		slave.solve();
 
 	}
 
 	protected void playerStop() {
-		console.playerStop();
+		slave.playerStop();
 
 	}
 
 	protected void play() {
-		console.play();
+		slave.play();
 
 	}
 
@@ -198,7 +201,7 @@ public class UI extends Application {
 
 			if(fi != null){
 				lastFileLocation = fi.getCanonicalFile().getParentFile();
-				console.curMIDI = MidiSystem.getSequence(fi);
+				Slave.curMIDI = MidiSystem.getSequence(fi);
 			}
 
 		} catch (InvalidMidiDataException | IOException e) {
@@ -207,13 +210,18 @@ public class UI extends Application {
 	}
 
 	public static void main(String args[]){
+		if(args.length == 0){
+			args = new String[1];
+			args[0] = "true";
+		}
+		UI.args = args;
 		launch(args);
 	}
 
 	@Override
 	public void stop(){
-		console.playerStop();
-		console.playerRelease();
+		slave.playerStop();
+		slave.playerRelease();
 	}
 
 
@@ -221,12 +229,16 @@ public class UI extends Application {
 	private void handleKeyEvent(KeyEvent event){
 		switch (event.getCode() +"") { //added to the empty string for implicit conversion
 		case "ENTER":
-			console.Parse(textConsole.getText());
+			slave.getConsole().Parse(textConsole.getText());
             break;
 
 		default:
 			break;
 		}
+	}
+
+	public TextArea getConsoleTextArea(){
+		return textConsole;
 	}
 
 }
