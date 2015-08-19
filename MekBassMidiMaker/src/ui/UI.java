@@ -21,6 +21,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
 import javafx.stage.FileChooser;
@@ -47,7 +48,87 @@ public class UI extends Application {
 	//Contains launches the application, for all intents and purposes, this is the contructor
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+
 		//-----Create the set of buttons to be added to the graphics pane-------
+		FlowPane buttonPanel = BuildButtons();
+		GridPane gridPane = new GridPane();
+
+		//Initialise the console
+		textConsole = new TextArea();
+
+		//Canvas
+		double canvasWidth = width * (3.0 / 5.0);
+		double canvasHeight = height * 0.667;
+
+		Canvas leftCanvas = new Canvas();
+		leftCanvas.setWidth(canvasWidth);
+		leftCanvas.setHeight(canvasHeight); //2/3
+
+		Canvas rightCanvas = new Canvas();
+		rightCanvas.setWidth(canvasWidth);
+		rightCanvas.setHeight(canvasHeight);
+
+		GraphicsContext gc = rightCanvas.getGraphicsContext2D();
+		drawShapes(gc);
+
+		textConsole.setPrefColumnCount(100);
+		textConsole.setPrefRowCount(10);
+		textConsole.setWrapText(true);
+		textConsole.setPrefWidth(canvasWidth);
+		textConsole.setPrefHeight(height * 0.332);
+
+		GridPane rightLowPanel = new GridPane();
+
+		gc = leftCanvas.getGraphicsContext2D();
+		drawShapes(gc);
+
+		//Add elems to the gridPane
+		gridPane.add(leftCanvas, 0, 0);
+		gridPane.add(textConsole, 0, 1);
+		gridPane.add(rightCanvas, 1, 0);
+		gridPane.add(buttonPanel, 1, 1);
+	    Scene scene =  new Scene(gridPane,width,height);
+
+	    scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
+
+			@Override
+			public void handle(KeyEvent event) {
+				handleKeyEvent(event);
+
+			}
+		});
+
+	    //TODO Make GUILISE
+	    slave = new Slave();
+	    slave.setUI(this);
+	    Console console = new Console(true,getConsoleTextArea(),slave);
+		slave.setConsole(console);
+
+	    PrintStream ps = new PrintStream(console, true);
+	    System.setOut(ps);
+	    System.setErr(ps);
+
+	    primaryStage.setTitle("Bing");
+	    primaryStage.setScene(scene);
+	    primaryStage.show();
+	}
+
+
+	protected void solve() {
+		slave.solve();
+
+	}
+
+	protected void playerStop() {
+		slave.playerStop();
+
+	}
+
+	protected void play() {
+		slave.play();
+	}
+
+	private FlowPane BuildButtons(){
 	    Button playBtn = new Button();//The play button
 		playBtn.setText("Play");
 
@@ -80,82 +161,13 @@ public class UI extends Application {
 			@Override
 			public void handle(ActionEvent event) {solve();}});
 
-		//Initialise the console
-		textConsole = new TextArea();
-		textConsole.setPrefColumnCount(100);
-		textConsole.setPrefRowCount(10);
-		textConsole.setWrapText(true);
-		textConsole.setPrefWidth(width - (width * .01));
-		textConsole.setPrefHeight(height / 2.1);
-
-		//window manager
-		FlowPane root =  new FlowPane();
-		root.setOrientation(Orientation.HORIZONTAL);
-		root.setHgap(width * .01);
-		root.setPadding(new Insets(1, 1, 1, 1));
-
 
 		FlowPane buttonPanel =  new FlowPane();
 		buttonPanel.setPadding(new Insets(3, 0, 0, 3));
 		buttonPanel.getChildren().addAll( playBtn, stpBtn, loadBtn, solveBtn);
 
-		//Canvas
-		Canvas canvas = new Canvas();
-		canvas.setWidth(width-(width *.01));
-		canvas.setHeight(height/2.1);
-
-
-		GraphicsContext gc = canvas.getGraphicsContext2D();
-		drawShapes(gc);
-
-		FlowPane consolePanel = new FlowPane(Orientation.HORIZONTAL, canvas, textConsole);
-		consolePanel.setVgap(height/200);
-		consolePanel.setPadding(new Insets(height/200, 0, 0, width/200));
-
-		//add the window elements
-		root.getChildren().addAll(buttonPanel,consolePanel);
-
-	    Scene scene =  new Scene(root,width,height);
-
-	    scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
-
-			@Override
-			public void handle(KeyEvent event) {
-				handleKeyEvent(event);
-
-			}
-		});
-
-	    //TODO Make GUILISE
-	    slave = new Slave();
-	    slave.setUI(this);
-	    Console console = new Console(true,getConsoleTextArea(),slave);
-		slave.setConsole(console);
-
-	    PrintStream ps = new PrintStream(console, true);
-	    System.setOut(ps);
-	    System.setErr(ps);
-	    primaryStage.setTitle("Bing");
-	    primaryStage.setScene(scene);
-	    primaryStage.show();
+		return buttonPanel;
 	}
-
-	protected void solve() {
-		slave.solve();
-
-	}
-
-	protected void playerStop() {
-		slave.playerStop();
-
-	}
-
-	protected void play() {
-		slave.play();
-
-	}
-
-
 
 	private void drawShapes(GraphicsContext gc) {
 			Random rand =  new Random();
@@ -163,26 +175,26 @@ public class UI extends Application {
             gc.setFill(Color.color(rand.nextDouble(), rand.nextDouble(), rand.nextDouble()));
             gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
 
-            gc.setFill(Color.GREEN);
-            gc.setStroke(Color.BLUE);
-            gc.setLineWidth(5);
-            gc.strokeLine(40, 10, 10, 40);
-            gc.fillOval(10, 60, 30, 30);
-            gc.strokeOval(60, 60, 30, 30);
-            gc.fillRoundRect(110, 60, 30, 30, 10, 10);
-            gc.strokeRoundRect(160, 60, 30, 30, 10, 10);
-            gc.fillArc(10, 110, 30, 30, 45, 240, ArcType.OPEN);
-            gc.fillArc(60, 110, 30, 30, 45, 240, ArcType.CHORD);
-            gc.fillArc(110, 110, 30, 30, 45, 240, ArcType.ROUND);
-            gc.strokeArc(10, 160, 30, 30, 45, 240, ArcType.OPEN);
-            gc.strokeArc(60, 160, 30, 30, 45, 240, ArcType.CHORD);
-            gc.strokeArc(110, 160, 30, 30, 45, 240, ArcType.ROUND);
-            gc.fillPolygon(new double[]{10, 40, 10, 40},
-                             new double[]{210, 210, 240, 240}, 4);
-            gc.strokePolygon(new double[]{60, 90, 60, 90},
-                               new double[]{210, 210, 240, 240}, 4);
-            gc.strokePolyline(new double[]{110, 140, 110, 140},
-                                new double[]{210, 210, 240, 240}, 4);
+//            gc.setFill(Color.GREEN);
+//            gc.setStroke(Color.BLUE);
+//            gc.setLineWidth(5);
+//            gc.strokeLine(40, 10, 10, 40);
+//            gc.fillOval(10, 60, 30, 30);
+//            gc.strokeOval(60, 60, 30, 30);
+//            gc.fillRoundRect(110, 60, 30, 30, 10, 10);
+//            gc.strokeRoundRect(160, 60, 30, 30, 10, 10);
+//            gc.fillArc(10, 110, 30, 30, 45, 240, ArcType.OPEN);
+//            gc.fillArc(60, 110, 30, 30, 45, 240, ArcType.CHORD);
+//            gc.fillArc(110, 110, 30, 30, 45, 240, ArcType.ROUND);
+//            gc.strokeArc(10, 160, 30, 30, 45, 240, ArcType.OPEN);
+//            gc.strokeArc(60, 160, 30, 30, 45, 240, ArcType.CHORD);
+//            gc.strokeArc(110, 160, 30, 30, 45, 240, ArcType.ROUND);
+//            gc.fillPolygon(new double[]{10, 40, 10, 40},
+//                             new double[]{210, 210, 240, 240}, 4);
+//            gc.strokePolygon(new double[]{60, 90, 60, 90},
+//                               new double[]{210, 210, 240, 240}, 4);
+//            gc.strokePolyline(new double[]{110, 140, 110, 140},
+//                                new double[]{210, 210, 240, 240}, 4);
 	}
 
 	//--------------Button methods----------
