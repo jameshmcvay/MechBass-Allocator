@@ -22,19 +22,27 @@ import static javax.sound.midi.ShortMessage.*;
 public class Solver {
 
 	// TODO: REPLACE ME WITH DYNAMIC
-	private static final MekString[] strings = new MekString[]{ new MekString(43, 56), new MekString(38, 51),
+	private static MekString[] strings = new MekString[]{ new MekString(43, 56), new MekString(38, 51),
 																new MekString(33, 46), new MekString(28, 41)};
 	private static long[] stringTimes;
 	private static int[] lastNote;
 	private static int lastString = -1;
 
 	/**
+	 * 
+	 */
+	public static Sequence solve(Sequence seq){
+		return solve(seq, strings);
+	}
+	
+	/**
 	 * Takes a Sequence, and splits it up into a pre-defined number of tracks, dropping notes that do not fit within the
 	 * constraints of the tracks, specified previously by the user.
 	 * @param seq The Sequence to be bodged
 	 * @return The New Sequence
 	 */
-	public static Sequence solve(Sequence seq){
+	public static Sequence solve(Sequence seq, MekString[] str){
+		strings = str;
 		// array of long for strings representing timestamp of most recent finished note
 		stringTimes = new long[strings.length];
 		lastNote = new int[strings.length];
@@ -76,7 +84,7 @@ public class Solver {
 						// put it there if it is valid
 						moveEvent(tr,seq.getTracks()[useString+1],tr.get(i));
 						i--;
-						//ystem.out.printf("Note %d moved\n", note);
+						//System.out.printf("Note %d moved\n", note);
 						// put it in last note for that string
 						lastNote[useString] = note;
 						lastString = useString;
@@ -102,14 +110,14 @@ public class Solver {
 						break; // if the note wasn't played, dont do anything with it
 					}
 					// now we have the correct string
+					stringTimes[useString] = tr.get(i).getTick();
 					// so we add the noteoff to the correct track
 					moveEvent(tr,seq.getTracks()[useString+1],tr.get(i));
 					i--;
-					//ystem.out.printf("Note off %d moved\n", note);
+					//System.out.printf("Note off %d moved\n", note);
 
 					// and set the other stuff to nothing
 					lastNote[useString] = -1;
-					stringTimes[useString] = tr.get(i).getTick();
 					lastString = -1;
 					break;
 				case PROGRAM_CHANGE:
