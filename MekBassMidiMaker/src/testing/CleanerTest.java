@@ -19,15 +19,43 @@ import solver.MekString;
 
 public class CleanerTest {
 	
+	/**
+	 * Helper method for string building
+	 * @return a mekstring
+	 */
 	public static MekString buildString(){
 		MekString str = new MekString(1,4,new long[]{100,200,300});
 		return str;
 	}
 	
+	/**
+	 * helper method for adding a note
+	 * @param note
+	 * @param time
+	 * @return a midievent representing a note at a time
+	 */
 	public static MidiEvent makeNote(int note, long time){
 		ShortMessage shrt;
 		try {
 			shrt = new ShortMessage(NOTE_ON,0,note,100);
+			return new MidiEvent(shrt, time);
+		} 
+		catch (InvalidMidiDataException e) {			
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * helper method for making a note off
+	 * @param note
+	 * @param time
+	 * @return a note off event for note at time
+	 */
+	public static MidiEvent makeNoteOff(int note, long time){
+		ShortMessage shrt;
+		try {
+			shrt = new ShortMessage(NOTE_OFF,0,note,100);
 			return new MidiEvent(shrt, time);
 		} 
 		catch (InvalidMidiDataException e) {			
