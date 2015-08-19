@@ -66,12 +66,15 @@ public class Slave {
 			File fi = new File(path);
 			if (fi != null){
 				curMIDI = MidiSystem.getSequence(fi);
+				System.out.print("successfully opened file \n");
 				return true;
 			}
 		} catch (IOException e) {
+			System.out.print("File was not found \n");
 			return false;
 		}
 		catch (InvalidMidiDataException e) {
+			System.out.print("Failed to create MIDI file \n");
 			return false;
 		}
 		return false;
@@ -79,6 +82,10 @@ public class Slave {
 
 	protected static void octaveUp(){
 		OctaveShifter.shiftOctave(curMIDI, 3);
+	}
+
+	protected static void octaveDown(){
+		OctaveShifter.shiftOctave(curMIDI, -3);
 	}
 
 	public static void main(String args[]){
