@@ -3,16 +3,12 @@ package ui;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Random;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
-import solver.TrackSplitter;
-import tools.Player;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -101,7 +97,7 @@ public class UI extends Application {
 
 		FlowPane buttonPanel =  new FlowPane();
 		buttonPanel.setPadding(new Insets(3, 0, 0, 3));
-		buttonPanel.getChildren().addAll(playBtn, stpBtn, loadBtn, solveBtn);
+		buttonPanel.getChildren().addAll( playBtn, stpBtn, loadBtn, solveBtn);
 
 		//Canvas
 		Canvas canvas = new Canvas();
@@ -133,14 +129,13 @@ public class UI extends Application {
 	    //TODO Make GUILISE
 	    slave = new Slave();
 	    slave.setUI(this);
-	    Console console = new Console(Boolean.parseBoolean(args[0]),getConsoleTextArea(),slave);
+	    Console console = new Console(true,getConsoleTextArea(),slave);
 		slave.setConsole(console);
 
 	    PrintStream ps = new PrintStream(console, true);
 	    System.setOut(ps);
 	    System.setErr(ps);
-
-	    primaryStage.setTitle("Google");
+	    primaryStage.setTitle("Bing");
 	    primaryStage.setScene(scene);
 	    primaryStage.show();
 	}
@@ -220,8 +215,16 @@ public class UI extends Application {
 			args = new String[1];
 			args[0] = "true";
 		}
-		UI.args = args;
-		launch(args);
+		if(Boolean.parseBoolean(args[0])){
+			launch(args);
+		}
+		else{
+			//TODO Make sure this works, get it a job if you have to
+			Slave slave = new Slave();
+			Console console = new Console();
+			slave.setConsole(console);
+
+		}
 	}
 
 	@Override
