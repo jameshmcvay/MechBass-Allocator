@@ -1,4 +1,4 @@
-package testing;
+package solver.tests;
 
 import static org.junit.Assert.*;
 import static javax.sound.midi.Sequence.*;
@@ -22,10 +22,10 @@ public class SolverTests {
 	@Test
 	public void testSequenceEquals(){
 		try {
-			testing.Sequence seq = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,2);
 			seq.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
-			testing.Sequence compare = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,2);
 			compare.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
 			Solver.solve(seq, new MekString[]{});
@@ -40,10 +40,10 @@ public class SolverTests {
 	@Test
 	public void testSequenceNotEquals(){
 		try {
-			testing.Sequence seq = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,2);
 			seq.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
-			testing.Sequence compare = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,2);
 			compare.getTracks()[0].add(CleanerTest.makeNote(1,10000));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,100000));
 			Solver.solve(seq, new MekString[]{});
@@ -60,10 +60,10 @@ public class SolverTests {
 	@Test
 	public void solveNoStrings(){
 		try {
-			testing.Sequence seq = new testing.Sequence(PPQ,1,1);
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,1);
 			seq.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
-			testing.Sequence compare = new testing.Sequence(PPQ,1,1);
+			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,1);
 			compare.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
 			Solver.solve(seq, new MekString[]{});
@@ -78,12 +78,12 @@ public class SolverTests {
 	@Test
 	public void solveInvalidStringNotes(){
 		try {
-			testing.Sequence seq = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,2);
 			seq.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
 			seq.getTracks()[0].add(CleanerTest.makeNote(2,500));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(2,600));
-			testing.Sequence compare = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,2);
 			compare.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
 			compare.getTracks()[0].add(CleanerTest.makeNote(2,500));
@@ -100,12 +100,12 @@ public class SolverTests {
 	@Test
 	public void solveInvalidStringIncrement(){
 		try {
-			testing.Sequence seq = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,2);
 			seq.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
 			seq.getTracks()[0].add(CleanerTest.makeNote(2,500));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(2,600));
-			testing.Sequence compare = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,2);
 			compare.getTracks()[1].add(CleanerTest.makeNote(1,0));
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,100));
 			compare.getTracks()[1].add(CleanerTest.makeNote(2,500));
@@ -122,12 +122,12 @@ public class SolverTests {
 	@Test
 	public void solveOneFourNone(){
 		try {
-			testing.Sequence seq = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,2);
 			seq.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
 			seq.getTracks()[0].add(CleanerTest.makeNote(2,500));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(2,600));
-			testing.Sequence compare = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,2);
 			compare.getTracks()[1].add(CleanerTest.makeNote(1,0));
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,100));
 			compare.getTracks()[1].add(CleanerTest.makeNote(2,500));
@@ -144,12 +144,12 @@ public class SolverTests {
 	@Test
 	public void solveOneFourOne(){
 		try {
-			testing.Sequence seq = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,2);
 			seq.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
 			seq.getTracks()[0].add(CleanerTest.makeNote(2,0));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(2,100));
-			testing.Sequence compare = new testing.Sequence(PPQ,1,2);
+			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,2);
 			compare.getTracks()[1].add(CleanerTest.makeNote(1,0));
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,100));
 			compare.getTracks()[0].add(CleanerTest.makeNote(2,0));
@@ -166,12 +166,12 @@ public class SolverTests {
 		@Test
 		public void solveTwoFourNone(){
 			try {
-				testing.Sequence seq = new testing.Sequence(PPQ,1,3);
+				solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,3);
 				seq.getTracks()[0].add(CleanerTest.makeNote(1,0));
 				seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
 				seq.getTracks()[0].add(CleanerTest.makeNote(2,0));
 				seq.getTracks()[0].add(CleanerTest.makeNoteOff(2,100));
-				testing.Sequence compare = new testing.Sequence(PPQ,1,3);
+				solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,3);
 				compare.getTracks()[1].add(CleanerTest.makeNote(1,0));
 				compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,100));
 				compare.getTracks()[2].add(CleanerTest.makeNote(2,0));
@@ -188,14 +188,14 @@ public class SolverTests {
 				@Test
 				public void solveTwoFourOne(){
 					try {
-						testing.Sequence seq = new testing.Sequence(PPQ,1,3);
+						solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,3);
 						seq.getTracks()[0].add(CleanerTest.makeNote(1,0));
 						seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
 						seq.getTracks()[0].add(CleanerTest.makeNote(2,0));
 						seq.getTracks()[0].add(CleanerTest.makeNoteOff(2,100));
 						seq.getTracks()[0].add(CleanerTest.makeNote(3,0));
 						seq.getTracks()[0].add(CleanerTest.makeNoteOff(3,100));
-						testing.Sequence compare = new testing.Sequence(PPQ,1,3);
+						solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,3);
 						compare.getTracks()[1].add(CleanerTest.makeNote(1,0));
 						compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,100));
 						compare.getTracks()[2].add(CleanerTest.makeNote(2,0));
