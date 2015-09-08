@@ -132,6 +132,7 @@ public class Cleaner {
 			Track cur = seq.getTracks()[i];
 			//add a prepos event for each note that is not consecutive
 			for(int j = 0; j < cur.size(); j++){
+				System.out.printf("Index %d\n ",j);
 				MidiMessage midNoteOn = cur.get(j).getMessage();
 				if (midNoteOn instanceof ShortMessage){
 					ShortMessage noteOn = (ShortMessage) midNoteOn;
@@ -142,16 +143,35 @@ public class Cleaner {
 							//find the previous note off
 							ShortMessage noteOff;
 							int prevIndex = getPrev(j,cur);
+							System.out.printf("prev index %d\n", prevIndex);
 							if(prevIndex>0){
 								noteOff = (ShortMessage) cur.get(prevIndex).getMessage();
 								int note2 = noteOff.getData1();
 								//if the note is different and they don't clash
 								if(note2 != note1 && !strings[i].conflicting(note1, note2, cur.get(prevIndex).getTick() - cur.get(j).getTick() - preTime)){
-									cur.add(new MidiEvent(new ShortMessage(),cur.get(j).getTick() - strings[i].difference(note1, note2) - preTime));
+									try {
+										cur.add(new MidiEvent(new ShortMessage(NOTE_ON,0,noteOn.getData1(),1) , cur.get(j).getTick() - strings[i].difference(note1, note2) - preTime));
+									} catch (ArrayIndexOutOfBoundsException e) {
+										e.printStackTrace();
+									} catch (InvalidMidiDataException e) {
+										e.printStackTrace();
+									}
+									j++;
+//									System.out.printf("Added prepos for");
 								}
 								else{
 									System.out.printf("%d: note %d to close to preceeding note.", cur.get(j).getTick() ,note1);
 								}
+							}
+							else if(prevIndex == 0){
+								try {
+									cur.add(new MidiEvent(new ShortMessage(NOTE_ON,0,noteOn.getData1(),1) , cur.get(j).getTick() - preTime));
+								} catch (ArrayIndexOutOfBoundsException e) {
+									e.printStackTrace();
+								} catch (InvalidMidiDataException e) {
+									e.printStackTrace();
+								}
+								j++;
 							}
 						}
 					}
@@ -161,10 +181,27 @@ public class Cleaner {
 		return seq;
 	}
 	
+	/**
+	 * delayNote should be used if a note conflict occurs and the user wishes to delay the note
+	 * 
+	 * @param seq: The squence the note is in.
+	 * @param str: The string the note is currently on.
+	 * @param event: The MidiEvent representing the note
+	 * @param delay: The amount to delay the note (s^-6)
+	 */
 	public static void delayNote(Sequence seq, MekString str, int event, long delay){
 		
 	}
 	
+	/**
+	 * dropNote should be used if a note conflict occurs and the user wishes to drop the note.
+	 * The note will note be played.
+	 * 
+	 * @param seq: The squence the note is in.
+	 * @param str: The string the note is currently on.
+	 * @param event: The MidiEvent representing the note
+	 * @param delay: The amount to delay the note (s^-6)
+	 */
 	public static void dropNote(Sequence seq, MekString str, int event){
 		
 	}

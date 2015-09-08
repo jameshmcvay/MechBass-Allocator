@@ -1,4 +1,4 @@
-package testing;
+package solver.tests;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MetaMessage;
@@ -35,7 +35,10 @@ public class Sequence extends javax.sound.midi.Sequence{
 						if(shrt1.getChannel() != shrt2.getChannel() ||
 								shrt1.getCommand() != shrt2.getCommand() ||
 								shrt1.getData1() != shrt2.getData1() ||
-								shrt1.getData2() != shrt2.getData2()) return false;
+								shrt1.getData2() != shrt2.getData2()){
+//							System.out.printf("Message1: %d, %d, %d, %d Message2: %d, %d, %d, %d",shrt1.getChannel(), shrt1.getCommand() , shrt1.getData1(), shrt1.getData2(), shrt2.getChannel(), shrt2.getCommand() , shrt2.getData1(), shrt2.getData2());
+							return false;
+						}
 					}
 //					else if(e1.getMessage() instanceof MetaMessage && e2.getMessage() instanceof MetaMessage){
 //						MetaMessage mta1 = (MetaMessage) e1.getMessage();
