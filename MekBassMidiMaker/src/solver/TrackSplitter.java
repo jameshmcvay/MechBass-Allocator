@@ -10,8 +10,8 @@ import main.Parser;
 
 /**
  *
- * @author Elliot Wilde and Andrew Palmer
- *
+ * @author Elliot Wilde
+ * @author Andrew Palmer
  */
 public class TrackSplitter {
 
@@ -60,9 +60,4 @@ public class TrackSplitter {
 		// then return the new MIDI Sequence
 		return output;
 	}
-/*
-	input: n tracks
-	output: m tracks
-
-*/
 }

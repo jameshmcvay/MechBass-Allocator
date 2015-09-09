@@ -16,7 +16,8 @@ import static javax.sound.midi.ShortMessage.*;
  * This is the core of the MekBassMidiMaker program as it is responsible for crafting a midi sequence
  * that the MekBass can actually play.<br>
  * Output can be changed by setting the String configuration (generally speaking, more strings can play more sounds).
- * @author Elliot Wilde, Andrew Palmer
+ * @author Elliot Wilde
+ * @author Andrew Palmer
  *
  */
 public class Solver {
