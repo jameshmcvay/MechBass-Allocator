@@ -24,7 +24,7 @@ public class TrackSplitter {
 	 * @throws InvalidMidiDataException
 	 */
 	public static Sequence split(Sequence seq, int trackCount, int bassTrack) throws InvalidMidiDataException {
-		Sequence output = new Sequence(seq.getDivisionType(), seq.getResolution(), trackCount+1);
+		Sequence output = new solver.tests.Sequence(seq.getDivisionType(), seq.getResolution(), trackCount+1);
 		Track inTrack = seq.getTracks()[bassTrack];
 		int pos = 0;
 		// add all of the events in the bass track to track zero in the output sequence
