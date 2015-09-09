@@ -74,6 +74,7 @@ public class MekString {
 	 * @return the min time between note1 and note2
 	 */
 	public long difference(int note1, int note2){
-		return addIntervals(note1-lowNote,note2-lowNote);
+		if(note1<note2) return addIntervals(note1-lowNote,note2-lowNote);
+		else return addIntervals(note2-lowNote, note1-lowNote);
 	}
 }
