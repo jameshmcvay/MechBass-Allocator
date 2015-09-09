@@ -9,9 +9,9 @@ import javax.sound.midi.Track;
 
 public class Sequence extends javax.sound.midi.Sequence{
 
-	public Sequence(float arg0, int arg1, int arg2)
+	public Sequence(float divisionType, int resolution, int numTracks)
 			throws InvalidMidiDataException {
-		super(arg0, arg1, arg2);
+		super(divisionType, resolution, numTracks);
 	}
 
 	public boolean equals(Object o){
@@ -44,7 +44,7 @@ public class Sequence extends javax.sound.midi.Sequence{
 //						MetaMessage mta1 = (MetaMessage) e1.getMessage();
 //						MetaMessage mta2 = (MetaMessage) e2.getMessage();
 //						if(mta1.getType() != mta2.getType() ||
-//								mta1.getData() != mta2.getData()) return false; 
+//								mta1.getData() != mta2.getData()) return false;
 //					}
 //					else if(e1.getMessage() instanceof SysexMessage && e2.getMessage() instanceof SysexMessage){
 //						SysexMessage sys1 = (SysexMessage) e1.getMessage();
