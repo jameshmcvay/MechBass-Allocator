@@ -107,9 +107,24 @@ public class Cleaner {
 	}
 	
 	/**
+	 * Returns true if conflicts exist in the sequence.
+	 * @param seq
+	 * @param strings
+	 * @return
+	 */
+	public boolean hasConflicts(Sequence seq, MekString[] strings){
+		if(scanTimings(seq,strings) > 0) return true;
+		return false;
+	}
+	
+	private static int getPrev(int index, Track cur){
+		return getPrev(index, cur, NOTE_OFF);
+	}
+	
+	/**
 	 * Gets the previous note 
 	 */
-	private static int getPrev(int index, Track cur){
+	private static int getPrev(int index, Track cur, int Command){
 //		System.out.printf("getPrev initial index %d\n",index);
 		int prev = 0;
 		for(int k = index; k > 0; k--){
@@ -117,7 +132,7 @@ public class Cleaner {
 			MidiMessage midNoteOff = cur.get(k).getMessage();			
 			if(midNoteOff instanceof ShortMessage){
 				ShortMessage noteOff = (ShortMessage) midNoteOff;
-				if(noteOff.getCommand() == NOTE_OFF){
+				if(noteOff.getCommand() == Command){
 //					System.out.printf("found previous note at index %d\n",k);
 					prev = k;
 				}
@@ -127,7 +142,7 @@ public class Cleaner {
 	}
 
 	/**
-	 * Adds pre positioning notes to the MIDI so MekBass can play it
+	 * Adds pre positioning notes to the MIDI so MekBass can play it. Does no conflict finding
 	 * @param seq - The sequence to add prepositioning to.
 	 * @param preTime - The time in É s to add before the string MUST be prepositioned. 
 	 * @return The prepositioned sequence.
@@ -158,13 +173,20 @@ public class Cleaner {
 //									System.out.printf("Added prepos at %d for note at %d\n" , cur.get(j).getTick() - strings[i].difference(note1, note2) - preTime, cur.get(j).getTick());
 //									System.out.printf("Note1: %d Note2: %d Difference: %d\n", note1, note2, strings[i].difference(note1, note2));
 									try {
-										cur.add(new MidiEvent(new ShortMessage(NOTE_ON,0,noteOn.getData1(),1) , cur.get(j).getTick() - strings[i].difference(note1, note2) - preTime));
+										if(cur.get(j).getTick() - strings[i].difference(note1, note2) - preTime < cur.get(prevIndex).getTick()){
+											System.out.printf("Warning: note overlap detected, Dropping note");
+											seq.getTracks()[0].add(cur.get(j));
+											cur.remove(cur.get(j));
+										}
+										else{
+											cur.add(new MidiEvent(new ShortMessage(NOTE_ON,0,noteOn.getData1(),1) , cur.get(j).getTick() - strings[i].difference(note1, note2) - preTime));
+											j++;
+										}
 									} catch (ArrayIndexOutOfBoundsException e) {
 										e.printStackTrace();
 									} catch (InvalidMidiDataException e) {
 										e.printStackTrace();
 									}
-									j++;
 //									
 								}
 							}
@@ -188,9 +210,61 @@ public class Cleaner {
 	}
 	
 	/**
+	 * Finds the next MidiEvent after a specific tick with a specific command.
+	 * This method assumes there is one to find, and returns null if not.
+	 * @param tr
+	 * @param tick
+	 * @param Command
+	 * @return
+	 */
+	public static MidiEvent findEvent(Track tr, long tick, int Command){
+		MidiEvent evnt = null;
+		for(int i = 0; i < tr.size(); i++){
+			MidiEvent cur = tr.get(i);
+			if(cur.getTick()>tick){
+				if(cur.getMessage() instanceof ShortMessage){
+					ShortMessage msg = (ShortMessage) cur.getMessage();
+					if(msg.getCommand() == Command){
+						evnt = cur;
+					}
+				}
+			}
+		}
+		return evnt;
+	}
+	
+	
+	public static List<Conflict> nextConflict(Sequence seq, long tick, MekString[] strings){
+		MidiEvent droppedOn = findEvent(seq.getTracks()[0], tick, NOTE_ON);
+		MidiEvent droppedOff = findEvent(seq.getTracks()[0], droppedOn.getTick(), NOTE_OFF);
+		List<Conflict> conflicts = new ArrayList<Conflict>();
+		Track dropTrack = seq.getTracks()[0];
+		for(int i = 1; i < seq.getTracks().length; i++){
+			MidiEvent playedOn = null;
+			MidiEvent playedOff = null;
+			for(int j = 0; j < seq.getTracks()[i].size(); j++ ){
+				if(seq.getTracks()[i].get(j).getMessage() instanceof ShortMessage){
+					ShortMessage shrt = (ShortMessage) seq.getTracks()[i].get(j).getMessage();
+					if(shrt.getCommand() == NOTE_OFF){
+						ShortMessage sh = (ShortMessage) droppedOn.getMessage();
+						if(strings[i].conflicting(sh.getData1(), shrt.getData1(), seq.getTracks()[i].get(j).getTick() - droppedOn.getTick())){
+							//there is a conflict, add it to list
+							playedOff = seq.getTracks()[i].get(j);
+							playedOn = seq.getTracks()[i].get(getPrev(j,seq.getTracks()[i],NOTE_ON));
+							conflicts.add(new Conflict(droppedOn, droppedOff, playedOn, playedOff, i));
+						}
+					}
+				}
+			}
+		}
+		return conflicts;
+	}
+	
+	
+	/**
 	 * delayNote should be used if a note conflict occurs and the user wishes to delay the note
 	 * 
-	 * @param seq: The squence the note is in.
+	 * @param seq: The sequence the note is in.
 	 * @param str: The string the note is currently on.
 	 * @param event: The MidiEvent representing the note
 	 * @param delay: The amount to delay the note (s^-6)
