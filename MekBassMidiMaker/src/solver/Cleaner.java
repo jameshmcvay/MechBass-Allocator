@@ -45,14 +45,16 @@ public class Cleaner {
 			for(int i = 0; i < seq.getTracks().length; i++){
 				Track cur = seq.getTracks()[i];
 				//check that each note on doesn't conflict with the previous note off
-				for(int j = cur.size()-1; j == 0; --j){
+				for(int j = 0; j < cur.size(); j++){
 					MidiMessage midmsg = cur.get(j).getMessage();
 					if (midmsg instanceof ShortMessage){
 						ShortMessage shrtmsg = (ShortMessage) midmsg;
 						if(shrtmsg.getCommand() == NOTE_ON && shrtmsg.getData2() == 0){
+//							System.out.printf("found false note off");
 							ShortMessage noteOff = new ShortMessage(NOTE_OFF, shrtmsg.getChannel(), shrtmsg.getData1(), shrtmsg.getData2());
 							MidiEvent event = new MidiEvent(noteOff,cur.get(j).getTick());
-							if(cur.remove(cur.get(j))) cur.add(event);
+							cur.remove(cur.get(j));
+							cur.add(event);
 						}
 					}
 				}	
@@ -107,24 +109,28 @@ public class Cleaner {
 	/**
 	 * Gets the previous note 
 	 */
-	private static int getPrev(int index, Track cur){ 
-		for(int k = index-1; k == 0; --k){
-			MidiMessage midNoteOff = cur.get(k).getMessage();
+	private static int getPrev(int index, Track cur){
+//		System.out.printf("getPrev initial index %d\n",index);
+		int prev = 0;
+		for(int k = index; k > 0; k--){
+//			System.out.printf("found note at index %d\n",k);
+			MidiMessage midNoteOff = cur.get(k).getMessage();			
 			if(midNoteOff instanceof ShortMessage){
 				ShortMessage noteOff = (ShortMessage) midNoteOff;
 				if(noteOff.getCommand() == NOTE_OFF){
-					return k;
+//					System.out.printf("found previous note at index %d\n",k);
+					prev = k;
 				}
 			}
 		}
-		return 0;
+		return prev;
 	}
 
 	/**
 	 * Adds pre positioning notes to the MIDI so MekBass can play it
 	 * @param seq - The sequence to add prepositioning to.
 	 * @param preTime - The time in É s to add before the string MUST be prepositioned. 
-	 * @return
+	 * @return The prepositioned sequence.
 	 */
 	public static Sequence prePos(Sequence seq, long preTime, MekString[] strings){
 		//for each track
@@ -132,7 +138,7 @@ public class Cleaner {
 			Track cur = seq.getTracks()[i];
 			//add a prepos event for each note that is not consecutive
 			for(int j = 0; j < cur.size(); j++){
-				System.out.printf("Index %d\n ",j);
+//				System.out.printf("Index %d\n ",j);
 				MidiMessage midNoteOn = cur.get(j).getMessage();
 				if (midNoteOn instanceof ShortMessage){
 					ShortMessage noteOn = (ShortMessage) midNoteOn;
@@ -143,12 +149,14 @@ public class Cleaner {
 							//find the previous note off
 							ShortMessage noteOff;
 							int prevIndex = getPrev(j,cur);
-							System.out.printf("prev index %d\n", prevIndex);
+//							System.out.printf("current index: %d, prev index %d\n", j,prevIndex);
 							if(prevIndex>0){
 								noteOff = (ShortMessage) cur.get(prevIndex).getMessage();
 								int note2 = noteOff.getData1();
-								//if the note is different and they don't clash
-								if(note2 != note1 && !strings[i].conflicting(note1, note2, cur.get(prevIndex).getTick() - cur.get(j).getTick() - preTime)){
+								//if the note is different add the prepositioning
+								if(note2 != note1){
+//									System.out.printf("Added prepos at %d for note at %d\n" , cur.get(j).getTick() - strings[i].difference(note1, note2) - preTime, cur.get(j).getTick());
+//									System.out.printf("Note1: %d Note2: %d Difference: %d\n", note1, note2, strings[i].difference(note1, note2));
 									try {
 										cur.add(new MidiEvent(new ShortMessage(NOTE_ON,0,noteOn.getData1(),1) , cur.get(j).getTick() - strings[i].difference(note1, note2) - preTime));
 									} catch (ArrayIndexOutOfBoundsException e) {
@@ -157,14 +165,12 @@ public class Cleaner {
 										e.printStackTrace();
 									}
 									j++;
-//									System.out.printf("Added prepos for");
-								}
-								else{
-									System.out.printf("%d: note %d to close to preceeding note.", cur.get(j).getTick() ,note1);
+//									
 								}
 							}
 							else if(prevIndex == 0){
 								try {
+//									System.out.printf("Added prepos at %d for note at %d\n" , cur.get(j).getTick() - preTime, cur.get(j).getTick());
 									cur.add(new MidiEvent(new ShortMessage(NOTE_ON,0,noteOn.getData1(),1) , cur.get(j).getTick() - preTime));
 								} catch (ArrayIndexOutOfBoundsException e) {
 									e.printStackTrace();
