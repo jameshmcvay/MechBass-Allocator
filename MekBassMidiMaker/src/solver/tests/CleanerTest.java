@@ -71,6 +71,28 @@ public class CleanerTest {
 	
 	
 	//-------------------------------------------------------------------------------
+	//---------Tests for Mekstring --------------------------------------------------
+	//-------------------------------------------------------------------------------
+	
+	@Test
+	public void addIntervalsTest(){
+		MekString str = new MekString(1,2,new long[]{100});
+		assertTrue(str.addIntervals(0,1) == 100);
+	}
+	
+	@Test
+	public void addIntervalsTestMulti(){
+		MekString str = new MekString(1,3,new long[]{100,100});
+		assertTrue(str.addIntervals(0,2) == 200);
+	}
+	
+	@Test
+	public void differenceTest(){
+		MekString str = new MekString(1,2,new long[]{100});
+		assertTrue(str.difference(1,2) == 100);
+	}
+	
+	//-------------------------------------------------------------------------------
 	//---------Tests for Cleaner.clean-----------------------------------------------
 	//-------------------------------------------------------------------------------
 		
@@ -81,7 +103,7 @@ public class CleanerTest {
 		try {
 			Sequence seq = new Sequence(PPQ,1,2);
 			Cleaner.clean(seq);
-			assert(seq.getTracks().length == 1);
+			assertTrue(seq.getTracks().length == 1);
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
 		}
@@ -98,7 +120,7 @@ public class CleanerTest {
 			tr.add(new MidiEvent(new ShortMessage(NOTE_ON,0,1,0), 100));
 			Cleaner.fixStupidity(seq);
 			ShortMessage sm = (ShortMessage) tr.get(0).getMessage();
-			assert(sm.getCommand()==NOTE_OFF);
+			assertTrue(sm.getCommand()==NOTE_OFF);
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
 		}
@@ -112,7 +134,7 @@ public class CleanerTest {
 	@Test
 	public void conflictingTrue(){
 		MekString string = buildString();
-		assert(string.conflicting(1, 2, 50));
+		assertTrue(string.conflicting(1, 2, 50));
 	}
 	
 	//Multi interval
@@ -126,7 +148,6 @@ public class CleanerTest {
 	@Test
 	public void conflictingFalse(){
 		MekString string = buildString();
-		System.out.println(string.addIntervals(0,1));
 		assertFalse(string.conflicting(1, 2, 300));
 	}
 	
@@ -147,7 +168,7 @@ public class CleanerTest {
 			MekString[] strings = new MekString[]{buildString()};
 			assertTrue(Cleaner.scanTimings(seq, strings)==0);
 		} catch (InvalidMidiDataException e) {
-			assert(false);
+			fail("this shouldn't happen");
 			e.printStackTrace();
 		} 
 	}
@@ -162,7 +183,7 @@ public class CleanerTest {
 			MekString[] strings = new MekString[]{buildString()};
 			assert(Cleaner.scanTimings(seq, strings)==1);
 		} catch (InvalidMidiDataException e) {
-			assert(false);
+			fail("this shouldn't happen");
 			e.printStackTrace();
 		} 
 	}
@@ -203,7 +224,7 @@ public class CleanerTest {
 			compare.getTracks()[0].add(CleanerTest.makeNote(2,400));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(2,500));
 			compare.getTracks()[0].add(CleanerTest.makeNote(1,0,1));
-			compare.getTracks()[0].add(CleanerTest.makeNote(2, 300,1));
+			compare.getTracks()[0].add(CleanerTest.makeNote(2,200,1));
 			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{100})});
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
@@ -211,6 +232,5 @@ public class CleanerTest {
 			e.printStackTrace();
 		}
 	}
-	
 	
 }
