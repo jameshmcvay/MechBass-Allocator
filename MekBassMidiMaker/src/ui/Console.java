@@ -132,13 +132,13 @@ public class Console extends OutputStream {
 	}
 
 	protected void save(String input){
-		String Filename = input.substring(4).replace("\"", "").trim();
-		//Slave.save(fileName);
+		String fileName = input.substring(4).replace("\"", "").trim();
+		Slave.save(fileName);
 	}
 
 	protected void save(){
 		output("saving file as \"out.mid\" in the current directory");
-		//Slave.save("/out.mid");
+		Slave.save("out.mid");
 	}
 
 	protected void solve(String input){

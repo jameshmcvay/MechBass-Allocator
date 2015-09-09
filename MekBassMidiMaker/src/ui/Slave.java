@@ -19,52 +19,62 @@ public class Slave {
 	private Console console;
 	private boolean guiMode;
 
-	public Slave() throws IllegalArgumentException{
+	public Slave() throws IllegalArgumentException {
 
 	}
 
-	public Console getConsole(){
+	public Console getConsole() {
 		return console;
 	}
 
-	public UI getUI(){
+	public UI getUI() {
 		return ui;
 	}
 
-	void setUI(UI ui){
+	void setUI(UI ui) {
 		this.ui = ui;
 	}
 
-	void setConsole(Console console){
+	void setConsole(Console console) {
 		this.console = console;
 	}
 
-	public void playerRelease(){
+	public void playerRelease() {
 		Player.release();
 	}
 
-	public void playerStop(){
+	public void playerStop() {
 		Player.stop();
 	}
 
 	protected void play() {
-	    if(curMIDI != null)
-		Player.play(curMIDI);
+		if (curMIDI != null)
+			Player.play(curMIDI);
 	}
 
 	protected void solve() {
-	   	if(curMIDI != null)
-	   		try {
-	            curMIDI = TrackSplitter.split(curMIDI, 4, 2);
-	        } catch (InvalidMidiDataException e) {
-	            e.printStackTrace();
-	        }
+		if (curMIDI != null)
+			try {
+				curMIDI = TrackSplitter.split(curMIDI, 4, 2);
+			} catch (InvalidMidiDataException e) {
+				e.printStackTrace();
+			}
+	}
+
+	protected static void save(String fileName) {
+		if (curMIDI != null) {
+			try {
+				MidiSystem.write(curMIDI, 1, new File(fileName));
+			} catch (IOException e) {
+				System.out.println("Could not save file");
+			}
 		}
+	}
 
 	protected static boolean setCurMIDI(String path) {
 		try {
 			File fi = new File(path);
-			if (fi != null){
+			if (fi != null) {
 				curMIDI = MidiSystem.getSequence(fi);
 				System.out.print("successfully opened file \n");
 				return true;
@@ -72,25 +82,23 @@ public class Slave {
 		} catch (IOException e) {
 			System.out.print("File was not found \n");
 			return false;
-		}
-		catch (InvalidMidiDataException e) {
+		} catch (InvalidMidiDataException e) {
 			System.out.print("Failed to create MIDI file \n");
 			return false;
 		}
 		return false;
 	}
 
-	protected static void octaveUp(){
+	protected static void octaveUp() {
 		OctaveShifter.shiftOctave(curMIDI, 3);
 	}
 
-	protected static void octaveDown(){
+	protected static void octaveDown() {
 		OctaveShifter.shiftOctave(curMIDI, -3);
 	}
 
-	public static void main(String args[]){
+	public static void main(String args[]) {
 
 	}
-
 
 }
