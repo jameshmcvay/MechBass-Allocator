@@ -6,7 +6,8 @@ import java.io.IOException;
 import javax.sound.midi.*;
 /**
  * This class creates a MIDI player for a given sequence obtains from the java MIDI Library.
- * @author Dylan Macdonald, Patrick Bayers
+ * @author Dylan Macdonald
+ * @author Patrick Bayers
  *
  */
 public class Player {
