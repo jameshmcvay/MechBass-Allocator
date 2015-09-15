@@ -142,11 +142,11 @@ public class OctaveShifter {
 	}
 
 	public static void main(String args[]){
-		File f =  new File("resources/DragonForce_Through-the-Fire-and-Flames.mid");
+		File f =  new File("resources/hysteria Allocated.mid");
 		try {
 			Sequence s = MidiSystem.getSequence(f);
-//			shiftOctave(s, -3);
-			shiftOctave(s, 100);
+//			shiftOctave(s, -2);
+			shiftOctave(s, 4);
 
 			Player.play(s);
 
