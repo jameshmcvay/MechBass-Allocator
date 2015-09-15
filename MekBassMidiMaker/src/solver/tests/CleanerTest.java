@@ -1,4 +1,4 @@
-package testing;
+package solver.tests;
 
 import static org.junit.Assert.*;
 
@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import solver.Cleaner;
 import solver.MekString;
+import solver.Solver;
 
 
 public class CleanerTest {
@@ -35,9 +36,13 @@ public class CleanerTest {
 	 * @return a midievent representing a note at a time
 	 */
 	public static MidiEvent makeNote(int note, long time){
+		return makeNote(note, time, 100);
+	}
+	
+	public static MidiEvent makeNote(int note, long time, int velocity){
 		ShortMessage shrt;
 		try {
-			shrt = new ShortMessage(NOTE_ON,0,note,100);
+			shrt = new ShortMessage(NOTE_ON,0,note,velocity);
 			return new MidiEvent(shrt, time);
 		} 
 		catch (InvalidMidiDataException e) {			
@@ -66,6 +71,28 @@ public class CleanerTest {
 	
 	
 	//-------------------------------------------------------------------------------
+	//---------Tests for Mekstring --------------------------------------------------
+	//-------------------------------------------------------------------------------
+	
+	@Test
+	public void addIntervalsTest(){
+		MekString str = new MekString(1,2,new long[]{100});
+		assertTrue(str.addIntervals(0,1) == 100);
+	}
+	
+	@Test
+	public void addIntervalsTestMulti(){
+		MekString str = new MekString(1,3,new long[]{100,100});
+		assertTrue(str.addIntervals(0,2) == 200);
+	}
+	
+	@Test
+	public void differenceTest(){
+		MekString str = new MekString(1,2,new long[]{100});
+		assertTrue(str.difference(1,2) == 100);
+	}
+	
+	//-------------------------------------------------------------------------------
 	//---------Tests for Cleaner.clean-----------------------------------------------
 	//-------------------------------------------------------------------------------
 		
@@ -76,7 +103,7 @@ public class CleanerTest {
 		try {
 			Sequence seq = new Sequence(PPQ,1,2);
 			Cleaner.clean(seq);
-			assert(seq.getTracks().length == 1);
+			assertTrue(seq.getTracks().length == 1);
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
 		}
@@ -93,7 +120,7 @@ public class CleanerTest {
 			tr.add(new MidiEvent(new ShortMessage(NOTE_ON,0,1,0), 100));
 			Cleaner.fixStupidity(seq);
 			ShortMessage sm = (ShortMessage) tr.get(0).getMessage();
-			assert(sm.getCommand()==NOTE_OFF);
+			assertTrue(sm.getCommand()==NOTE_OFF);
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
 		}
@@ -107,21 +134,20 @@ public class CleanerTest {
 	@Test
 	public void conflictingTrue(){
 		MekString string = buildString();
-		assert(string.conflicting(1, 2, 50));
+		assertTrue(string.conflicting(1, 2, 50));
 	}
 	
 	//Multi interval
 	@Test
 	public void conflictingTrueMulti(){
 		MekString string = buildString();
-		assert(string.conflicting(1, 4, 300));
+		assertTrue(string.conflicting(1, 4, 300));
 	}
 	
 	//Tests that conflicting returns false if notes are not conflicting 
 	@Test
 	public void conflictingFalse(){
 		MekString string = buildString();
-		System.out.println(string.addIntervals(0,1));
 		assertFalse(string.conflicting(1, 2, 300));
 	}
 	
@@ -140,9 +166,9 @@ public class CleanerTest {
 			seq.getTracks()[0].add(makeNote(1,0));
 			seq.getTracks()[0].add(makeNote(2,500));
 			MekString[] strings = new MekString[]{buildString()};
-			assert(Cleaner.scanTimings(seq, strings)==0);
+			assertTrue(Cleaner.scanTimings(seq, strings)==0);
 		} catch (InvalidMidiDataException e) {
-			assert(false);
+			fail("this shouldn't happen");
 			e.printStackTrace();
 		} 
 	}
@@ -157,8 +183,54 @@ public class CleanerTest {
 			MekString[] strings = new MekString[]{buildString()};
 			assert(Cleaner.scanTimings(seq, strings)==1);
 		} catch (InvalidMidiDataException e) {
-			assert(false);
+			fail("this shouldn't happen");
 			e.printStackTrace();
 		} 
 	}
+	
+	//---------------------------------------------------------------
+	//-------------Tests for pre positioning-------------------------
+	//---------------------------------------------------------------
+	
+	@Test
+	public void preposOneStringNoConOneNote(){
+		try {
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,1);
+			seq.getTracks()[0].add(CleanerTest.makeNote(1,100));
+			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,200));
+			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,1);
+			compare.getTracks()[0].add(CleanerTest.makeNote(1,100));
+			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,200));
+			compare.getTracks()[0].add(CleanerTest.makeNote(1, 0, 1));
+			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{0})});
+			assertTrue(seq.equals(compare));
+		} catch (InvalidMidiDataException e) {
+			fail("this shouldn't happen");
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void preposOneStringNoConTwoNotes(){
+		try {
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,1);
+			seq.getTracks()[0].add(CleanerTest.makeNote(1,100));
+			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,200));
+			seq.getTracks()[0].add(CleanerTest.makeNote(2,400));
+			seq.getTracks()[0].add(CleanerTest.makeNoteOff(2,500));
+			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,1);
+			compare.getTracks()[0].add(CleanerTest.makeNote(1,100));
+			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,200));
+			compare.getTracks()[0].add(CleanerTest.makeNote(2,400));
+			compare.getTracks()[0].add(CleanerTest.makeNoteOff(2,500));
+			compare.getTracks()[0].add(CleanerTest.makeNote(1,0,1));
+			compare.getTracks()[0].add(CleanerTest.makeNote(2,200,1));
+			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{100})});
+			assertTrue(seq.equals(compare));
+		} catch (InvalidMidiDataException e) {
+			fail("this shouldn't happen");
+			e.printStackTrace();
+		}
+	}
+	
 }

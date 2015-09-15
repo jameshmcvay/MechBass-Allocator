@@ -16,7 +16,8 @@ import static javax.sound.midi.ShortMessage.*;
  * This is the core of the MekBassMidiMaker program as it is responsible for crafting a midi sequence
  * that the MekBass can actually play.<br>
  * Output can be changed by setting the String configuration (generally speaking, more strings can play more sounds).
- * @author Elliot Wilde, Andrew Palmer
+ * @author Elliot Wilde
+ * @author Andrew Palmer
  *
  */
 public class Solver {
@@ -29,12 +30,12 @@ public class Solver {
 	private static int lastString = -1;
 
 	/**
-	 * 
+	 *
 	 */
 	public static Sequence solve(Sequence seq){
 		return solve(seq, strings);
 	}
-	
+
 	/**
 	 * Takes a Sequence, and splits it up into a pre-defined number of tracks, dropping notes that do not fit within the
 	 * constraints of the tracks, specified previously by the user.
@@ -61,14 +62,94 @@ public class Solver {
 				// check what kind of command it is (note on/off, etc)
 				switch (shrtmsg.getCommand()){
 				case NOTE_ON:
-					// find the right string
+					// get a list of applicable strings
 					int note = shrtmsg.getData1();
+					// flag saying whether or not there is a potential conflict
+					int stringInUse = -1;
 					List<Integer> rightStrings = new ArrayList<Integer>();
 					for (int j = 0; j < strings.length; j++){
-						if (note >= strings[j].lowNote && note <= strings[j].highNote && lastNote[j] == -1) {
-							rightStrings.add(j);
+						if (note >= strings[j].lowNote && note <= strings[j].highNote){
+							if (lastNote[j] == -1) {
+								rightStrings.add(j);
+							} else {
+								// if one of the strings that could be used is in use, set a flag
+								stringInUse = j;
+							}
 						}
 					}
+//					int ran = Long.hashCode(System.nanoTime());
+//					if (rightStrings.isEmpty()) System.out.println(ran + " strings empty");
+//					if (stringInUse != -1) System.out.println(ran + "  string used");
+
+					// if there is nothing in the list of strings AND lastString is not '-1' AND the stringInUse flag has been raised
+					// we want to look at the last note added, and see if it could go on another string instead
+					// then try again
+					rearrangeFailure:
+					if (rightStrings.isEmpty() && stringInUse != -1){
+						//ystem.out.println("String in Use, attempting to move previous note");
+						// get the string/track
+						Track lst = seq.getTracks()[stringInUse+1];
+						// get the event
+						int dec = 2;
+						MidiEvent lstEvent = null;
+						MidiMessage lstmsg = null;
+						// this skips past metamessages and escape when it has the offending event
+						do {
+							//ystem.out.println(lst.size() + " " + dec);
+							if (dec >lst.size()) {
+								//ystem.out.println("Breaking");
+								break rearrangeFailure;
+							}
+							lstEvent = lst.get(lst.size()-dec);
+							lstmsg = lstEvent.getMessage();
+							dec++;
+						} while (lstmsg instanceof MetaMessage);
+
+						// get the note
+						int lstNote = ((ShortMessage)lstmsg).getData1();
+						// get the strings it could play on (minus the one it was just on)
+						List<Integer> lastStrings = new ArrayList<Integer>();
+						for (int j = 0; j < strings.length; j++){
+							if (lstNote >= strings[j].lowNote && lstNote <= strings[j].highNote){
+								if (lastNote[j] == -1 && j != stringInUse) {
+									lastStrings.add(j);
+								}
+							}
+						}
+						//ystem.out.printf("No. of valid Strings: [%d]\n", lastStrings.size());
+						// pick the most suitable string (last used longest time ago)
+
+						long minTime = Long.MAX_VALUE;
+						int useString = -1;
+						for(Integer j : lastStrings){
+							if (stringTimes[j] < minTime){
+								minTime = stringTimes[j];
+								useString = j;
+							}
+						}
+
+						//ystem.out.printf("Usestring (old): [%d]\n", useString);
+						if (useString == -1) { // if it cant fit on any strings, dont go any further in the conflict resolution
+							break;
+						}
+						// add it to that string (if there is another string), and remove it from the string it was on
+						moveEvent(lst, seq.getTracks()[useString+1], lstEvent);
+						lastNote[useString] = lstNote;
+						lastNote[stringInUse] = -1;
+
+						// then try the current event again
+						for (int j = 0; j < strings.length; j++){
+							if (note >= strings[j].lowNote && note <= strings[j].highNote){
+								if (lastNote[j] == -1) {
+									rightStrings.add(j);
+								}
+							}
+						}
+						//ystem.out.printf("No. of valid Strings (fix): [%d]\n", rightStrings.size());
+
+						// and now that we are done here(hopefully), we continue on our merry way
+					}
+
 					// we now have a list of strings which can theoretically play the note. we assign it to
 					//the string that was played the longest time ago.
 					//TODO: figure out which is closer to the middle
@@ -84,7 +165,7 @@ public class Solver {
 						// put it there if it is valid
 						moveEvent(tr,seq.getTracks()[useString+1],tr.get(i));
 						i--;
-						//System.out.printf("Note %d moved\n", note);
+						//ystem.out.printf("Note %d moved\n", note);
 						// put it in last note for that string
 						lastNote[useString] = note;
 						lastString = useString;
@@ -93,7 +174,7 @@ public class Solver {
 						if (useString == -1){
 							//ystem.out.printf("Note %d not moved, No string available.\n", note);
 						}
-						else if (useString > strings.length){				
+						else if (useString > strings.length){
 							//ystem.out.printf("Note %d not moved, string num too high, this shouldn't occur.\n", note);
 						}
 					}

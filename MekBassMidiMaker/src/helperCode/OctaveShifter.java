@@ -14,15 +14,15 @@ import javax.sound.midi.Track;
 import tools.Player;
 
 /**
- * @author Dean Newberry
  *
- * This class exists solely to shift the octave up or down.
+ * This class exists solely to shift the octave up or down.<p>
  *
- * SOME RULES:
- * 	key MUST stay between 0 - 127 (inclusive),
- * 	octave MUST stay between 0 - 10 (inclusive),
- * 	shift MUST ALSO stay between 0 - 10 (inclusive);
+ * SOME RULES:<br>
+ * 	key MUST stay between 0 - 127 (inclusive),<br>
+ * 	octave MUST stay between 0 - 10 (inclusive),<br>
+ * 	shift MUST ALSO stay between 0 - 10 (inclusive);<br>
  * 		HOWEVER, shift MUST NOT violate the above octave rule.
+ * @author Dean Newberry
  * */
 
 public class OctaveShifter {
@@ -36,31 +36,34 @@ public class OctaveShifter {
 	public final int SHIFT_MAX = 10;
 
 	/**
-	 * @author Dean Newberry
 	 *
 	 * This method, when given a sequence will shift all the
 	 * notes up the given number of octaves, OR if moving too
-	 * far up or down, will shift the note as far as it will go.
+	 * far up or down, will shift the note as far as it will go.<p>
 	 *
 	 * For example, trying to shift key 13 down 2 octaves would
 	 * make key go to -11, with an octave of -1. In this case, it
 	 * would be shifted down only 1 octave to key = 1, octave = 0
-	 * instead.
+	 * instead.<br>
 	 * The reverse can happen too; if you try to shift key 109 up 2
 	 * octaves, then the key would be 133 and the octave would be 11.
 	 * In this case, it would be shifted up only 1 octave to key = 121,
-	 * octave = 10 instead.
+	 * octave = 10 instead.<p>
 	 *
 	 * If the above example occurs, a message will be printed to warn
 	 * the user - if this happens too much, the result will be a very
-	 * flat sound part/file.
+	 * flat sound part/file.<p>
 	 *
-	 * REQUIRES: A Sequence with playable notes and an integer for the
-	 * number of octaves to shift (between 0 - 10 (inclusive)).
-	 * ENSURES: Every note in the Sequence adjusted by the "shift", except
-	 * where this shift causes key or octave to go out of bounds.
+	 * <b>REQUIRES:</b> A Sequence with playable notes and an integer for the
+	 * number of octaves to shift (between 0 - 10 (inclusive)).<br>
+	 * <b>ENSURES:</b> Every note in the Sequence adjusted by the "shift", except
+	 * where this shift causes key or octave to go out of bounds.<br>
 	 * 		- In this case, a warning will be displayed and the note will
 	 * 		  be shifted to the minimum/maximum octave possible.
+	 * @param seq A Sequence with playable notes.
+	 * @param shift An integer for the number of octaves to shift (between 0 - 10 (inclusive))
+	 * @return The passed in Sequence
+	 * @author Dean Newberry
 	 * */
 	public static Sequence shiftOctave(Sequence seq, int shift){
 		for (Track t : seq.getTracks()){
