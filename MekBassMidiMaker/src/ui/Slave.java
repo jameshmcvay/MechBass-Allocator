@@ -9,6 +9,7 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
+import solver.SplitAndSolve;
 import solver.TrackSplitter;
 import tools.Player;
 
@@ -81,9 +82,8 @@ public class Slave {
 		OctaveShifter.shiftOctave(curMIDI, 3);
 	}
 
-	public static void main(String args[]){
-
+	protected void save(File fi) throws IOException{
+		MidiSystem.write(curMIDI, 1, fi);
 	}
-
 
 }
