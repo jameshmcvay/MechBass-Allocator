@@ -6,8 +6,6 @@ import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.Track;
 
-import main.Parser;
-
 /**
  *
  * @author Elliot Wilde
