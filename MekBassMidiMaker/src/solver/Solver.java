@@ -16,7 +16,8 @@ import static javax.sound.midi.ShortMessage.*;
  * This is the core of the MekBassMidiMaker program as it is responsible for crafting a midi sequence
  * that the MekBass can actually play.<br>
  * Output can be changed by setting the String configuration (generally speaking, more strings can play more sounds).
- * @author Elliot Wilde, Andrew Palmer
+ * @author Elliot Wilde
+ * @author Andrew Palmer
  *
  */
 public class Solver {
@@ -76,51 +77,77 @@ public class Solver {
 							}
 						}
 					}
-					int ran = Long.hashCode(System.nanoTime());
-					if (rightStrings.isEmpty()) System.out.println(ran + " strings empty");
-					if (stringInUse != -1) System.out.println(ran + "  string used");
+//					int ran = Long.hashCode(System.nanoTime());
+//					if (rightStrings.isEmpty()) System.out.println(ran + " strings empty");
+//					if (stringInUse != -1) System.out.println(ran + "  string used");
 
 					// if there is nothing in the list of strings AND lastString is not '-1' AND the stringInUse flag has been raised
 					// we want to look at the last note added, and see if it could go on another string instead
 					// then try again
 					rearrangeFailure:
 					if (rightStrings.isEmpty() && stringInUse != -1){
-						System.err.println("String in Use, attempting to move previous note");
+						//ystem.out.println("String in Use, attempting to move previous note");
 						// get the string/track
 						Track lst = seq.getTracks()[stringInUse+1];
 						// get the event
 						int dec = 2;
 						MidiEvent lstEvent = null;
 						MidiMessage lstmsg = null;
-//						//ystem.out.println(lstmsg.getClass());
+						// this skips past metamessages and escape when it has the offending event
 						do {
-							if (dec ==lst.size()) break rearrangeFailure;
 							//ystem.out.println(lst.size() + " " + dec);
+							if (dec >lst.size()) {
+								//ystem.out.println("Breaking");
+								break rearrangeFailure;
+							}
 							lstEvent = lst.get(lst.size()-dec);
 							lstmsg = lstEvent.getMessage();
 							dec++;
 						} while (lstmsg instanceof MetaMessage);
-
-
-
 
 						// get the note
 						int lstNote = ((ShortMessage)lstmsg).getData1();
 						// get the strings it could play on (minus the one it was just on)
 						List<Integer> lastStrings = new ArrayList<Integer>();
 						for (int j = 0; j < strings.length; j++){
-							if (note >= strings[j].lowNote && note <= strings[j].highNote){
+							if (lstNote >= strings[j].lowNote && lstNote <= strings[j].highNote){
 								if (lastNote[j] == -1 && j != stringInUse) {
 									lastStrings.add(j);
 								}
 							}
 						}
+						//ystem.out.printf("No. of valid Strings: [%d]\n", lastStrings.size());
+						// pick the most suitable string (last used longest time ago)
+
+						long minTime = Long.MAX_VALUE;
+						int useString = -1;
+						for(Integer j : lastStrings){
+							if (stringTimes[j] < minTime){
+								minTime = stringTimes[j];
+								useString = j;
+							}
+						}
+
+						//ystem.out.printf("Usestring (old): [%d]\n", useString);
+						if (useString == -1) { // if it cant fit on any strings, dont go any further in the conflict resolution
+							break;
+						}
 						// add it to that string (if there is another string), and remove it from the string it was on
-						moveEvent(lst, tr, lstEvent);
+						moveEvent(lst, seq.getTracks()[useString+1], lstEvent);
+						lastNote[useString] = lstNote;
+						lastNote[stringInUse] = -1;
 
 						// then try the current event again
+						for (int j = 0; j < strings.length; j++){
+							if (note >= strings[j].lowNote && note <= strings[j].highNote){
+								if (lastNote[j] == -1) {
+									rightStrings.add(j);
+								}
+							}
+						}
+						//ystem.out.printf("No. of valid Strings (fix): [%d]\n", rightStrings.size());
 
-
+						// and now that we are done here(hopefully), we continue on our merry way
 					}
 
 					// we now have a list of strings which can theoretically play the note. we assign it to
@@ -138,7 +165,7 @@ public class Solver {
 						// put it there if it is valid
 						moveEvent(tr,seq.getTracks()[useString+1],tr.get(i));
 						i--;
-						//System.out.printf("Note %d moved\n", note);
+						//ystem.out.printf("Note %d moved\n", note);
 						// put it in last note for that string
 						lastNote[useString] = note;
 						lastString = useString;

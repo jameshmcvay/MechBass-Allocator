@@ -12,10 +12,10 @@ import javax.sound.midi.Sequencer;
 import tools.Player;
 
 /**
+ * Uses code written by Dean
  *
  * @author Andrew Palmer
  *
- * Uses code written by Dean
  */
 public class SplitAndSolve {
 
@@ -39,15 +39,15 @@ public class SplitAndSolve {
 			System.out.printf("Found %d unmoved events\n",out.getTracks()[0].size());
 //			seq.deleteTrack(seq.getTracks()[bass]);
 //			out.deleteTrack(out.getTracks()[0]);
-			
-			
+
+
 			try {
 				MidiSystem.write(out, 1, new File("out.mid"));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 			Player.release();
 		}
 		catch(InvalidMidiDataException e){

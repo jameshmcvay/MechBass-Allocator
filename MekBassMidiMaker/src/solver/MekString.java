@@ -6,7 +6,8 @@ package solver;
  * Highest and Lowest notes that the string can play. <br>
  * The Range of Notes that the string can play. <br>
  * The time taken to travel between two adjacent notes.
- * @author Elliot Wilde, Andrew Palmer
+ * @author Elliot Wilde
+ * @author Andrew Palmer
  */
 public class MekString {
 	/**
@@ -27,6 +28,13 @@ public class MekString {
 	 */
 	public final long[] interval;
 
+	/**
+	 * Construct a MekString with a highest and lowest note and an array consisting of the time it takes
+	 * for the string to move between adjacent frets.
+	 * @param low The lowest note that the string can play
+	 * @param high The highest note that the string can play
+	 * @param time An array of times between frets
+	 */
 	public MekString(int low, int high, long[] time){
 		this.lowNote = low;
 		this.highNote = high;
@@ -34,6 +42,12 @@ public class MekString {
 		this.noteRange = highNote - lowNote;
 	}
 
+	/**
+	 * Construct a MekString with a highest and lowest note.<br>
+	 * In this constructor the array of note times has been omitted, and <b>zero</b> is used for the timings instead (as in: instantaneous).
+	 * @param low The lowest note that the string can play
+	 * @param high The highest note that the string can play
+	 */
 	public MekString(int low, int high){
 		this.lowNote = low;
 		this.highNote = high;
@@ -60,13 +74,13 @@ public class MekString {
 	 * @param note1
 	 * @param note2
 	 * @param duration - the time between note1 finishing and note 2 starting
-	 * @return the 
+	 * @return the
 	 */
 	public boolean conflicting(int note1,int note2, long duration){
 		if(addIntervals(note1-lowNote,note2-lowNote) > duration) return true;
 		return false;
 	}
-	
+
 	/**
 	 * Checks the minimum time between two notes
 	 * @param note1
