@@ -77,7 +77,7 @@ public class MekString {
 	 * @return the
 	 */
 	public boolean conflicting(int note1,int note2, long duration){
-		if(addIntervals(note1-lowNote,note2-lowNote) > duration) return true;
+		if(difference(note1,note2) > duration) return true;
 		return false;
 	}
 
