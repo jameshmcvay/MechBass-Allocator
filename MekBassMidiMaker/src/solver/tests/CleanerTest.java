@@ -92,11 +92,16 @@ public class CleanerTest {
 		assertTrue(str.difference(1,2) == 100);
 	}
 	
+	@Test
+	public void differenceTestMulti(){
+		MekString str = new MekString(1,3,new long[]{100,200});
+		assertTrue(str.difference(1,3) == 300);
+	}
+	
 	//-------------------------------------------------------------------------------
 	//---------Tests for Cleaner.clean-----------------------------------------------
 	//-------------------------------------------------------------------------------
-		
-	
+			
 	//passes as long as the sequence has the correct number of tracks after cleaning
 	@Test
 	public void cleanTestPass(){
@@ -216,15 +221,15 @@ public class CleanerTest {
 			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,1);
 			seq.getTracks()[0].add(CleanerTest.makeNote(1,100));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,200));
-			seq.getTracks()[0].add(CleanerTest.makeNote(2,400));
-			seq.getTracks()[0].add(CleanerTest.makeNoteOff(2,500));
+			seq.getTracks()[0].add(CleanerTest.makeNote(2,420));
+			seq.getTracks()[0].add(CleanerTest.makeNoteOff(2,520));
 			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,1);
 			compare.getTracks()[0].add(CleanerTest.makeNote(1,100));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,200));
-			compare.getTracks()[0].add(CleanerTest.makeNote(2,400));
-			compare.getTracks()[0].add(CleanerTest.makeNoteOff(2,500));
+			compare.getTracks()[0].add(CleanerTest.makeNote(2,420));
+			compare.getTracks()[0].add(CleanerTest.makeNoteOff(2,520));
 			compare.getTracks()[0].add(CleanerTest.makeNote(1,0,1));
-			compare.getTracks()[0].add(CleanerTest.makeNote(2,200,1));
+			compare.getTracks()[0].add(CleanerTest.makeNote(2,220,1));
 			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{100})});
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
