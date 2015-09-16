@@ -15,6 +15,12 @@ import solver.Solver;
 import solver.TrackSplitter;
 import tools.Player;
 
+/**
+ * The console used in both the GUI and non-GUI modes, it is responsible for receiving user's text input
+ * and displaying any text output.
+ * @author Patrick Byers
+ *
+ */
 public class Console extends OutputStream {
 
 	boolean guiMode;
@@ -22,15 +28,24 @@ public class Console extends OutputStream {
 	BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 	String input = "i";
 	Slave slave;
-
-	public Console(boolean gui, TextArea text, Slave slave) {
-		guiMode = gui;
+/**
+ * Create a console using for use within the gui.
+ * @param text The text of the GUI for this console to use
+ * @param slave The slave instance
+ */
+	public Console(TextArea text, Slave slave) {
+		guiMode = true;
 		area = text;
 		this.slave = slave;
 	}
-
-	public Console() {
+/**
+ * Create a console for use without a GUI.
+ * @param slave The slave instance.
+ */
+	public Console(Slave slave) {
 		guiMode = false;
+		this.slave = slave;
+		startTerminalInput();
 	}
 
 	protected void startTerminalInput() {
@@ -44,9 +59,12 @@ public class Console extends OutputStream {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		} while (input != "END");
+		} while (!input.equals("END"));
 	}
-
+/**
+ * Parse a block of input
+ * @param text The block of input
+ */
 	protected void Parse(String text) {
 		String[] lines = text.split("\n");
 		String rawInput = lines[lines.length-1].trim();
@@ -82,46 +100,16 @@ public class Console extends OutputStream {
 			}
 			else this.save();
 			break;
+		case "END":
+			System.exit(0);
 		default:
 			output("Command not recongnized");
 		}
-		// if (input.equals("open"))
-		// output("No File Specified");
-		// else if (input.startsWith("open")) {
-		// input = input.substring(4).trim();
-		// if(slave.setCurMIDI(input)) output("Successfully open file");
-		// else output("Failed to open file");
-		// return;
-		// }
-		//
-		// if (input.equals("solve")) {
-		// slave.solve();
-		// return;
-		// }
-		// else if(input.startsWith("solve")){
-		// input = input.substring(5).trim();
-		// if(slave.setCurMIDI(input)) output("Successfully open file");
-		// else output("Failed to open file");
-		// slave.solve();
-		// output("successfully solved");
-		// }
-		//
-		// if (input.equals("play")) {
-		// slave.play();
-		// return;
-		// }
-		//
-		// if(input.equals("stop")){
-		// slave.playerStop();
-		// return;
-		// }
-		//
-		// if(input.equals("octUp")){
-		// Slave.octaveUp();
-		// }
-		//
 	}
-
+/**
+ * Returns whether or not the console is set to GUI mode
+ * @return GUI mode
+ */
 	protected boolean getGUIMode() {
 		return guiMode;
 	}
@@ -147,14 +135,12 @@ public class Console extends OutputStream {
 			slave.solve();
 		}
 	}
-
+	/**
+	 * Output the string to the appropriate area
+	 * @param text
+	 */
 	protected void output(String text) {
 		System.out.print(text + "\n");
-	}
-
-	public static void main(String args[]) {
-		Console c = new Console();
-		c.startTerminalInput();
 	}
 
 	@Override
