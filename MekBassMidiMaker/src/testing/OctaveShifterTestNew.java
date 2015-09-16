@@ -31,10 +31,12 @@ public class OctaveShifterTestNew {
 	private final String MIDIFILESTRING = "./resources/Twinkle_Twinkle_in_octaves.mid";
 	private Parser3 parser = new Parser3(MIDIFILESTRING);
 	
+	
 	@Test
 	public void testShiftOctaveUpOne() {
 		Sequence seq = parser.getSequence();
-		Sequence newSeq = OctaveShifter.shiftOctave(seq, 1);
+		Sequence newSeq = OctaveShifter.shiftOctave(new Parser3(MIDIFILESTRING).getSequence(), 1);
+		assertNotEquals("These sequences should NOT be equal", seq, newSeq);
 		try {
 			PrintWriter seqWriter = new PrintWriter("control.txt", "UTF-8");
 			PrintWriter newWriter = new PrintWriter("O_SHIFT.txt", "UTF-8");
@@ -58,10 +60,10 @@ public class OctaveShifterTestNew {
 				}
 			}
 		
-			tracks = newSeq.getTracks();
+			Track[] newTracks = newSeq.getTracks();
 			
 			// FOR EVERY TRACK...
-			for (Track t : tracks){
+			for (Track t : newTracks){
 				// ... Print out some basic information (Track Number and the Size of the track)
 				
 				for (int i=0; i < t.size(); i++) {
@@ -88,10 +90,13 @@ public class OctaveShifterTestNew {
 		try {
 			Scanner seqScan = new Scanner(seqFile);
 			Scanner newScan = new Scanner(newFile);
-			while (seqScan.hasNext() && newScan.hasNext())
+			while (seqScan.hasNext() && newScan.hasNext()){
+				int num1 = seqScan.nextInt();
+				int num2 = newScan.nextInt();
 				assertTrue("Something has gone wrong with Octave Shifter.", 
-						seqScan.nextInt() == (newScan.nextInt() - 12));
-			if (seqScan.hasNext() || newScan.hasNext()){
+						num1 == num2-12);
+			}
+			if ((seqScan.hasNext() && !newScan.hasNext()) || (!seqScan.hasNext() && newScan.hasNext())){
 				fail("The size of the files is unequal for some reason...");
 			}
 			seqScan.close();

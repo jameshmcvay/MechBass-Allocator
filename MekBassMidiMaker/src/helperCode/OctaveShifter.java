@@ -27,13 +27,13 @@ import tools.Player;
 
 public class OctaveShifter {
 
-	public final int KEY_MIN = 0;
-	public final int OCTAVE_MIN = 0;
-	public final int SHIFT_MIN = 0;
+	public static final int KEY_MIN = 0;
+	public static final int OCTAVE_MIN = 0;
+	public static final int SHIFT_MIN = 0;
 
-	public final int KEY_MAX = 127;
-	public final int OCTAVE_MAX = 10;
-	public final int SHIFT_MAX = 10;
+	public static final int KEY_MAX = 127;
+	public static final int OCTAVE_MAX = 10;
+	public static final int SHIFT_MAX = 10;
 
 	/**
 	 *

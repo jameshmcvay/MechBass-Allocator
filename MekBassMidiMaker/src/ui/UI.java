@@ -1,6 +1,7 @@
 package ui;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Random;
@@ -101,7 +102,7 @@ public class UI extends Application {
 	    //TODO Make GUILISE
 	    slave = new Slave();
 	    slave.setUI(this);
-	    Console console = new Console(true,getConsoleTextArea(),slave);
+	    Console console = new Console(getConsoleTextArea(),slave);
 		slave.setConsole(console);
 
 	    PrintStream ps = new PrintStream(console, true);
@@ -153,6 +154,22 @@ public class UI extends Application {
 			@Override
 			public void handle(ActionEvent event){setCurMIDI();}});
 
+		Button saveBtn = new Button();//The Save Button
+		saveBtn.setText("Save");
+
+		saveBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
+			//call to saveCurMIDI
+			@Override
+			public void handle(ActionEvent event){saveCurMIDI();}});
+
+		Button TsaveBtn = new Button();//The Save Button
+		TsaveBtn.setText("TSave");
+
+		TsaveBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
+			//call to saveCurMIDI
+			@Override
+			public void handle(ActionEvent event){testSave();}});
+
 		Button solveBtn = new Button();//The Solve Button
 		solveBtn.setText("Solve");
 
@@ -164,7 +181,7 @@ public class UI extends Application {
 
 		FlowPane buttonPanel =  new FlowPane();
 		buttonPanel.setPadding(new Insets(3, 0, 0, 3));
-		buttonPanel.getChildren().addAll( playBtn, stpBtn, loadBtn, solveBtn);
+		buttonPanel.getChildren().addAll( playBtn, stpBtn, loadBtn, saveBtn, TsaveBtn, solveBtn);
 
 		return buttonPanel;
 	}
@@ -222,6 +239,31 @@ public class UI extends Application {
 		}
 	}
 
+	protected void saveCurMIDI(){
+		try {
+			FileChooser fiChoo = new FileChooser();
+			fiChoo.setTitle("Select the location to save the file");
+			if(lastFileLocation != null){
+				fiChoo.setInitialDirectory(lastFileLocation);
+			}
+			File retrival = fiChoo.showSaveDialog(null);
+			if (retrival != null && Slave.curMIDI != null){
+			MidiSystem.write(Slave.curMIDI, 1, retrival);
+			}
+		}
+		catch (IOException e){
+			System.out.print("error saving the file");
+		}
+	}
+
+	protected void testSave(){
+		solver.tests.Sequence seq = (solver.tests.Sequence) Slave.curMIDI;
+		setCurMIDI();
+		if(seq.equals(Slave.curMIDI)){
+			System.out.print("It succeded");
+		}
+	}
+
 	public static void main(String args[]){
 		if(args.length == 0){
 			args = new String[1];
@@ -233,7 +275,7 @@ public class UI extends Application {
 		else{
 			//TODO Make sure this works, get it a job if you have to
 			Slave slave = new Slave();
-			Console console = new Console();
+			Console console = new Console(slave);
 			slave.setConsole(console);
 
 		}

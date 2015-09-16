@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import solver.Cleaner;
 import solver.MekString;
-import solver.Solver;
+import solver.GreedySolver;
 
 
 public class CleanerTest {
