@@ -9,6 +9,7 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
+import solver.GreedySolver;
 import solver.Solver;
 import solver.TrackSplitter;
 import tools.Player;
@@ -56,8 +57,9 @@ public class Slave {
 	protected void solve() {
 		if (curMIDI != null)
 			try {
+				Solver greedy = new GreedySolver();
 				curMIDI = TrackSplitter.split(curMIDI, 4, 2);
-				curMIDI = Solver.solve(curMIDI);
+				curMIDI = greedy.solve(curMIDI);
 				//while(hasConflicts()){
 				//get conflict
 				//serve users valid choices
