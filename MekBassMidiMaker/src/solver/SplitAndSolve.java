@@ -1,6 +1,7 @@
 package solver;
 
 import java.io.File;
+import solver.GreedySolver;
 import java.io.IOException;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -28,8 +29,9 @@ public class SplitAndSolve {
 	 */
 	public SplitAndSolve(Sequence seq, int tracks,int bass){
 		try{
+			Solver blah =  new GreedySolver();
 			Sequence out = TrackSplitter.split(seq,tracks,bass);
-			out = Solver.solve(out);
+			out = blah.solve(out);
 			int moved = 0;
 			for(int i = 1; i<=tracks; i++){
 				moved += out.getTracks()[i].size();
