@@ -3,6 +3,7 @@ package solver;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiMessage;
@@ -33,7 +34,12 @@ public class Solver {
 	 *
 	 */
 	public static Sequence solve(Sequence seq){
-		return solve(seq, strings);
+		for(MekString str: strings){
+			str.initTimings(500);
+		}
+		Sequence solved;// = Cleaner.fixStupidity(seq);
+		solved = solve(seq, strings); 	 
+		return Cleaner.prePos(solved, 50, strings);
 	}
 
 	/**
@@ -226,14 +232,14 @@ public class Solver {
 //				i--;
 				MetaMessage m = (MetaMessage) midmsg;
 				if (m.getType() == 0x51){
-					System.out.print(tr.get(i).getTick() + " tempo");
+//					System.out.print(tr.get(i).getTick() + " tempo");
 					for (int me: m.getMessage()){
-						System.out.print(" 0x" + Integer.toHexString((int)(me & 0xFF)));
+//						System.out.print(" 0x" + Integer.toHexString((int)(me & 0xFF)));
 					}
-					System.out.println();
+//					System.out.println();
 				}
 				if (m.getType() == 0x2f) break;
-				System.out.printf("0x%x\n", m.getType());
+//				System.out.printf("0x%x\n", m.getType());
 				for (int j = 1; j <= strings.length; j++){
 					seq.getTracks()[j].add(tr.get(i));
 				}
