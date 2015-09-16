@@ -42,9 +42,10 @@ public class SplitAndSolve {
 
 
 			try {
-				MidiSystem.write(out, 1, new File("out.mid"));
+				out = Cleaner.clean(out);
+				MidiSystem.write(out, 1, new File("hyst.mid"));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				System.out.println("Write Failed\n");
 				e.printStackTrace();
 			}
 
@@ -68,15 +69,17 @@ public class SplitAndSolve {
 			sequence = sequencer.getSequence();
 		}
 		catch (MidiUnavailableException e) {
+			System.out.println("Midi Unavailable\n");
 			e.printStackTrace();
 		}
 		catch (InvalidMidiDataException e){
+			System.out.println("Midi Invalid\n");
 			e.printStackTrace();
 		}
 		catch (IOException e) {
+			System.out.println("IO Exception\n");
 			e.printStackTrace();
 		}
-		SplitAndSolve sAndS =  new SplitAndSolve(sequence,4,1);
-
+		SplitAndSolve sAndS =  new SplitAndSolve(sequence,4,9);
 	}
 }
