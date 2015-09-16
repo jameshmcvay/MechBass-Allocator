@@ -54,7 +54,16 @@ public class MekString {
 		this.noteRange = highNote - lowNote;
 		this.interval = new long[this.noteRange];
 	}
-
+	
+	/**
+	 * Initialises all note delays to i
+	 */
+	public void initTimings(long i){
+		for(long j: interval){
+			j = i;
+		}
+	}
+	
 	/**
 	 * returns the sum of all intervals between start and stop.
 	 * @param start
@@ -63,9 +72,10 @@ public class MekString {
 	 */
 	public long addIntervals(int start, int stop){
 		long ret = 0;
-		for(int i = start; i < stop; i++){ //not inclusive as start and stop represent notes and interval is between them
-			ret += interval[i];
-		}
+		if(stop <= interval.length)
+			for(int i = start; i < stop; i++){ //not inclusive as start and stop represent notes and interval is between them
+				ret += interval[i];
+			}
 		return ret;
 	}
 
