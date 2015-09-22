@@ -200,13 +200,13 @@ public class CleanerTest {
 	@Test
 	public void preposOneStringNoConOneNote(){
 		try {
-			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,1);
-			seq.getTracks()[0].add(CleanerTest.makeNote(1,100));
-			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,200));
-			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,1);
-			compare.getTracks()[0].add(CleanerTest.makeNote(1,100));
-			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,200));
-			compare.getTracks()[0].add(CleanerTest.makeNote(1, 0, 1));
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,2);
+			seq.getTracks()[1].add(CleanerTest.makeNote(1,100));
+			seq.getTracks()[1].add(CleanerTest.makeNoteOff(1,200));
+			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,2);
+			compare.getTracks()[1].add(CleanerTest.makeNote(1,100));
+			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,200));
+			compare.getTracks()[1].add(CleanerTest.makeNote(1, 0, 1));
 			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{0})});
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
@@ -218,18 +218,18 @@ public class CleanerTest {
 	@Test
 	public void preposOneStringNoConTwoNotes(){
 		try {
-			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,1);
-			seq.getTracks()[0].add(CleanerTest.makeNote(1,100));
-			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,200));
-			seq.getTracks()[0].add(CleanerTest.makeNote(2,420));
-			seq.getTracks()[0].add(CleanerTest.makeNoteOff(2,520));
-			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,1);
-			compare.getTracks()[0].add(CleanerTest.makeNote(1,100));
-			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,200));
-			compare.getTracks()[0].add(CleanerTest.makeNote(2,420));
-			compare.getTracks()[0].add(CleanerTest.makeNoteOff(2,520));
-			compare.getTracks()[0].add(CleanerTest.makeNote(1,0,1));
-			compare.getTracks()[0].add(CleanerTest.makeNote(2,220,1));
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,2);
+			seq.getTracks()[1].add(CleanerTest.makeNote(1,100));
+			seq.getTracks()[1].add(CleanerTest.makeNoteOff(1,200));
+			seq.getTracks()[1].add(CleanerTest.makeNote(2,420));
+			seq.getTracks()[1].add(CleanerTest.makeNoteOff(2,520));
+			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,2);
+			compare.getTracks()[1].add(CleanerTest.makeNote(1,100));
+			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,200));
+			compare.getTracks()[1].add(CleanerTest.makeNote(2,420));
+			compare.getTracks()[1].add(CleanerTest.makeNoteOff(2,520));
+			compare.getTracks()[1].add(CleanerTest.makeNote(1,0,1));
+			compare.getTracks()[1].add(CleanerTest.makeNote(2,220,1));
 			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{100})});
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
