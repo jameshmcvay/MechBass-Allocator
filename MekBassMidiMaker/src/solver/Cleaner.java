@@ -116,14 +116,14 @@ public class Cleaner {
 	
 
 	/**
-	 * Gets the previous note
+	 * Gets the previous note off
 	 */
 	private static int getPrev(int index, Track cur){
 		return getPrev(index, cur, NOTE_OFF);
 	}
 	
 	/**
-	 * Gets the previous note
+	 * Gets the previous note of a specified command
 	 */
 	private static int getPrev(int index, Track cur, int Command){
 		for(int k = index-1; k >= 0; --k){
@@ -142,12 +142,16 @@ public class Cleaner {
 	 * Adds pre positioning notes to the MIDI so MekBass can play it.
 	 * 
 	 * This assumes that track 0 exists as the dropped note area.
-	 * 
+	 * It also makes the prepositioning notes on the same channel as the
+	 * note it is prepositioning for.	
+	 *  
 	 * @param seq - The sequence to add prepositioning to.
 	 * @param preTime - The time in ?¿½?¿½s to add before the string MUST be prepositioned.
+	 * @param strings - The data for the strings it is to be played on.
+	 * @param length - How long the prepositioning note should be.
 	 * @return
 	 */
-	public static Sequence prePos(Sequence seq, long preTime, MekString[] strings){
+	public static Sequence prePos(Sequence seq, long preTime, MekString[] strings, long length){
 		//for each track
 		for(int i = 1; i < seq.getTracks().length; i++){
 			Track cur = seq.getTracks()[i];
@@ -185,9 +189,13 @@ public class Cleaner {
 												}
 											}
 											else{
-												System.out.printf("Added Prepos for %d at: Note On %d note Off %d\n", note2, cur.get(j).getTick() - strings[i-1].difference(note1, note2) - preTime, (cur.get(j).getTick() - strings[i-1].difference(note1, note2) - preTime) +  14);
-												cur.add(new MidiEvent(new ShortMessage(NOTE_ON,0,noteOn.getData1(),1) , cur.get(j).getTick() - strings[i-1].difference(note1, note2) - preTime));
-												cur.add(new MidiEvent(new ShortMessage(NOTE_OFF,0,noteOn.getData1(),0) , (cur.get(j).getTick() - strings[i-1].difference(note1, note2)) +  14));
+												//for some reason adding these on the same line ends up with the wrong note off timing.
+												long time = cur.get(j).getTick();
+												time -= strings[i-1].difference(note1, note2);
+												time -= preTime;
+//												System.out.printf("Added Prepos for %d at: Note On %d note Off %d\n", note2, time, time + length);
+												cur.add(new MidiEvent(new ShortMessage(NOTE_ON,noteOn.getChannel(),noteOn.getData1(),1) , time));
+												cur.add(new MidiEvent(new ShortMessage(NOTE_OFF,noteOn.getChannel(),noteOn.getData1(),0) , time +  length));
 												j++;
 											}
 										} catch (ArrayIndexOutOfBoundsException e) {
