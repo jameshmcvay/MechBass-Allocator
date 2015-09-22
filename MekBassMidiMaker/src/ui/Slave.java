@@ -13,7 +13,8 @@ import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
 import solver.MekString;
-import solver.SplitAndSolve;
+import solver.GreedySolver;
+import solver.Solver;
 import solver.TrackSplitter;
 import tools.Player;
 
@@ -61,11 +62,18 @@ public class Slave {
 	}
 
 	protected void solve() {
-		try {
-			if (curMIDI != null){
+
+		if (curMIDI != null)
+			try {
+				Solver greedy = new GreedySolver();
 				curMIDI = TrackSplitter.split(curMIDI, 4, 2);
-			}
-		} catch (InvalidMidiDataException e) {
+				curMIDI = greedy.solve(curMIDI);
+				//while(hasConflicts()){
+				//get conflict
+				//serve users valid choices
+				//receive users choice
+				//call appropriate method
+			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
 		}
 	}

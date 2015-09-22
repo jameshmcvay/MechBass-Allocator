@@ -27,13 +27,13 @@ import tools.Player;
 
 public class OctaveShifter {
 
-	public final int KEY_MIN = 0;
-	public final int OCTAVE_MIN = 0;
-	public final int SHIFT_MIN = 0;
+	public static final int KEY_MIN = 0;
+	public static final int OCTAVE_MIN = 0;
+	public static final int SHIFT_MIN = 0;
 
-	public final int KEY_MAX = 127;
-	public final int OCTAVE_MAX = 10;
-	public final int SHIFT_MAX = 10;
+	public static final int KEY_MAX = 127;
+	public static final int OCTAVE_MAX = 10;
+	public static final int SHIFT_MAX = 10;
 
 	/**
 	 *
@@ -145,11 +145,11 @@ public class OctaveShifter {
 	}
 
 	public static void main(String args[]){
-		File f =  new File("resources/DragonForce_Through-the-Fire-and-Flames.mid");
+		File f =  new File("resources/hysteria Allocated.mid");
 		try {
 			Sequence s = MidiSystem.getSequence(f);
-//			shiftOctave(s, -3);
-			shiftOctave(s, 100);
+//			shiftOctave(s, -2);
+			shiftOctave(s, 4);
 
 			Player.play(s);
 

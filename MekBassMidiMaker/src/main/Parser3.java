@@ -793,7 +793,7 @@ public class Parser3 {
 					else
 						command = "Note off";
 					// After that, Print the details.
-					System.out.println("Channel " + channel + ": " + command + ", " +
+					System.out.println("@" + event.getTick() + "(SHORT_MESSAGE)\tChannel " + channel + ": " + command + ", " +
 							noteName + octave + " key=" + key + " velocity: " + velocity);
 				} else if (sm.getCommand() == ShortMessage.PROGRAM_CHANGE){
 					System.out.println("@" + event.getTick() + "(SHORT_MESSAGE)");

@@ -2,18 +2,14 @@ package solver.tests;
 
 import static org.junit.Assert.*;
 import static javax.sound.midi.Sequence.*;
-import static javax.sound.midi.ShortMessage.*;
 
 import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiEvent;
-import javax.sound.midi.MidiMessage;
-import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
-import javax.sound.midi.Track;
 
 import org.junit.Test;
 
 import solver.MekString;
+import solver.GreedySolver;
 import solver.Solver;
 
 public class SolverTests {
@@ -28,7 +24,8 @@ public class SolverTests {
 			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,2);
 			compare.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
-			Solver.solve(seq, new MekString[]{});
+			Solver solve = new GreedySolver(new MekString[]{});
+			solve.solve(seq);
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
@@ -46,7 +43,8 @@ public class SolverTests {
 			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,2);
 			compare.getTracks()[0].add(CleanerTest.makeNote(1,10000));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,100000));
-			Solver.solve(seq, new MekString[]{});
+			Solver solve = new GreedySolver(new MekString[]{});
+			solve.solve(seq);
 			assertFalse(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
@@ -66,7 +64,8 @@ public class SolverTests {
 			solver.tests.Sequence compare = new solver.tests.Sequence(PPQ,1,1);
 			compare.getTracks()[0].add(CleanerTest.makeNote(1,0));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
-			Solver.solve(seq, new MekString[]{});
+			Solver solve = new GreedySolver(new MekString[]{});
+			solve.solve(seq);
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
@@ -88,7 +87,8 @@ public class SolverTests {
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(1,100));
 			compare.getTracks()[0].add(CleanerTest.makeNote(2,500));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(2,600));
-			Solver.solve(seq, new MekString[]{new MekString(-4,-3,new long[]{100})});
+			Solver solve = new GreedySolver(new MekString[]{new MekString(-4,-3,new long[]{100})});
+			solve.solve(seq);
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
@@ -110,7 +110,8 @@ public class SolverTests {
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,100));
 			compare.getTracks()[1].add(CleanerTest.makeNote(2,500));
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(2,600));
-			Solver.solve(seq, new MekString[]{new MekString(1,2,new long[]{-400})});
+			Solver solve = new GreedySolver(new MekString[]{new MekString(1,2,new long[]{-400})});
+			solve.solve(seq);
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
@@ -132,7 +133,8 @@ public class SolverTests {
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,100));
 			compare.getTracks()[1].add(CleanerTest.makeNote(2,500));
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(2,600));
-			Solver.solve(seq, new MekString[]{CleanerTest.buildString()});
+			Solver solve = new GreedySolver(new MekString[]{CleanerTest.buildString()});
+			solve.solve(seq);
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
@@ -154,7 +156,8 @@ public class SolverTests {
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,100));
 			compare.getTracks()[0].add(CleanerTest.makeNote(2,0));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(2,100));
-			Solver.solve(seq, new MekString[]{CleanerTest.buildString()});
+			Solver solve = new GreedySolver(new MekString[]{CleanerTest.buildString()});
+			solve.solve(seq);
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
@@ -176,7 +179,8 @@ public class SolverTests {
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,100));
 			compare.getTracks()[2].add(CleanerTest.makeNote(2,0));
 			compare.getTracks()[2].add(CleanerTest.makeNoteOff(2,100));
-			Solver.solve(seq, new MekString[]{CleanerTest.buildString(),CleanerTest.buildString()});
+			Solver solve = new GreedySolver(new MekString[]{CleanerTest.buildString(),CleanerTest.buildString()});
+			solve.solve(seq);
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
@@ -202,7 +206,8 @@ public class SolverTests {
 			compare.getTracks()[2].add(CleanerTest.makeNoteOff(2,100));
 			compare.getTracks()[0].add(CleanerTest.makeNote(3,0));
 			compare.getTracks()[0].add(CleanerTest.makeNoteOff(3,100));
-			Solver.solve(seq, new MekString[]{CleanerTest.buildString(),CleanerTest.buildString()});
+			Solver solve = new GreedySolver(new MekString[]{CleanerTest.buildString(),CleanerTest.buildString()});
+			solve.solve(seq);
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
@@ -222,8 +227,9 @@ public class SolverTests {
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(3, 100));
 			seq.getTracks()[0].add(CleanerTest.makeNote(2, 70));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(2, 120));
-			Solver.solve(seq, new MekString[]{new MekString(1,3,new long[]{100,200,300}),
-											new MekString(3,5,new long[]{100,200,300})});
+			Solver solve = new GreedySolver(new MekString[]{new MekString(1,3,new long[]{100,200,300}),
+					new MekString(3,5,new long[]{100,200,300})});
+			solve.solve(seq);
 
 			assertEquals("There Should be only one event in the zeroth track", 1, seq.getTracks()[0].size());
 			assertEquals("There Should be only two extra events in the first track", 3, seq.getTracks()[1].size());
@@ -243,8 +249,9 @@ public class SolverTests {
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(2, 100));
 			seq.getTracks()[0].add(CleanerTest.makeNote(2, 70));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(2, 120));
-			Solver.solve(seq, new MekString[]{new MekString(1,3,new long[]{100,200,300}),
+			Solver solve = new GreedySolver(new MekString[]{new MekString(1,3,new long[]{100,200,300}),
 											new MekString(3,5,new long[]{100,200,300})});
+			solve.solve(seq);
 
 			assertEquals("There Should be two unmoved events in the zeroth track", 3, seq.getTracks()[0].size());
 			assertEquals("There Should be only two extra events in the first track", 3, seq.getTracks()[1].size());
@@ -272,10 +279,11 @@ public class SolverTests {
 			seq.getTracks()[0].add(CleanerTest.makeNote(5, 70));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(5, 120));
 
-			Solver.solve(seq, new MekString[]{new MekString(1,3,new long[]{100,200,300}),
+			Solver solve = new GreedySolver(new MekString[]{new MekString(1,3,new long[]{100,200,300}),
 											new MekString(3,5,new long[]{100,200,300}),
 											new MekString(5,7,new long[]{100,200,300}),
 											new MekString(7,9,new long[]{100,200,300})});
+			solve.solve(seq);
 
 			assertEquals("There Should be only one event in the zeroth track", 1, seq.getTracks()[0].size());
 			assertEquals("There Should be only two extra events in the first track", 3, seq.getTracks()[1].size());
@@ -310,10 +318,11 @@ public class SolverTests {
 			seq.getTracks()[0].add(CleanerTest.makeNote(5, 70));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(5, 120));
 
-			Solver.solve(seq, new MekString[]{new MekString(1,3,new long[]{100,200,300}),
+			Solver solve = new GreedySolver(new MekString[]{new MekString(1,3,new long[]{100,200,300}),
 											new MekString(3,5,new long[]{100,200,300}),
 											new MekString(5,7,new long[]{100,200,300}),
 											new MekString(7,9,new long[]{100,200,300})});
+			solve.solve(seq);
 
 			assertEquals("There Should be only two extra events in the zeroth track", 3, seq.getTracks()[0].size());
 			assertEquals("There Should be only two extra events in the first track", 3, seq.getTracks()[1].size());

@@ -1,6 +1,7 @@
 package ui;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Random;
@@ -104,7 +105,7 @@ public class UI extends Application{
 	    //TODO Make GUILISE
 	    slave = new Slave();
 	    slave.setUI(this);
-	    Console console = new Console(true,getConsoleTextArea(),slave);
+	    Console console = new Console(getConsoleTextArea(),slave);
 		slave.setConsole(console);
 	    PrintStream ps = new PrintStream(console, true);
 
@@ -171,7 +172,6 @@ public class UI extends Application{
 									).getUserData()
 								)
 							);
-		System.out.println("it is" + checkName);
 		if(checkName.equals("TextString"))
 		switch (event.getCode() +"") {
 		case "ENTER":
@@ -181,7 +181,6 @@ public class UI extends Application{
 		default:
 			break;
 		}
-		System.out.println(stringsNumber);
 	}
 
 	protected void solve() {
@@ -221,6 +220,17 @@ public class UI extends Application{
 			@Override
 			public void handle(ActionEvent event){setCurrentMIDI();}});
 
+		Button saveBtn = new Button();//The Save Button
+		saveBtn.setText("Save");
+
+		saveBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
+			//call to saveCurMIDI
+			@Override
+			public void handle(ActionEvent event){save();}});
+
+		Button TsaveBtn = new Button();//The Save Button
+		TsaveBtn.setText("TSave");
+
 		Button solveBtn = new Button();//The Solve Button
 		solveBtn.setText("Solve");
 
@@ -228,12 +238,6 @@ public class UI extends Application{
 			//Call to solve
 			@Override
 			public void handle(ActionEvent event) {solve();}});
-
-		Button saveBtn = new Button();
-		saveBtn.setText("Save");
-		saveBtn.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {save();}});
 
 		FlowPane buttonPanel =  new FlowPane();
 		buttonPanel.setPadding(new Insets(3, 0, 0, 3));
@@ -306,12 +310,14 @@ public class UI extends Application{
 		}
 	}
 
+
 	private File fileChooser(String string) throws IOException, InvalidMidiDataException {
 		FileChooser fiChoo = new FileChooser();
 		fiChoo.setTitle(string);
 		if(lastFileLocation != null){
 			fiChoo.setInitialDirectory(lastFileLocation);
 		}
+
 
 		File fi = fiChoo.showOpenDialog(null);
 
@@ -334,7 +340,6 @@ public class UI extends Application{
 
 
 	private void handleConsoleKeyEvent(KeyEvent event){
-			System.out.println("truth");
 			switch (event.getCode() +"") { //added to the empty string for implicit conversion
 			case "ENTER":
 				slave.getConsole().Parse(textConsole.getText());
@@ -357,7 +362,7 @@ public class UI extends Application{
 		else{
 			//TODO Make sure this works, get it a job if you have to
 			Slave slave = new Slave();
-			Console console = new Console();
+			Console console = new Console(slave);
 			slave.setConsole(console);
 		}
 	}
