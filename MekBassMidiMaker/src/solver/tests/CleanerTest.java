@@ -60,7 +60,7 @@ public class CleanerTest {
 	public static MidiEvent makeNoteOff(int note, long time){
 		ShortMessage shrt;
 		try {
-			shrt = new ShortMessage(NOTE_OFF,0,note,100);
+			shrt = new ShortMessage(NOTE_OFF,0,note,0);
 			return new MidiEvent(shrt, time);
 		} 
 		catch (InvalidMidiDataException e) {			
@@ -207,7 +207,8 @@ public class CleanerTest {
 			compare.getTracks()[1].add(CleanerTest.makeNote(1,100));
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,200));
 			compare.getTracks()[1].add(CleanerTest.makeNote(1, 0, 1));
-			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{0})});
+			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1, 14));
+			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{0})},14);
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
@@ -229,8 +230,10 @@ public class CleanerTest {
 			compare.getTracks()[1].add(CleanerTest.makeNote(2,420));
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(2,520));
 			compare.getTracks()[1].add(CleanerTest.makeNote(1,0,1));
+			compare.getTracks()[1].add(CleanerTest.makeNoteOff(1,14));
 			compare.getTracks()[1].add(CleanerTest.makeNote(2,220,1));
-			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{100})});
+			compare.getTracks()[1].add(CleanerTest.makeNoteOff(2,234));
+			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{100})},14);
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
