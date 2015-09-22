@@ -160,6 +160,5 @@ public class Console extends OutputStream {
 	@Override
 	public void write(int i) throws IOException {
 		area.appendText(String.valueOf((char) i));
-
 	}
 }
