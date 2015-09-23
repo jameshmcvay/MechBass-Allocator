@@ -239,7 +239,7 @@ public class Cleaner {
 	 * @return
 	 */
 	public static int findEvent(Track tr, long tick, int Command){
-		int curIndex = 0;
+		int curIndex = -1;
 		for(int i = 0; i < tr.size(); i++){
 			MidiEvent cur = tr.get(i);
 			if(cur.getMessage() instanceof ShortMessage){
@@ -263,6 +263,7 @@ public class Cleaner {
 				ShortMessage note = (ShortMessage) current.getMessage();
 				if(note.getCommand() == NOTE_ON){
 					Conflict con = new Conflict(current);
+					System.out.printf("DropTrack event %d conflict building\n", i);
 					//if there is a note on add it and all related events to a list
 					ArrayList<MidiEvent> dropped = new ArrayList<MidiEvent>();
 					dropped.add(current);
@@ -274,53 +275,67 @@ public class Cleaner {
 							ShortMessage nextNote = (ShortMessage) next.getMessage();
 							if(nextNote.getData1() == note.getData1() && nextNote.getChannel() == note.getChannel()){
 								dropped.add(next);
+								System.out.printf("Adding event %d to conflict\n", j);
 								if(nextNote.getCommand() == NOTE_OFF){
+									System.out.printf("NoteOff added\n");
 									break addEvents;
 								}
 							}
 						}
 					}
-					for(int k = 1; k < strings.length; k++){
+					for(int k = 1; k < seq.getTracks().length; k++){
+						System.out.printf("Looking for conflicts on string %d\n",k-1);
 						Track track = seq.getTracks()[k];
 						//look for conficts on each string that can play the note.
 						if(strings[k-1].playable(note.getData1())){
+							System.out.printf("Playable on string %d\n", k-1);
 							//this adds all related events of the note before the conflicting note to a list
 							int conflictIndex = findEvent(track, current.getTick(), NOTE_ON);
-							ShortMessage conflict1 = (ShortMessage) track.get(conflictIndex).getMessage();
-							List<MidiEvent> play1 = new ArrayList<MidiEvent>();
-							addConf1:
-							for(int j = conflictIndex; j < seq.getTracks()[k].size(); j++){
-								MidiEvent next = track.get(j);
-								if(next.getMessage() instanceof ShortMessage){
-									ShortMessage nextMessage = (ShortMessage) next.getMessage();
-									if(nextMessage.getData1() == conflict1.getData1() && nextMessage.getChannel() == conflict1.getChannel()){
-										play1.add(next);
-										if(nextMessage.getCommand() == NOTE_OFF){
-											conflictIndex = j;
-											break addConf1;
+							System.out.printf("Conflicting with event number %d\n",conflictIndex);
+							if(conflictIndex >= 0){
+								ShortMessage conflict1 = (ShortMessage) track.get(conflictIndex).getMessage();
+								List<MidiEvent> play1 = new ArrayList<MidiEvent>();
+								addConf1:
+								for(int j = conflictIndex; j < seq.getTracks()[k].size(); j++){
+									MidiEvent next = track.get(j);
+									if(next.getMessage() instanceof ShortMessage){
+										ShortMessage nextMessage = (ShortMessage) next.getMessage();
+										if(nextMessage.getData1() == conflict1.getData1() && nextMessage.getChannel() == conflict1.getChannel()){
+											play1.add(next);
+											System.out.printf("Added event %d on to conflict\n",j);
+											if(nextMessage.getCommand() == NOTE_OFF){
+												conflictIndex = j;
+												System.out.printf("First note of conflict complete\n");
+												break addConf1;
+											}
 										}
 									}
 								}
-							}
-							List<MidiEvent> play2 = new ArrayList<MidiEvent>();
-							addConf2:
-							for(int j = conflictIndex; j < seq.getTracks()[k].size(); j++){
-								MidiEvent next = track.get(j);
-								if(next.getMessage() instanceof ShortMessage){
-									ShortMessage nextMessage = (ShortMessage) next.getMessage();
-									if(nextMessage.getData1() == conflict1.getData1() && nextMessage.getChannel() == conflict1.getChannel()){
-										play2.add(next);
-										if(nextMessage.getCommand() == NOTE_OFF){
-											break addConf2;
+								List<MidiEvent> play2 = new ArrayList<MidiEvent>();
+								addConf2:
+								for(int j = conflictIndex; j < seq.getTracks()[k].size(); j++){
+									System.out.printf("Started last note of conflict");
+									MidiEvent next = track.get(j);
+									if(next.getMessage() instanceof ShortMessage){
+										ShortMessage nextMessage = (ShortMessage) next.getMessage();
+										if(nextMessage.getData1() == conflict1.getData1() && nextMessage.getChannel() == conflict1.getChannel()){
+											play2.add(next);
+											if(nextMessage.getCommand() == NOTE_OFF){
+												break addConf2;
+											}
 										}
 									}
 								}
+								
+								//add the note notes to the conflict
+								NoteConflict conflict = new NoteConflict(dropped, play1, play2, track, dropTrack, k-1);
+								System.out.print(conflict.toString());
+								con.addConf(conflict, k-1);
+								System.out.print(con.toString());
 							}
-							//add the note notes to the conflict
-							NoteConflict conflict = new NoteConflict(dropped, play1, play2, track, dropTrack, k-1);
-							con.addConf(conflict, k-1);
 						}
 					}
+					conflicts.add(con);
 				}
 			}
 		}
