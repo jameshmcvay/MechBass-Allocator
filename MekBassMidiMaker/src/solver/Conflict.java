@@ -34,4 +34,8 @@ public class Conflict {
 		return conflicts.get(str);
 	}
 	
+	public String toString(){
+		return "Conflict containing a note playable on " + conflicts.size() +" strings\n";
+	}
+	
 }
