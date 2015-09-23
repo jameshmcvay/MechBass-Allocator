@@ -101,4 +101,9 @@ public class MekString {
 		if(note1<note2) return addIntervals(note1-lowNote,note2-lowNote);
 		else return addIntervals(note2-lowNote, note1-lowNote);
 	}
+	
+	public boolean playable(int i){
+		if(i>lowNote && i<highNote) return true;
+		return false;
+	}
 }
