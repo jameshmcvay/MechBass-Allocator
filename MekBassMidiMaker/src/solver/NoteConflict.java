@@ -114,4 +114,8 @@ public class NoteConflict{
 			dropTrack.remove(d);
 		}
 	}
+	
+	public String toString(){
+		return "Conlict on string " + string + "\n"; 
+	}
 }
