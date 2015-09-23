@@ -8,23 +8,26 @@ import java.util.Random;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
-import javax.sound.midi.Sequence;
+
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
+import javafx.scene.text.Font;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -34,9 +37,9 @@ import javafx.stage.Stage;
  * @author macdondyla1, oswaldgreg
  *
  */
-public class UI extends Application {
+public class UI extends Application{
 
-	Sequence curMIDI;//the File we're currently modifying
+//	Sequence curMIDI;//the File we're currently modifying
 
 	//4:3 screen ratio
 	double width = 1200;
@@ -49,53 +52,53 @@ public class UI extends Application {
 	//Contains launches the application, for all intents and purposes, this is the contructor
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-
+		primaryStage.setResizable(false);
 		//-----Create the set of buttons to be added to the graphics pane-------
 		FlowPane buttonPanel = BuildButtons();
 		GridPane gridPane = new GridPane();
 
 		//Initialise the console
 		textConsole = new TextArea();
-
-		//Canvas
-		double canvasWidth = width * (3.0 / 5.0);
+		leftCanvasWidth = width * (3.0 / 5.0);
 		double canvasHeight = height * 0.667;
 
-		Canvas leftCanvas = new Canvas();
-		leftCanvas.setWidth(canvasWidth);
-		leftCanvas.setHeight(canvasHeight); //2/3
 
+		Canvas leftCanvas = new Canvas();
+		leftCanvas.setWidth(leftCanvasWidth);
+		leftCanvas.setHeight(canvasHeight);
+
+		double rightCanvasWidth = width * (2.0 / 5.0);
 		Canvas rightCanvas = new Canvas();
-		rightCanvas.setWidth(canvasWidth);
+		rightCanvas.setWidth(rightCanvasWidth);
 		rightCanvas.setHeight(canvasHeight);
 
-		GraphicsContext gc = rightCanvas.getGraphicsContext2D();
-		drawShapes(gc);
+		GridPane leftGUIGridPane = buildLeftGUI();
+
 
 		textConsole.setPrefColumnCount(100);
 		textConsole.setPrefRowCount(10);
 		textConsole.setWrapText(true);
-		textConsole.setPrefWidth(canvasWidth);
+		textConsole.setPrefWidth(leftCanvasWidth);
 		textConsole.setPrefHeight(height * 0.332);
+		textConsole.setUserData("TextConsole");
 
-		GridPane rightLowPanel = new GridPane();
+//		GridPane rightLowPanel = new GridPane();
 
-		gc = leftCanvas.getGraphicsContext2D();
+		GraphicsContext gc = leftCanvas.getGraphicsContext2D();
 		drawShapes(gc);
 
 		//Add elems to the gridPane
 		gridPane.add(leftCanvas, 0, 0);
 		gridPane.add(textConsole, 0, 1);
-		gridPane.add(rightCanvas, 1, 0);
+		gridPane.add(leftGUIGridPane, 1, 0);
 		gridPane.add(buttonPanel, 1, 1);
-	    Scene scene =  new Scene(gridPane,width,height);
 
-	    scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
+		Scene scene =  new Scene(gridPane,width,height);
 
+	    textConsole.setOnKeyReleased(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
-				handleKeyEvent(event);
-
+				handleConsoleKeyEvent(event);
 			}
 		});
 
@@ -104,25 +107,88 @@ public class UI extends Application {
 	    slave.setUI(this);
 	    Console console = new Console(getConsoleTextArea(),slave);
 		slave.setConsole(console);
-
 	    PrintStream ps = new PrintStream(console, true);
+
 	    System.setOut(ps);
 	    System.setErr(ps);
 
-	    primaryStage.setTitle("Bing");
+	    primaryStage.setTitle("MSNSearch");
 	    primaryStage.setScene(scene);
 	    primaryStage.show();
 	}
 
+	int stringsToDefine;
+	int stringsNumber;
+	String saveFileName = " ";
+	private GridPane buildLeftGUI() {
+		GridPane GPane = new GridPane();
+
+		//Input a name
+		Label nameLabel = new Label("File Name: ");
+		nameLabel.setFont(new Font("FreeSans", 20));
+
+		TextField nameTextField =  new TextField();
+		nameTextField.setUserData("TextName");
+		nameTextField.setOnKeyReleased(new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				handleNameKeyEvent(event);}});
+
+		//Input the number of strings, this will notify the main pane that Strings still need to be defined
+		Label stringLabel = new Label("Input Number of Strings: ");
+		stringLabel.setFont(new Font("FreeSans", 20));
+
+		TextField stringsTextField = new TextField();
+		stringsTextField.setUserData("TextString");
+		stringsTextField.setOnKeyReleased(new EventHandler<KeyEvent>(){
+			@Override
+			public void handle(KeyEvent event) {
+				handleNameKeyEvent(event);}});
+
+		//Add all above elems to the GridPane
+		GPane.add(nameLabel, 0, 0);
+		GPane.add(nameTextField, 1, 0);
+		GPane.add(stringLabel, 0, 1);
+		GPane.add(stringsTextField,1,1);
+
+
+//		canvas.
+		/*
+		 * name
+		 * strings
+		 * octaves to shift
+		 * preposition
+		 * solver
+		 */
+		return GPane;
+	}
+
+	protected void handleNameKeyEvent(KeyEvent event) {
+		// Get the source of the event (Object) cast to TextArea get the userdata, cast it to String and check if the name is valid for this method
+		String checkName = (
+								(
+									(String)(
+										(TextField)event.getSource()
+									).getUserData()
+								)
+							);
+		if(checkName.equals("TextString"))
+		switch (event.getCode() +"") {
+		case "ENTER":
+			stringsNumber = stringsToDefine = Integer.parseInt(((TextField) event.getSource()).getText());
+			break;
+
+		default:
+			break;
+		}
+	}
 
 	protected void solve() {
 		slave.solve();
-
 	}
 
 	protected void playerStop() {
 		slave.playerStop();
-
 	}
 
 	protected void play() {
@@ -152,7 +218,7 @@ public class UI extends Application {
 		loadBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
 			//call to setCurrMIDI
 			@Override
-			public void handle(ActionEvent event){setCurMIDI();}});
+			public void handle(ActionEvent event){setCurrentMIDI();}});
 
 		Button saveBtn = new Button();//The Save Button
 		saveBtn.setText("Save");
@@ -160,15 +226,10 @@ public class UI extends Application {
 		saveBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
 			//call to saveCurMIDI
 			@Override
-			public void handle(ActionEvent event){saveCurMIDI();}});
+			public void handle(ActionEvent event){save();}});
 
 		Button TsaveBtn = new Button();//The Save Button
 		TsaveBtn.setText("TSave");
-
-		TsaveBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
-			//call to saveCurMIDI
-			@Override
-			public void handle(ActionEvent event){testSave();}});
 
 		Button solveBtn = new Button();//The Solve Button
 		solveBtn.setText("Solve");
@@ -178,10 +239,9 @@ public class UI extends Application {
 			@Override
 			public void handle(ActionEvent event) {solve();}});
 
-
 		FlowPane buttonPanel =  new FlowPane();
 		buttonPanel.setPadding(new Insets(3, 0, 0, 3));
-		buttonPanel.getChildren().addAll( playBtn, stpBtn, loadBtn, saveBtn, TsaveBtn, solveBtn);
+		buttonPanel.getChildren().addAll( playBtn, stpBtn, saveBtn, loadBtn, solveBtn);
 
 		return buttonPanel;
 	}
@@ -189,48 +249,40 @@ public class UI extends Application {
 	private void drawShapes(GraphicsContext gc) {
 			Random rand =  new Random();
 
-            gc.setFill(Color.color(rand.nextDouble(), rand.nextDouble(), rand.nextDouble()));
+			gc.setFill(Color.color(rand.nextDouble(), rand.nextDouble(), rand.nextDouble()));
             gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
 
-//            gc.setFill(Color.GREEN);
-//            gc.setStroke(Color.BLUE);
-//            gc.setLineWidth(5);
-//            gc.strokeLine(40, 10, 10, 40);
-//            gc.fillOval(10, 60, 30, 30);
-//            gc.strokeOval(60, 60, 30, 30);
-//            gc.fillRoundRect(110, 60, 30, 30, 10, 10);
-//            gc.strokeRoundRect(160, 60, 30, 30, 10, 10);
-//            gc.fillArc(10, 110, 30, 30, 45, 240, ArcType.OPEN);
-//            gc.fillArc(60, 110, 30, 30, 45, 240, ArcType.CHORD);
-//            gc.fillArc(110, 110, 30, 30, 45, 240, ArcType.ROUND);
-//            gc.strokeArc(10, 160, 30, 30, 45, 240, ArcType.OPEN);
-//            gc.strokeArc(60, 160, 30, 30, 45, 240, ArcType.CHORD);
-//            gc.strokeArc(110, 160, 30, 30, 45, 240, ArcType.ROUND);
-//            gc.fillPolygon(new double[]{10, 40, 10, 40},
-//                             new double[]{210, 210, 240, 240}, 4);
-//            gc.strokePolygon(new double[]{60, 90, 60, 90},
-//                               new double[]{210, 210, 240, 240}, 4);
-//            gc.strokePolyline(new double[]{110, 140, 110, 140},
-//                                new double[]{210, 210, 240, 240}, 4);
+            gc.setFill(Color.GREEN);
+            gc.setStroke(Color.BLUE);
+            gc.setLineWidth(5);
+            gc.strokeLine(40, 10, 10, 40);
+            gc.fillOval(10, 60, 30, 30);
+            gc.strokeOval(60, 60, 30, 30);
+            gc.fillRoundRect(110, 60, 30, 30, 10, 10);
+            gc.strokeRoundRect(160, 60, 30, 30, 10, 10);
+            gc.fillArc(10, 110, 30, 30, 45, 240, ArcType.OPEN);
+            gc.fillArc(60, 110, 30, 30, 45, 240, ArcType.CHORD);
+            gc.fillArc(110, 110, 30, 30, 45, 240, ArcType.ROUND);
+            gc.strokeArc(10, 160, 30, 30, 45, 240, ArcType.OPEN);
+            gc.strokeArc(60, 160, 30, 30, 45, 240, ArcType.CHORD);
+            gc.strokeArc(110, 160, 30, 30, 45, 240, ArcType.ROUND);
+            gc.fillPolygon(new double[]{10, 40, 10, 40},
+                             new double[]{210, 210, 240, 240}, 4);
+            gc.strokePolygon(new double[]{60, 90, 60, 90},
+                               new double[]{210, 210, 240, 240}, 4);
+            gc.strokePolyline(new double[]{110, 140, 110, 140},
+                                new double[]{210, 210, 240, 240}, 4);
 	}
 
-	//--------------Button methods----------
 	File lastFileLocation;
+	private double leftCanvasWidth;
+
 	//Load a new Sequence
-	protected void setCurMIDI(){
+	protected void setCurrentMIDI(){
 		try {
-			FileChooser fiChoo =  new FileChooser();
-			fiChoo.setTitle("Select the MIDI File to be converted.");
-
-			//Assign the selected file to fi and convert it to a MIDI
-			if(lastFileLocation != null){
-				fiChoo.setInitialDirectory(lastFileLocation);
-			}
-
-			File fi = fiChoo.showOpenDialog(null);
+			File fi = fileChooser("Select a MIDI file to open");
 
 			if(fi != null){
-				lastFileLocation = fi.getCanonicalFile().getParentFile();
 				Slave.curMIDI = MidiSystem.getSequence(fi);
 			}
 
@@ -239,30 +291,65 @@ public class UI extends Application {
 		}
 	}
 
-	protected void saveCurMIDI(){
+	protected void save(){
 		try {
-			FileChooser fiChoo = new FileChooser();
-			fiChoo.setTitle("Select the location to save the file");
+			DirectoryChooser dirChoo = new DirectoryChooser();
+			dirChoo.setTitle("Select Save Location");
+
 			if(lastFileLocation != null){
-				fiChoo.setInitialDirectory(lastFileLocation);
+				dirChoo.setInitialDirectory(lastFileLocation);
 			}
-			File retrival = fiChoo.showSaveDialog(null);
-			if (retrival != null && Slave.curMIDI != null){
-			MidiSystem.write(Slave.curMIDI, 1, retrival);
+
+			File fi = dirChoo.showDialog(null);
+			if(fi != null){
+				lastFileLocation = fi.getCanonicalFile().getParentFile();
+				slave.save(fi);
 			}
-		}
-		catch (IOException e){
-			System.out.print("error saving the file");
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
-	protected void testSave(){
-		solver.tests.Sequence seq = (solver.tests.Sequence) Slave.curMIDI;
-		setCurMIDI();
-		if(seq.equals(Slave.curMIDI)){
-			System.out.print("It succeded");
+
+	private File fileChooser(String string) throws IOException, InvalidMidiDataException {
+		FileChooser fiChoo = new FileChooser();
+		fiChoo.setTitle(string);
+		if(lastFileLocation != null){
+			fiChoo.setInitialDirectory(lastFileLocation);
 		}
+
+
+		File fi = fiChoo.showOpenDialog(null);
+
+		if(fi!= null){
+			lastFileLocation = fi.getCanonicalFile().getParentFile();
+		}
+		return fi;
 	}
+
+	@Override
+	public void stop(){
+		slave.playerStop();
+		slave.playerRelease();
+	}
+
+
+	public TextArea getConsoleTextArea(){
+		return textConsole;
+	}
+
+
+	private void handleConsoleKeyEvent(KeyEvent event){
+			switch (event.getCode() +"") { //added to the empty string for implicit conversion
+			case "ENTER":
+				slave.getConsole().read(textConsole.getText());
+	            break;
+
+			default:
+				break;
+			}
+	}
+
 
 	public static void main(String args[]){
 		if(args.length == 0){
@@ -277,31 +364,8 @@ public class UI extends Application {
 			Slave slave = new Slave();
 			Console console = new Console(slave);
 			slave.setConsole(console);
-
 		}
 	}
 
-	@Override
-	public void stop(){
-		slave.playerStop();
-		slave.playerRelease();
-	}
-
-
-
-	private void handleKeyEvent(KeyEvent event){
-		switch (event.getCode() +"") { //added to the empty string for implicit conversion
-		case "ENTER":
-			slave.getConsole().Parse(textConsole.getText());
-            break;
-
-		default:
-			break;
-		}
-	}
-
-	public TextArea getConsoleTextArea(){
-		return textConsole;
-	}
 
 }

@@ -3,12 +3,16 @@ package ui;
 import helperCode.OctaveShifter;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Scanner;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
+import solver.MekString;
 import solver.GreedySolver;
 import solver.Solver;
 import solver.TrackSplitter;
@@ -20,6 +24,10 @@ public class Slave {
 	private UI ui;
 	private Console console;
 	private boolean guiMode;
+
+	private static String name = "";
+	private static long preposition;
+	private static MekString[] setOfStrings;
 
 	public Slave() throws IllegalArgumentException {
 
@@ -50,11 +58,11 @@ public class Slave {
 	}
 
 	protected void play() {
-		if (curMIDI != null)
-			Player.play(curMIDI);
+		if (curMIDI != null) Player.play(curMIDI);
 	}
 
 	protected void solve() {
+
 		if (curMIDI != null)
 			try {
 				Solver greedy = new GreedySolver();
@@ -67,13 +75,23 @@ public class Slave {
 				//call appropriate method
 			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
-			}
+		}
 	}
 
 	protected static void save(String fileName) {
 		if (curMIDI != null) {
 			try {
 				MidiSystem.write(curMIDI, 1, new File(fileName));
+			} catch (IOException e) {
+				System.out.println("Could not save file");
+			}
+		}
+	}
+
+	protected static void save(File fileName) {
+		if (curMIDI != null) {
+			try {
+				MidiSystem.write(curMIDI, 1, fileName);
 			} catch (IOException e) {
 				System.out.println("Could not save file");
 			}
@@ -107,6 +125,71 @@ public class Slave {
 	}
 
 	public static void main(String args[]) {
+
+	}
+
+	public static void setSettings(String n, long prepTime, long prepSize,MekString[] strings){
+		name = n;
+		setOfStrings = strings;
+		preposition = prepTime;
+	}
+
+
+	public static boolean parse(File fi){
+		try {
+			Scanner sc =  new Scanner(fi);
+
+			sc.next();
+			sc.next();
+			name = sc.next();
+			sc.next();
+			sc.next();
+			preposition = sc.nextLong();
+			sc.next();
+			sc.next();
+			setOfStrings = new MekString[sc.nextInt()];
+			for(int i = 0; i <= setOfStrings.length; i++){
+				sc.next();
+				sc.next();
+				int low = sc.nextInt();
+				sc.next();
+				sc.next();
+				int high =  sc.nextInt();
+				long[] time = new long[(high - low)];
+				for(int j = 0; j < time.length; j++){
+					time[j] = sc.nextLong();
+				}
+				setOfStrings[i] = new MekString(low, high, time);
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			return false;
+		}
+
+		return true;
+	}
+
+	public static void saveConfig(File fi){
+		try {
+			PrintStream ps = new PrintStream(fi);
+
+			ps.println("Name = " + name);
+			ps.println("Preposition = " + preposition);
+			ps.println("Strings = " + setOfStrings.length);
+			for(int i  = 0; i < setOfStrings.length; i++){
+				ps.println("LowNote = " + setOfStrings[i].lowNote);
+				ps.println("HighNote = " + setOfStrings[i].highNote);
+				String output = "";
+				for(int j = 0; j < setOfStrings[i].interval.length;j++){
+
+					output += setOfStrings[i].interval[j] + ", ";
+				}
+				ps.println(output);
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
