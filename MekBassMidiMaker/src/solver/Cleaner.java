@@ -189,7 +189,7 @@ public class Cleaner {
 												}
 											}
 											else{
-												//for some reason adding these on the same line ends up with the wrong note off timing.
+												//for some reason adding these on the same line ends up with the wrong note off tim
 												long time = cur.get(j).getTick();
 												time -= strings[i-1].difference(note1, note2);
 												time -= preTime;
@@ -214,7 +214,7 @@ public class Cleaner {
 							else if(prevIndex == 0){
 								try {
 									cur.add(new MidiEvent(new ShortMessage(NOTE_ON,0,noteOn.getData1(),1) , 0));
-									cur.add(new MidiEvent(new ShortMessage(NOTE_OFF,0,noteOn.getData1(),0) , 14));
+									cur.add(new MidiEvent(new ShortMessage(NOTE_OFF,0,noteOn.getData1(),0) , length));
 								} catch (ArrayIndexOutOfBoundsException e) {
 									e.printStackTrace();
 								} catch (InvalidMidiDataException e) {
@@ -231,78 +231,99 @@ public class Cleaner {
 	}
 
 	/**
-	 * Finds the next MidiEvent after a specific tick with a specific command.
-	 * This method assumes there is one to find, and returns null if not.
+	 * Finds the index of the MidiEvent before a specific tick with a specific command.
+	 * This method assumes there is one to find, and returns 0 if not.
 	 * @param tr
 	 * @param tick
 	 * @param Command
 	 * @return
 	 */
-	public static MidiEvent findEvent(Track tr, long tick, int Command){
-		MidiEvent evnt = null;
+	public static int findEvent(Track tr, long tick, int Command){
+		int curIndex = 0;
 		for(int i = 0; i < tr.size(); i++){
 			MidiEvent cur = tr.get(i);
-			if(cur.getTick()>tick){
-				if(cur.getMessage() instanceof ShortMessage){
-					ShortMessage msg = (ShortMessage) cur.getMessage();
-					if(msg.getCommand() == Command){
-						evnt = cur;
-					}
+			if(cur.getMessage() instanceof ShortMessage){
+				ShortMessage msg = (ShortMessage) cur.getMessage();
+				if(msg.getCommand() == Command){
+					if(cur.getTick() < tick) curIndex = i;
 				}
 			}
 		}
-		return evnt;
+		return curIndex;
 	}
 	
 	
-	public static List<NoteConflict> nextConflict(Sequence seq, long tick, MekString[] strings){
-		MidiEvent droppedOn = findEvent(seq.getTracks()[0], tick, NOTE_ON);
-		MidiEvent droppedOff = findEvent(seq.getTracks()[0], droppedOn.getTick(), NOTE_OFF);
-		List<NoteConflict> conflicts = new ArrayList<NoteConflict>();
+	public static List<Conflict> getConflicts(Sequence seq, MekString[] strings){
 		Track dropTrack = seq.getTracks()[0];
-		for(int i = 1; i < seq.getTracks().length; i++){
-			MidiEvent playedOn = null;
-			MidiEvent playedOff = null;
-			for(int j = 0; j < seq.getTracks()[i].size(); j++ ){
-				if(seq.getTracks()[i].get(j).getMessage() instanceof ShortMessage){
-					ShortMessage shrt = (ShortMessage) seq.getTracks()[i].get(j).getMessage();
-					if(shrt.getCommand() == NOTE_OFF){
-						ShortMessage sh = (ShortMessage) droppedOn.getMessage();
-						if(strings[i].conflicting(sh.getData1(), shrt.getData1(), seq.getTracks()[i].get(j).getTick() - droppedOn.getTick())){
-							//there is a conflict, add it to list
-							playedOff = seq.getTracks()[i].get(j);
-							playedOn = seq.getTracks()[i].get(getPrev(j,seq.getTracks()[i],NOTE_ON));
-//							conflicts.add(new NoteConflict(droppedOn, droppedOff, playedOn, playedOff, i));
+		List<Conflict> conflicts = new ArrayList<Conflict>();
+		//For each note in the dropped note track
+		for(int i = 0; i < dropTrack.size(); i++){
+			MidiEvent current = dropTrack.get(i);
+			if(current.getMessage() instanceof ShortMessage){
+				ShortMessage note = (ShortMessage) current.getMessage();
+				if(note.getCommand() == NOTE_ON){
+					Conflict con = new Conflict(current);
+					//if there is a note on add it and all related events to a list
+					ArrayList<MidiEvent> dropped = new ArrayList<MidiEvent>();
+					dropped.add(current);
+					addEvents:
+					for(int j = i+1; j < dropTrack.size(); j++){
+						//add every event on the same channel that relates to the first note
+						MidiEvent next = dropTrack.get(j);
+						if(next.getMessage() instanceof ShortMessage){
+							ShortMessage nextNote = (ShortMessage) next.getMessage();
+							if(nextNote.getData1() == note.getData1() && nextNote.getChannel() == note.getChannel()){
+								dropped.add(next);
+								if(nextNote.getCommand() == NOTE_OFF){
+									break addEvents;
+								}
+							}
+						}
+					}
+					for(int k = 1; k < strings.length; k++){
+						Track track = seq.getTracks()[k];
+						//look for conficts on each string that can play the note.
+						if(strings[k-1].playable(note.getData1())){
+							//this adds all related events of the note before the conflicting note to a list
+							int conflictIndex = findEvent(track, current.getTick(), NOTE_ON);
+							ShortMessage conflict1 = (ShortMessage) track.get(conflictIndex).getMessage();
+							List<MidiEvent> play1 = new ArrayList<MidiEvent>();
+							addConf1:
+							for(int j = conflictIndex; j < seq.getTracks()[k].size(); j++){
+								MidiEvent next = track.get(j);
+								if(next.getMessage() instanceof ShortMessage){
+									ShortMessage nextMessage = (ShortMessage) next.getMessage();
+									if(nextMessage.getData1() == conflict1.getData1() && nextMessage.getChannel() == conflict1.getChannel()){
+										play1.add(next);
+										if(nextMessage.getCommand() == NOTE_OFF){
+											conflictIndex = j;
+											break addConf1;
+										}
+									}
+								}
+							}
+							List<MidiEvent> play2 = new ArrayList<MidiEvent>();
+							addConf2:
+							for(int j = conflictIndex; j < seq.getTracks()[k].size(); j++){
+								MidiEvent next = track.get(j);
+								if(next.getMessage() instanceof ShortMessage){
+									ShortMessage nextMessage = (ShortMessage) next.getMessage();
+									if(nextMessage.getData1() == conflict1.getData1() && nextMessage.getChannel() == conflict1.getChannel()){
+										play2.add(next);
+										if(nextMessage.getCommand() == NOTE_OFF){
+											break addConf2;
+										}
+									}
+								}
+							}
+							//add the note notes to the conflict
+							NoteConflict conflict = new NoteConflict(dropped, play1, play2, track, dropTrack, k-1);
+							con.addConf(conflict, k-1);
 						}
 					}
 				}
 			}
 		}
 		return conflicts;
-	}
-	
-	/**
-	 * delayNote should be used if a note conflict occurs and the user wishes to delay the note
-	 *
-	 * @param seq: The squence the note is in.
-	 * @param str: The string the note is currently on.
-	 * @param event: The MidiEvent representing the note
-	 * @param delay: The amount to delay the note (s^-6)
-	 */
-	public static void delayNote(Sequence seq, MekString str, int event, long delay){
-
-	}
-	
-	/**
-	 * dropNote should be used if a note conflict occurs and the user wishes to drop the note.
-	 * The note will note be played.
-	 *
-	 * @param seq: The squence the note is in.
-	 * @param str: The string the note is currently on.
-	 * @param event: The MidiEvent representing the note
-	 * @param delay: The amount to delay the note (s^-6)
-	 */
-	public static void dropNote(Sequence seq, MekString str, int event){
-
 	}
 }
