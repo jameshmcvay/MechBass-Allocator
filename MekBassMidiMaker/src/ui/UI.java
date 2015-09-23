@@ -4,12 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -49,6 +52,8 @@ public class UI extends Application{
 
 	Slave slave;
 	TextArea textConsole = null; //the console
+	Simulation sim;
+	Timer timer;
 
 	//Contains launches the application, for all intents and purposes, this is the contructor
 	@Override
@@ -118,13 +123,32 @@ public class UI extends Application{
 	    Console console = new Console(getConsoleTextArea(),slave);
 		slave.setConsole(console);
 
-//	    PrintStream ps = new PrintStream(console, true);
-//	    System.setOut(ps);
-//	    System.setErr(ps);
+	    PrintStream ps = new PrintStream(console, true);
+	    System.setOut(ps);
+	    System.setErr(ps);
 
 	    primaryStage.setTitle("Blackle");
 	    primaryStage.setScene(scene);
 	    primaryStage.show();
+
+	    sim = new Simulation();
+
+	 // set a run loop
+	    timer = new java.util.Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
+		    public void run() {
+		         Platform.runLater(new Runnable() {
+		            public void run() {
+//		                label.update();
+//		                javafxcomponent.doSomething();
+//		            	System.out.println("test");
+		            	sim.draw(leftCanvas.getGraphicsContext2D(), 1);
+
+//		            	sim.addDrawStartTime(14);
+		            }
+		        });
+		    }
+		}, 50, 50);
 	}
 
 
@@ -492,6 +516,7 @@ public class UI extends Application{
 
 			if(fi != null){
 				slave.setSequence(MidiSystem.getSequence(fi));
+				sim.setSequence(slave.getSequence());
 			}
 
 		} catch (InvalidMidiDataException | IOException e) {
@@ -539,6 +564,7 @@ public class UI extends Application{
 	public void stop(){
 		slave.playerStop();
 		slave.playerRelease();
+		timer.cancel();
 	}
 
 
