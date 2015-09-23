@@ -115,12 +115,12 @@ public class Console extends OutputStream {
 			output("Input the prepositioning timing");
 			break;
 		case 1:
-			prepTime =(long) Integer.parseInt(text);
+			prepTime = (long) Integer.parseInt(text);
 			output("input the prepositioning length");
 			state++;
 			break;
 		case 2:
-			prepSize =(long) Integer.parseInt(text);
+			prepSize = (long) Integer.parseInt(text);
 			output("input the number of strings");
 			state++;
 			break;
@@ -139,7 +139,7 @@ public class Console extends OutputStream {
 		case 5:
 			highNote = Integer.parseInt(text);
 			output("Please input the timing between note " + lowNote + " and "
-					+ (lowNote +1) + " on string " + curString);
+					+ (lowNote + 1) + " on string " + curString);
 			state++;
 			timing = new long[highNote - lowNote];
 			i = 0;
@@ -148,21 +148,21 @@ public class Console extends OutputStream {
 			if (i < timing.length - 1) {
 				timing[i] = Long.parseLong(text);
 				i++;
-				output("Please input the timing between note " + (lowNote+i) + " and "
-						+ (lowNote+i+1) + " on string " + curString);
+				output("Please input the timing between note " + (lowNote + i)
+						+ " and " + (lowNote + i + 1) + " on string "
+						+ curString);
 			} else {
 				timing[i] = Long.parseLong(text);
-				string = new MekString(lowNote,highNote,timing);
-				strings[curString-1]=string;
+				string = new MekString(lowNote, highNote, timing);
+				strings[curString - 1] = string;
 				if (curString < numStrings) {
 					curString++;
 					output("Please input the lowest note of string "
 							+ curString);
-					state=4;
-				}
-				else{
-					state =0;
-					setup=false;
+					state = 4;
+				} else {
+					state = 0;
+					setup = false;
 					Slave.setSettings(setupName, prepTime, prepSize, strings);
 					output("Setup complete");
 				}
@@ -185,6 +185,12 @@ public class Console extends OutputStream {
 		case "open":
 			if (input.length > 1)
 				open(rawInput);
+			else
+				output("no file specified");
+			break;
+		case "openConfig":
+			if (input.length > 1)
+				openConfig(rawInput);
 			else
 				output("no file specified");
 			break;
@@ -212,9 +218,18 @@ public class Console extends OutputStream {
 			} else
 				this.save();
 			break;
+		case "saveConfig":
+			if (input.length > 1) {
+				this.saveConfig(rawInput);
+			} else
+				this.saveConfig();
+			break;
 		case "setup":
-			setup=true;
+			setup = true;
 			output("input the name of the setup");
+			break;
+		case "config":
+			Slave.getConfig();
 			break;
 		case "END":
 			System.exit(0);
@@ -222,7 +237,7 @@ public class Console extends OutputStream {
 			output("Command not recongnized");
 		}
 		prevCommand = commandStack;
-		//allText = area.getText();
+		// allText = area.getText();
 	}
 
 	/**
@@ -243,6 +258,26 @@ public class Console extends OutputStream {
 	protected void open(String input) {
 		String FileName = input.substring(4).replace("\"", "").trim();
 		Slave.setCurMIDI(FileName);
+	}
+
+	protected void openConfig(String input) {
+		String FileName = input.substring(10).replace("\"", "").trim();
+		File fi = new File(FileName);
+		if (fi != null) {
+			Slave.parse(fi);
+		}
+	}
+
+	protected void saveConfig() {
+		output("saving config as \"default.csv\" in the current directory");
+		File fi = new File("default.csv");
+		Slave.saveConfig(fi);
+	}
+
+	protected void saveConfig(String input) {
+		String fileName = input.substring(10).replace("\"", "").trim();
+		File fi = new File(fileName);
+		Slave.saveConfig(fi);
 	}
 
 	protected void save(String input) {
