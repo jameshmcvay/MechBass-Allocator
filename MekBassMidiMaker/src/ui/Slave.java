@@ -6,12 +6,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
+import solver.Cleaner;
+import solver.Conflict;
 import solver.MekString;
 import solver.GreedySolver;
 import solver.Solver;
@@ -30,6 +33,8 @@ public class Slave {
 	private static long prepositionDelay;
 	private static MekString[] setOfStrings;
 	private static int bassTrack = 2;
+
+	private static List<Conflict> setOfConflicts;
 
 	public Slave() throws IllegalArgumentException {
 
@@ -98,6 +103,7 @@ public class Slave {
 				Solver greedy = new GreedySolver();
 				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
+				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
 				//while(hasConflicts()){
 				//get conflict
 				//serve users valid choices
@@ -158,6 +164,14 @@ public class Slave {
 
 	}
 
+	public static void setSettings(String n, long prepTime, long prepSize,MekString[] strings){
+		name = n;
+		setOfStrings = strings;
+		prepositionLength = prepSize;
+		prepositionDelay = prepTime;
+	}
+
+
 	public static boolean parse(File fi){
 		try {
 			Scanner sc =  new Scanner(fi);
@@ -174,7 +188,7 @@ public class Slave {
 			sc.next();
 			sc.next();
 			setOfStrings = new MekString[sc.nextInt()];
-			for(int i = 0; i <= setOfStrings.length; i++){
+			for(int i = 0; i < setOfStrings.length; i++){
 				sc.next();
 				sc.next();
 				int low = sc.nextInt();
@@ -182,8 +196,10 @@ public class Slave {
 				sc.next();
 				int high =  sc.nextInt();
 				long[] time = new long[(high - low)];
-				for(int j = 0; j < time.length; j++){
-					time[j] = sc.nextLong();
+				sc.nextLine();
+				String[] values = sc.nextLine().split(",");
+				for(int j = 0; j < values.length-1; j++){
+					time[j] = Long.parseLong(values[j].trim());
 				}
 				setOfStrings[i] = new MekString(low, high, time);
 			}
@@ -218,6 +234,23 @@ public class Slave {
 			e.printStackTrace();
 		}
 
+	}
+
+	public static void getConfig(){
+		System.out.println("Name = " + name);
+		System.out.println("PrepositionLength = " + prepositionLength);
+		System.out.println("PrepositionDelay = "  + prepositionDelay );
+		System.out.println("Strings = " + setOfStrings.length);
+		for(int i  = 0; i < setOfStrings.length; i++){
+			System.out.println("LowNote = " + setOfStrings[i].lowNote);
+			System.out.println("HighNote = " + setOfStrings[i].highNote);
+			String output = "";
+			for(int j = 0; j < setOfStrings[i].interval.length;j++){
+
+				output += setOfStrings[i].interval[j] + ",";
+			}
+			System.out.println(output);
+		}
 	}
 
 }

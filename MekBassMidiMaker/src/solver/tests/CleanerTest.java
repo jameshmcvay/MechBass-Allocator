@@ -98,6 +98,19 @@ public class CleanerTest {
 		assertTrue(str.difference(1,3) == 300);
 	}
 	
+	@Test
+	public void playableFalse(){
+		MekString str = new MekString(1,2,new long[]{100});
+		assertTrue(str.playable(4) == false);
+	}
+	
+	@Test
+	public void playableTrue(){
+		MekString str = new MekString(1,2,new long[]{100});
+		assertTrue(str.playable(1) == true);
+	}
+	
+	
 	//-------------------------------------------------------------------------------
 	//---------Tests for Cleaner.clean-----------------------------------------------
 	//-------------------------------------------------------------------------------
@@ -241,4 +254,54 @@ public class CleanerTest {
 		}
 	}
 	
+	//--------------------------------------------------------------------------------------
+	//---------------------Tests for conflict list building --------------------------------
+	//-------------------------------------------------------------------------------------
+	
+	@Test
+	public void conflictBuildNoEvents(){
+		try {
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,2);
+			seq.getTracks()[1].add(CleanerTest.makeNote(1,100));
+			seq.getTracks()[1].add(CleanerTest.makeNoteOff(1,200));
+			assertTrue(Cleaner.getConflicts(seq, new MekString[]{new MekString(1,2,new long[]{100})}).isEmpty());
+		} catch (InvalidMidiDataException e) {
+			fail("this shouldn't happen");
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void conflictBuildOneEventMakesObject(){
+		try {
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,2);
+			seq.getTracks()[1].add(CleanerTest.makeNote(1,100));
+			seq.getTracks()[1].add(CleanerTest.makeNoteOff(1,200));
+			seq.getTracks()[0].add(CleanerTest.makeNote(1,150));
+			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,250));
+			//System.out.println(Cleaner.getConflicts(seq, new MekString[]{new MekString(1,2,new long[]{100})}).size());
+			assertTrue(Cleaner.getConflicts(seq, new MekString[]{new MekString(1,2,new long[]{100})}).size() == 1);
+		} catch (InvalidMidiDataException e) {
+			fail("this shouldn't happen");
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void conflictBuildOneEventTwoStrings(){
+		try {
+			solver.tests.Sequence seq = new solver.tests.Sequence(PPQ,1,3);
+			seq.getTracks()[1].add(CleanerTest.makeNote(1,100));
+			seq.getTracks()[1].add(CleanerTest.makeNoteOff(1,200));
+			seq.getTracks()[2].add(CleanerTest.makeNote(1,100));
+			seq.getTracks()[2].add(CleanerTest.makeNoteOff(1,200));
+			seq.getTracks()[0].add(CleanerTest.makeNote(1,150));
+			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,250));
+			//System.out.println(Cleaner.getConflicts(seq, new MekString[]{new MekString(1,2,new long[]{100})}).size());
+			assertTrue(Cleaner.getConflicts(seq, new MekString[]{new MekString(1,2,new long[]{100}),new MekString(1,2,new long[]{100})}).get(0).strings() == 2);
+		} catch (InvalidMidiDataException e) {
+			fail("this shouldn't happen");
+			e.printStackTrace();
+		}
+	}
 }

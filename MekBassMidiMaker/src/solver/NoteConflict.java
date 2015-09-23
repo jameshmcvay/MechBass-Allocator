@@ -1,29 +1,24 @@
 package solver;
 
-import java.util.ArrayList;
 import java.util.List;
-
 import javax.sound.midi.MidiEvent;
-import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Track;
 
 /**
  * 
- * @author Andrew
+ * @author Andrew Palmer
  *
  */
 public class NoteConflict{
-	private MidiEvent playedOn; //This should always be the earlier of the two
-	private MidiEvent playedOff;
-	private MidiEvent droppedOn; //this should be the later of the two
-	private MidiEvent droppedOff;
+	private List<MidiEvent> played1; //This should always be the earliest of the three
+	private List<MidiEvent> played2; //This should always be the earliest of the three
+	private List<MidiEvent> dropped; //this should be the later of the two
 	private Track workingTrack;
 	private Track dropTrack;
 	private int string;
 	
-	public NoteConflict(MidiEvent dOn, MidiEvent dOff, MidiEvent pOn, MidiEvent pOff, Track w , Track d , int str){
-		droppedOn = dOn; droppedOff = dOff;
-		playedOn = pOn; playedOff = pOff;
+	public NoteConflict(List<MidiEvent> drop,List<MidiEvent> play1,List<MidiEvent> play2, Track w , Track d , int str){
+		dropped = drop;	played1 = play1; played2 = play2;
 		workingTrack = w; dropTrack = d;
 		string = str;
 	}
@@ -33,7 +28,7 @@ public class NoteConflict{
 	 * @return
 	 */
 	public long difference(int string){
-		return droppedOn.getTick() - playedOff.getTick();
+		return dropped.get(0).getTick() - played1.get(played1.size()-1).getTick();
 	}
 	
 	/**
@@ -41,7 +36,7 @@ public class NoteConflict{
 	 * @return
 	 */
 	public long tick(){
-		return playedOn.getTick();
+		return played1.get(0).getTick();
 	}
 	
 	/**
@@ -55,27 +50,71 @@ public class NoteConflict{
 	 * This drops the first note of the conflict
 	 */
 	public void dropFirst(){
-		
+		//swap the tracks the notes are on
+		drop1();
+		play();
 	}
 	
 	/**
 	 * this drops the second note of the conflict
 	 */
-	public void dropSecond(){
-		
+	public void dropLast(){
+		drop2();
+		play();
 	}
 	
 	/**
 	 * this makes the first note shorter such that the second can be played
 	 */
-	public void delayFirstEnd(){
-		
+	public void delayFirstEnd(long time){
+		//move played off back
+		long cur = played1.get(played1.size()-1).getTick();
+		played1.get(played1.size()-1).setTick(cur - time);
+		//add dropped note back in
+		play();
 	}
 	
 	/**
 	 * this delays the start of the second note such that it can be played
 	 */
-	public void delaySecondStart(){
-		
+	public void delaySecondStart(long time){
+		//move dropped on forward
+		long cur = dropped.get(0).getTick();
+		dropped.get(0).setTick(cur + time);
+		//add dropped note back in
+		play();
+	}
+	
+	public boolean delayFirstPossible(long time){
+		return(played1.get(0).getTick() < played1.get(played1.size()-1).getTick() - time);
+	}
+	
+	public boolean delaySecondPossible(long time){
+		return(dropped.get(0).getTick() + time < dropped.get(dropped.size()-1).getTick());
+	}
+	
+	private void drop1(){
+		for(MidiEvent d: played1){
+			dropTrack.add(d);
+			workingTrack.remove(d);
+		}
+	}
+	
+	private void drop2(){
+		for(MidiEvent d: played2){
+			dropTrack.add(d);
+			workingTrack.remove(d);
+		}
+	}
+	
+	private void play(){
+		for(MidiEvent d: dropped){
+			workingTrack.add(d);
+			dropTrack.remove(d);
+		}
+	}
+	
+	public String toString(){
+		return "Conlict on string " + string + "\n"; 
 	}
 }
