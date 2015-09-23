@@ -103,7 +103,7 @@ public class MekString {
 	}
 	
 	public boolean playable(int i){
-		if(i>lowNote && i<highNote) return true;
+		if(i>=lowNote && i<=highNote) return true;
 		return false;
 	}
 }
