@@ -6,12 +6,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
+import solver.Cleaner;
+import solver.Conflict;
 import solver.MekString;
 import solver.GreedySolver;
 import solver.Solver;
@@ -28,6 +31,8 @@ public class Slave {
 	private static String name = "";
 	private static long preposition;
 	private static MekString[] setOfStrings;
+
+	private static List<Conflict> setOfConflicts;
 
 	public Slave() throws IllegalArgumentException {
 
@@ -68,6 +73,7 @@ public class Slave {
 				Solver greedy = new GreedySolver();
 				curMIDI = TrackSplitter.split(curMIDI, 4, 2);
 				curMIDI = greedy.solve(curMIDI);
+				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
 				//while(hasConflicts()){
 				//get conflict
 				//serve users valid choices
