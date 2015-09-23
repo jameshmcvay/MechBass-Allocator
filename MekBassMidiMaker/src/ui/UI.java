@@ -1,16 +1,17 @@
 package ui;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Random;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
-
+import javax.sound.midi.Sequence;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -18,6 +19,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -107,12 +109,12 @@ public class UI extends Application{
 	    slave.setUI(this);
 	    Console console = new Console(getConsoleTextArea(),slave);
 		slave.setConsole(console);
-	    PrintStream ps = new PrintStream(console, true);
 
-	    System.setOut(ps);
-	    System.setErr(ps);
+//	    PrintStream ps = new PrintStream(console, true);
+//	    System.setOut(ps);
+//	    System.setErr(ps);
 
-	    primaryStage.setTitle("MSNSearch");
+	    primaryStage.setTitle("Blackle");
 	    primaryStage.setScene(scene);
 	    primaryStage.show();
 	}
@@ -120,23 +122,62 @@ public class UI extends Application{
 	int stringsToDefine;
 	int stringsNumber;
 	String saveFileName = " ";
+	ComboBox<Integer> BassTrackComboBox;
 	private GridPane buildLeftGUI() {
 		GridPane GPane = new GridPane();
 
-		//Input a name
-		Label nameLabel = new Label("File Name: ");
-		nameLabel.setFont(new Font("FreeSans", 20));
 
+		//---
+		//Default Font for text input
+		Font defaultFont = new Font("FreeSans", 20);
+		//---
+
+
+		//----------------------------------
+		//Define Name input entry
+		//
+		Label nameLabel = new Label("File Name: ");
+		nameLabel.setFont(defaultFont);
+		//
+		//The input Field (String Based)
 		TextField nameTextField =  new TextField();
-		nameTextField.setUserData("TextName");
 		nameTextField.setOnKeyReleased(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
 				handleNameKeyEvent(event);}});
+		//
+		//--------------------------------
+
+
+		//--------------------------------
+		//Define BassTrack selection entry
+		//
+		Label bassTrackLabel = new Label("Select Bass Track: ");
+		bassTrackLabel.setFont(defaultFont);
+		//TODO Add to GPane
+		//The inputfield, a combobox. Box is enumerated with an observableList with each of the tracks available
+		//If no file is loaded, only option is zero.
+		//Due to changable loaded files, the comboBox must be externalised.
+		BassTrackComboBox = new ComboBox<Integer>();
+		BassTrackComboBox.setItems(populateComboBox());
+		BassTrackComboBox.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				// TODO Auto-generated method stub
+				if(event.getSource() instanceof ComboBox){
+					Slave.setBassTrack(((ComboBox<Integer>) event.getSource()).getValue());
+				}
+			}
+		});
+		//
+		//--------------------------------
+
+
+
 
 		//Input the number of strings, this will notify the main pane that Strings still need to be defined
 		Label stringLabel = new Label("Input Number of Strings: ");
-		stringLabel.setFont(new Font("FreeSans", 20));
+		stringLabel.setFont(defaultFont);
 
 		TextField stringsTextField = new TextField();
 		stringsTextField.setUserData("TextString");
@@ -148,8 +189,11 @@ public class UI extends Application{
 		//Add all above elems to the GridPane
 		GPane.add(nameLabel, 0, 0);
 		GPane.add(nameTextField, 1, 0);
-		GPane.add(stringLabel, 0, 1);
-		GPane.add(stringsTextField,1,1);
+		GPane.add(bassTrackLabel,0,1);
+		GPane.add(BassTrackComboBox, 1, 1);
+		GPane.add(stringLabel, 0, 2);
+		GPane.add(stringsTextField,1,2);
+
 
 
 //		canvas.
@@ -163,24 +207,49 @@ public class UI extends Application{
 		return GPane;
 	}
 
-	protected void handleNameKeyEvent(KeyEvent event) {
-		// Get the source of the event (Object) cast to TextArea get the userdata, cast it to String and check if the name is valid for this method
-		String checkName = (
-								(
-									(String)(
-										(TextField)event.getSource()
-									).getUserData()
-								)
-							);
-		if(checkName.equals("TextString"))
-		switch (event.getCode() +"") {
-		case "ENTER":
-			stringsNumber = stringsToDefine = Integer.parseInt(((TextField) event.getSource()).getText());
-			break;
+	/**
+	 * Returns an Observable list of integers.
+	 * Integers are derived from the current loaded MIDI file. Range is 0 - number of tracks.
+	 * Forced externalisation of the population method for a combobox, due to the current MIDI being a changable property.
+	 *
+	 * @return
+	 */
+	private ObservableList<Integer> populateComboBox(){
+		ObservableList<Integer> options;
+		if(Slave.getSequence() != null){
 
-		default:
-			break;
+			options = FXCollections.observableArrayList();
+
+			for(int i = 0; i < Slave.getSequence().getTracks().length; i++){
+				options.add(i);
+			}
 		}
+		else{
+
+			options = FXCollections.observableArrayList(0);
+		}
+		return options;
+	}
+
+	protected void handleNameKeyEvent(KeyEvent event) {
+		//TODO
+//		// Get the source of the event (Object) cast to TextArea get the userdata, cast it to String and check if the name is valid for this method
+//		String checkName = (
+//								(
+//									(String)(
+//										(TextField)event.getSource()
+//									).getUserData()
+//								)
+//							);
+//		if(checkName.equals("TextString"))
+//		switch (event.getCode() +"") {
+//		case "ENTER":
+//			stringsNumber = stringsToDefine = Integer.parseInt(((TextField) event.getSource()).getText());
+//			break;
+//
+//		default:
+//			break;
+//		}
 	}
 
 	protected void solve() {
@@ -218,7 +287,12 @@ public class UI extends Application{
 		loadBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
 			//call to setCurrMIDI
 			@Override
-			public void handle(ActionEvent event){setCurrentMIDI();}});
+			public void handle(ActionEvent event){setCurrentMIDI();
+			//Remove and re-add the eventhandler, this is to avoid it being called upon changing the contents of the combobox
+			EventHandler<ActionEvent> temp = BassTrackComboBox.getOnAction();
+			BassTrackComboBox.setOnAction(null);
+			BassTrackComboBox.setItems(populateComboBox());
+			BassTrackComboBox.setOnAction(temp);}});
 
 		Button saveBtn = new Button();//The Save Button
 		saveBtn.setText("Save");
@@ -283,7 +357,7 @@ public class UI extends Application{
 			File fi = fileChooser("Select a MIDI file to open");
 
 			if(fi != null){
-				Slave.curMIDI = MidiSystem.getSequence(fi);
+				slave.setSequence(MidiSystem.getSequence(fi));
 			}
 
 		} catch (InvalidMidiDataException | IOException e) {
@@ -349,7 +423,6 @@ public class UI extends Application{
 				break;
 			}
 	}
-
 
 	public static void main(String args[]){
 		if(args.length == 0){

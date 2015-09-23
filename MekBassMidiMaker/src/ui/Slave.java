@@ -20,7 +20,7 @@ import tools.Player;
 
 public class Slave {
 
-	static Sequence curMIDI;
+	private static Sequence curMIDI;
 	private UI ui;
 	private Console console;
 	private boolean guiMode;
@@ -28,9 +28,18 @@ public class Slave {
 	private static String name = "";
 	private static long preposition;
 	private static MekString[] setOfStrings;
+	private static int bassTrack = 2;
 
 	public Slave() throws IllegalArgumentException {
 
+	}
+
+	public static Sequence getSequence(){
+		return curMIDI;
+	}
+
+	public static void setSequence(Sequence m){
+		curMIDI = m;
 	}
 
 	public Console getConsole() {
@@ -61,12 +70,16 @@ public class Slave {
 		if (curMIDI != null) Player.play(curMIDI);
 	}
 
+	public static void setBassTrack(int i){
+		bassTrack = i;
+	}
+
 	protected void solve() {
 
 		if (curMIDI != null)
 			try {
 				Solver greedy = new GreedySolver();
-				curMIDI = TrackSplitter.split(curMIDI, 4, 2);
+				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
 				//while(hasConflicts()){
 				//get conflict
