@@ -128,6 +128,13 @@ public class Slave {
 
 	}
 
+	public static void setSettings(String n, long prepTime, long prepSize,MekString[] strings){
+		name = n;
+		setOfStrings = strings;
+		preposition = prepTime;
+	}
+
+
 	public static boolean parse(File fi){
 		try {
 			Scanner sc =  new Scanner(fi);

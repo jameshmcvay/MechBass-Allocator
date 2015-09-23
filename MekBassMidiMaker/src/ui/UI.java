@@ -342,7 +342,7 @@ public class UI extends Application{
 	private void handleConsoleKeyEvent(KeyEvent event){
 			switch (event.getCode() +"") { //added to the empty string for implicit conversion
 			case "ENTER":
-				slave.getConsole().Parse(textConsole.getText());
+				slave.getConsole().read(textConsole.getText());
 	            break;
 
 			default:

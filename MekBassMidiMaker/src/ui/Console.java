@@ -14,6 +14,7 @@ import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
 import javafx.scene.control.TextArea;
+import solver.MekString;
 import solver.Solver;
 import solver.TrackSplitter;
 import tools.Player;
@@ -36,6 +37,20 @@ public class Console extends OutputStream {
 	Stack<String> commandStack = new Stack<String>();
 	String SelectedCommand;
 	String allText;
+
+	int state;
+	int curString;
+	int numStrings;
+	boolean setup = false;
+	solver.MekString string;
+	solver.MekString[] strings;
+	int lowNote;
+	int highNote;
+	long[] timing;
+	String setupName;
+	int i;
+	long prepTime;
+	long prepSize;
 
 	/**
 	 * Create a console using for use within the gui.
@@ -68,7 +83,7 @@ public class Console extends OutputStream {
 			try {
 				input = buf.readLine();
 				if (input != null) {
-					Parse(input);
+					read(input);
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -77,20 +92,92 @@ public class Console extends OutputStream {
 		} while (!input.equals("END"));
 	}
 
-	/**
-	 * Parse a block of input
-	 *
-	 * @param text
-	 *            The block of input
-	 */
-	protected void Parse(String text) {
-		if(text.equals("") || text == null || text.equals("\n")){
+	protected void read(String text) {
+		if (text.equals("") || text == null || text.equals("\n")) {
 			area.setText("No command input");
 			area.appendText("");
 			return;
 		}
 		String[] lines = text.split("\n");
 		String rawInput = lines[lines.length - 1].trim();
+		if (setup) {
+			setupParse(rawInput);
+		} else {
+			parse(rawInput);
+		}
+	}
+
+	protected void setupParse(String text) {
+		switch (state) {
+		case 0:
+			setupName = text;
+			state++;
+			output("Input the prepositioning timing");
+			break;
+		case 1:
+			prepTime =(long) Integer.parseInt(text);
+			output("input the prepositioning length");
+			state++;
+			break;
+		case 2:
+			prepSize =(long) Integer.parseInt(text);
+			output("input the number of strings");
+			state++;
+			break;
+		case 3:
+			curString = 1;
+			numStrings = Integer.parseInt(text);
+			output("Please input the lowest note of string " + curString);
+			strings = new solver.MekString[numStrings];
+			state++;
+			break;
+		case 4:
+			lowNote = Integer.parseInt(text);
+			output("Please input the highest note of string " + curString);
+			state++;
+			break;
+		case 5:
+			highNote = Integer.parseInt(text);
+			output("Please input the timing between note " + lowNote + " and "
+					+ (lowNote +1) + " on string " + curString);
+			state++;
+			timing = new long[highNote - lowNote];
+			i = 0;
+			break;
+		case 6:
+			if (i < timing.length - 1) {
+				timing[i] = Long.parseLong(text);
+				i++;
+				output("Please input the timing between note " + (lowNote+i) + " and "
+						+ (lowNote+i+1) + " on string " + curString);
+			} else {
+				timing[i] = Long.parseLong(text);
+				string = new MekString(lowNote,highNote,timing);
+				strings[curString-1]=string;
+				if (curString < numStrings) {
+					curString++;
+					output("Please input the lowest note of string "
+							+ curString);
+					state=4;
+				}
+				else{
+					state =0;
+					setup=false;
+					Slave.setSettings(setupName, prepTime, prepSize, strings);
+					output("Setup complete");
+				}
+			}
+			break;
+		}
+	}
+
+	/**
+	 * Parse a block of input
+	 *
+	 * @param text
+	 *            The block of input
+	 */
+	protected void parse(String rawInput) {
 		String[] input = rawInput.split("\\s+");
 		String command = input[0];
 		commandStack.push(rawInput);
@@ -125,13 +212,17 @@ public class Console extends OutputStream {
 			} else
 				this.save();
 			break;
+		case "setup":
+			setup=true;
+			output("input the name of the setup");
+			break;
 		case "END":
 			System.exit(0);
 		default:
 			output("Command not recongnized");
 		}
 		prevCommand = commandStack;
-		allText = area.getText();
+		//allText = area.getText();
 	}
 
 	/**
@@ -143,7 +234,7 @@ public class Console extends OutputStream {
 		return guiMode;
 	}
 
-	protected void prevCommand(){
+	protected void prevCommand() {
 		area.clear();
 		this.SelectedCommand = prevCommand.pop();
 		output(allText + SelectedCommand);
@@ -177,7 +268,7 @@ public class Console extends OutputStream {
 	 * @param text
 	 */
 	protected void output(String text) {
-		for (char c: text.toCharArray()){
+		for (char c : text.toCharArray()) {
 			try {
 				write((int) c);
 			} catch (IOException e) {
@@ -194,7 +285,9 @@ public class Console extends OutputStream {
 
 	@Override
 	public void write(int i) throws IOException {
-		if(guiMode) area.appendText(String.valueOf((char) i));
-		else System.out.write(i);
+		if (guiMode)
+			area.appendText(String.valueOf((char) i));
+		else
+			System.out.write(i);
 	}
 }
