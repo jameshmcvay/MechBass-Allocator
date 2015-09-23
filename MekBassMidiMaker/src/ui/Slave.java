@@ -148,7 +148,7 @@ public class Slave {
 			sc.next();
 			sc.next();
 			setOfStrings = new MekString[sc.nextInt()];
-			for(int i = 0; i <= setOfStrings.length; i++){
+			for(int i = 0; i < setOfStrings.length; i++){
 				sc.next();
 				sc.next();
 				int low = sc.nextInt();
@@ -156,8 +156,10 @@ public class Slave {
 				sc.next();
 				int high =  sc.nextInt();
 				long[] time = new long[(high - low)];
-				for(int j = 0; j < time.length; j++){
-					time[j] = sc.nextLong();
+				sc.nextLine();
+				String[] values = sc.nextLine().split(",");
+				for(int j = 0; j < values.length-1; j++){
+					time[j] = Long.parseLong(values[j].trim());
 				}
 				setOfStrings[i] = new MekString(low, high, time);
 			}
@@ -182,7 +184,7 @@ public class Slave {
 				String output = "";
 				for(int j = 0; j < setOfStrings[i].interval.length;j++){
 
-					output += setOfStrings[i].interval[j] + ", ";
+					output += setOfStrings[i].interval[j] + ",";
 				}
 				ps.println(output);
 			}
@@ -191,6 +193,22 @@ public class Slave {
 			e.printStackTrace();
 		}
 
+	}
+
+	public static void getConfig(){
+		System.out.println("Name = " + name);
+		System.out.println("Preposition = " + preposition);
+		System.out.println("Strings = " + setOfStrings.length);
+		for(int i  = 0; i < setOfStrings.length; i++){
+			System.out.println("LowNote = " + setOfStrings[i].lowNote);
+			System.out.println("HighNote = " + setOfStrings[i].highNote);
+			String output = "";
+			for(int j = 0; j < setOfStrings[i].interval.length;j++){
+
+				output += setOfStrings[i].interval[j] + ",";
+			}
+			System.out.println(output);
+		}
 	}
 
 }
