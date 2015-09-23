@@ -31,6 +31,7 @@ import javafx.scene.shape.ArcType;
 import javafx.scene.text.Font;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
@@ -40,8 +41,6 @@ import javafx.stage.Stage;
  *
  */
 public class UI extends Application{
-
-//	Sequence curMIDI;//the File we're currently modifying
 
 	//4:3 screen ratio
 	double width = 1200;
@@ -54,6 +53,15 @@ public class UI extends Application{
 	//Contains launches the application, for all intents and purposes, this is the contructor
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		//---------------------
+		//Popup window at the start
+		doPopUp();
+		//
+		//--------------------------
+
+
+
+
 		primaryStage.setResizable(false);
 		//-----Create the set of buttons to be added to the graphics pane-------
 		FlowPane buttonPanel = BuildButtons();
@@ -119,13 +127,139 @@ public class UI extends Application{
 	    primaryStage.show();
 	}
 
+
+	private void doPopUp(){
+
+		Stage stage = new Stage();
+		stage.initModality(Modality.APPLICATION_MODAL);
+		stage.setOpacity(1);
+		stage.setTitle("MIDIAllocator");
+		GridPane GPane = new GridPane();
+		stage.setScene(new Scene(GPane));
+			//#################
+			//Internal elems
+			Label openingLabel = new Label("Welcome to MIDIAllocator!");
+			//
+			//Button for creating a new configuration
+			Button newConfigBtn = new Button("New Configuration");
+			newConfigBtn.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event) {
+					doSetupWindow();}});
+			//
+			//Button for loading an existing config
+			Button loadConfigBtn = new Button("Load Configuration");
+			loadConfigBtn.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event) {
+					try {
+						File fi = fileChooser("Select a Configuration File");
+
+						if(fi != null){
+							Slave.parse(fi);
+							stage.close();
+						}
+					} catch (IOException | InvalidMidiDataException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();}}});
+			//
+			//################
+		GPane.add(openingLabel, 3, 0);
+		GPane.add(newConfigBtn,2,3);
+		GPane.add(loadConfigBtn,4,3);
+		stage.showAndWait();
+	}
+	Button setupNextBtn;
+	private int remainingStrings = 0;
+	private void doSetupWindow() {
+		Stage stage = new Stage();
+		stage.initModality(Modality.APPLICATION_MODAL);
+		stage.setOpacity(1);
+
+		GridPane gPane = new GridPane();
+		stage.setScene(new Scene(gPane));
+		//----------------------
+		//Name Label
+		Label nameLbl = new Label("Config Name: ");
+		//
+		//Name TextInput
+		TextField nameTxtFld =  new TextField();
+		//Assign to GPane
+		gPane.add(nameLbl, 1, 1);
+		gPane.add(nameTxtFld, 2, 1);
+		//
+		//-----------------------
+
+		//-----------------------
+		//Preposition Label
+		Label prepositionLabel =  new Label("Preposition Length: ");
+		//
+		//Preposition TextField
+		TextField prepositionTxtFld = new TextField();
+		//Assign the gPane
+		gPane.add(prepositionLabel, 1, 2);
+		gPane.add(prepositionTxtFld, 2, 2);
+		//
+		//----------------------
+
+		//----------------------
+		//Preposition delay
+		Label prepositionDelayLabel =  new Label("Preposition Delay: ");
+		//
+		//Preposition delay TextField
+		TextField PrepositionDelayTxtFld = new TextField();
+		//Assign to the gPane
+		gPane.add(prepositionDelayLabel, 1, 3);
+		gPane.add(PrepositionDelayTxtFld, 2, 3);
+		//
+		//----------------------
+
+		//----------------------
+		//Number of Strings
+		Label numberOfStringsLbl = new Label("Number of Strings: ");
+		//
+		//Number of strings textField
+		TextField numberOfStringsTxtFld =  new TextField();
+		//
+		//Add to gPane
+		gPane.add(numberOfStringsLbl, 1, 4);
+		gPane.add(numberOfStringsTxtFld,2,4);
+		//
+		//---------------------
+
+		//---------------------
+		//NextButton
+		setupNextBtn = new Button("Next");
+		setupNextBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				Slave.setName(             nameTxtFld.                             getText()  );
+				Slave.setPrepositionLength(Long.parseLong  (prepositionTxtFld.     getText() ));
+				Slave.setPrepositionDelay( Long.parseLong  (PrepositionDelayTxtFld.getText() ));
+				Slave.setNumberOfStrings(  Integer.parseInt(numberOfStringsTxtFld. getText() ));
+				remainingStrings = Integer.parseInt(numberOfStringsTxtFld.getText());
+				if(remainingStrings > 0){
+					MekStringWindow();
+					((Stage)((Button)event.getSource()).getScene().getWindow()).close();
+				}
+			}
+		});
+		//Add to gPane
+		gPane.add(setupNextBtn, 2, 5);
+		stage.showAndWait();
+	}
+
+	private void MekStringWindow() {
+
+
+	}
 	int stringsToDefine;
 	int stringsNumber;
 	String saveFileName = " ";
 	ComboBox<Integer> BassTrackComboBox;
+
 	private GridPane buildLeftGUI() {
 		GridPane GPane = new GridPane();
-
 
 		//---
 		//Default Font for text input
@@ -134,7 +268,7 @@ public class UI extends Application{
 
 
 		//----------------------------------
-		//Define Name input entry
+		//Define name input entry
 		//
 		Label nameLabel = new Label("File Name: ");
 		nameLabel.setFont(defaultFont);
