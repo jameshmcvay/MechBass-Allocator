@@ -41,6 +41,11 @@ public class Node {
 	 */
 	private int stringToPlayOn = Integer.MIN_VALUE;
 
+	/*
+	 * A boolean value indicating whether the current Node has a "Note".
+	 */
+	private boolean hasNote = false;
+	
 	/**
 	 * A full constructor - this one is unlikely to be used as it includes the 
 	 * string it will be assigned, rather than this being solved using the 
@@ -61,6 +66,8 @@ public class Node {
 		for (Integer i : ss)
 			strings.add(i);
 		stringToPlayOn = string;
+		if (sm.getCommand() == ShortMessage.NOTE_OFF || sm.getCommand() == ShortMessage.NOTE_ON)
+			hasNote = true;
 	}
 	
 	/**
@@ -82,6 +89,8 @@ public class Node {
 			neighbours.add(n);
 		for (Integer i : ss)
 			strings.add(i);
+		if (sm.getCommand() == ShortMessage.NOTE_OFF || sm.getCommand() == ShortMessage.NOTE_ON)
+			hasNote = true;
 	}
 	
 	/**
@@ -94,6 +103,8 @@ public class Node {
 	public Node(ShortMessage sm, long time){
 		shortMessage = sm;
 		tick = time;
+		if (sm.getCommand() == ShortMessage.NOTE_OFF || sm.getCommand() == ShortMessage.NOTE_ON)
+			hasNote = true;
 	}
 	
 	/**
@@ -179,12 +190,40 @@ public class Node {
 		this.strings = strings;
 	}
 
+	/**
+	 * A getter that returns the int that represents the string this Node should be played on.
+	 * @return The int that represent the string that should play this Node.
+	 * */
 	public int getStringToPlayOn() {
 		return stringToPlayOn;
 	}
 
+	/**
+	 * A setter that assigns the int that represents the string this Node should be played on.
+	 * @param stringToPlayOn The int that represent the string that should play this Node.
+	 * */
 	public void setStringToPlayOn(int stringToPlayOn) {
 		this.stringToPlayOn = stringToPlayOn;
+	}
+
+	/**
+	 * A getter that returns whether this Node has a note that can be played or not.
+	 * @return true if this Node has a playable Note. false otherwise.
+	 * */
+	public boolean isHasNote() {
+		return hasNote;
+	}
+
+	/**
+	 * A setter that sets whether this Node has a note that can be played or not.
+	 * For example, if the Command in the ShortMessage of this Node is "PROGRAM_CHANGE", this is false.
+	 * 
+	 * !CAUTION! This method should really only be used when creating the Node from the blank constructor.
+	 * 
+	 * @param hasNote Whether the Node has a playable note.
+	 * */
+	public void setHasNote(boolean hasNote) {
+		this.hasNote = hasNote;
 	}
 
 	/**
