@@ -26,7 +26,8 @@ public class Slave {
 	private boolean guiMode;
 
 	private static String name = "";
-	private static long preposition;
+	private static long prepositionLength;
+	private static long prepositionDelay;
 	private static MekString[] setOfStrings;
 	private static int bassTrack = 2;
 
@@ -48,6 +49,22 @@ public class Slave {
 
 	public UI getUI() {
 		return ui;
+	}
+
+	public static void setPrepositionLength(long l){
+		prepositionLength = l;
+	}
+
+	public static void setPrepositionDelay(long l){
+		prepositionDelay = l;
+	}
+
+	public static void setNumberOfStrings(int i){
+		setOfStrings = new MekString[i];
+	}
+
+	public static void setName(String n){
+		name = n;
 	}
 
 	void setUI(UI ui) {
@@ -150,7 +167,10 @@ public class Slave {
 			name = sc.next();
 			sc.next();
 			sc.next();
-			preposition = sc.nextLong();
+			prepositionLength = sc.nextLong();
+			sc.next();
+			sc.next();
+			prepositionDelay = sc.nextLong();
 			sc.next();
 			sc.next();
 			setOfStrings = new MekString[sc.nextInt()];
@@ -177,17 +197,18 @@ public class Slave {
 
 	public static void saveConfig(File fi){
 		try {
+
 			PrintStream ps = new PrintStream(fi);
 
 			ps.println("Name = " + name);
-			ps.println("Preposition = " + preposition);
+			ps.println("PrepositionLength = " + prepositionLength);
+			ps.println("PrepositionDelay = " + prepositionDelay);
 			ps.println("Strings = " + setOfStrings.length);
 			for(int i  = 0; i < setOfStrings.length; i++){
 				ps.println("LowNote = " + setOfStrings[i].lowNote);
 				ps.println("HighNote = " + setOfStrings[i].highNote);
 				String output = "";
 				for(int j = 0; j < setOfStrings[i].interval.length;j++){
-
 					output += setOfStrings[i].interval[j] + ", ";
 				}
 				ps.println(output);
