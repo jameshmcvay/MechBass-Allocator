@@ -292,11 +292,8 @@ public class Cleaner {
 				Track tr2 = retSeq.getTracks()[j];
 				for(int i = 0; i < tr.size(); i++){
 					MidiEvent event = tr.get(i);
-					if(event.getMessage() instanceof MetaMessage){
-						tr2.add(event);
-					}
-					else if(event.getTick() > con.start() && event.getTick() < con.end()){
-						tr2.add(event);
+					if(event.getTick() > con.start() && event.getTick() < con.end()){
+						tr2.add(new MidiEvent(event.getMessage(), event.getTick() - start));
 					}
 				}
 			}
