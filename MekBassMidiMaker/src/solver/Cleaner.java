@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Sequence;
@@ -274,7 +275,45 @@ public class Cleaner {
 		return curIndex;
 	}
 	
+	/**
+	 * Cuts a section of a sequence out for playback.
+	 * @param seq - The base sequence
+	 * @param con - The conflict around which we want to cut
+	 * @return
+	 */
+	public static Sequence getSection(Sequence seq, Conflict con, long prePlayTime){
+		Sequence retSeq = null;
+		try {
+			retSeq = new Sequence(seq.getDivisionType(), seq.getResolution(), seq.getTracks().length);
+			long start = con.start() - prePlayTime;
+			
+			for(int j = 0; j < seq.getTracks().length; j++){
+				Track tr = seq.getTracks()[j];
+				Track tr2 = retSeq.getTracks()[j];
+				for(int i = 0; i < tr.size(); i++){
+					MidiEvent event = tr.get(i);
+					if(event.getMessage() instanceof MetaMessage){
+						tr2.add(event);
+					}
+					else if(event.getTick() > con.start() && event.getTick() < con.end()){
+						tr2.add(event);
+					}
+				}
+			}
+			
+		} catch (InvalidMidiDataException e) {
+			e.printStackTrace();
+		}
+		return retSeq;
+	}
 	
+	
+	/**
+	 * Makes a List of Conflict objects, representing pairs of notes that cannot share a string, but there is not a string available for the second.
+	 * @param seq
+	 * @param strings
+	 * @return
+	 */
 	public static List<Conflict> getConflicts(Sequence seq, MekString[] strings){
 		Track dropTrack = seq.getTracks()[0];
 		List<Conflict> conflicts = new ArrayList<Conflict>();
@@ -352,7 +391,7 @@ public class Cleaner {
 								//add the note notes to the conflict
 								NoteConflict conflict = new NoteConflict(dropped, play1, play2, track, dropTrack, k-1);
 //								System.out.print(conflict.toString());
-								con.addConf(conflict, k-1);
+								con.addConf(conflict);
 //								System.out.print(con.toString());
 							}
 						}
