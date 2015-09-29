@@ -182,6 +182,9 @@ public class Console extends OutputStream {
 		String command = input[0];
 		commandStack.push(rawInput);
 		switch (command) {
+		case "d":
+			openConfig("openConfig default.csv");
+			break;
 		case "open":
 			if (input.length > 1)
 				open(rawInput);
