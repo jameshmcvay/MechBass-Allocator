@@ -1,7 +1,9 @@
 package solver;
 
 import java.util.List;
+
 import javax.sound.midi.MidiEvent;
+import javax.sound.midi.Sequence;
 import javax.sound.midi.Track;
 
 /**
@@ -17,6 +19,15 @@ public class NoteConflict{
 	private Track dropTrack;
 	private int string;
 	
+	/**
+	 * Creates a NoteConflict.
+	 * @param drop - The dropped note and related Midi Events
+	 * @param play1 - The note that the dropped note is conflicting with and related events.
+	 * @param play2 - the note and related events after play1 on the same string. May also conflict with drop.
+	 * @param w - The track representing the string play1 and play2 are on
+	 * @param d - The track representing dropped notes.
+	 * @param str - The index of the string play1 an two are on.
+	 */
 	public NoteConflict(List<MidiEvent> drop,List<MidiEvent> play1,List<MidiEvent> play2, Track w , Track d , int str){
 		dropped = drop;	played1 = play1; played2 = play2;
 		workingTrack = w; dropTrack = d;
@@ -37,6 +48,10 @@ public class NoteConflict{
 	 */
 	public long tick(){
 		return played1.get(0).getTick();
+	}
+	
+	public long maxTick(){
+		return played2.get(played2.size() - 1).getTick();
 	}
 	
 	/**
