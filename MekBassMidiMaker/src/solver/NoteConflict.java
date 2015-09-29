@@ -114,7 +114,27 @@ public class NoteConflict{
 		}
 	}
 	
+	public Track getTrack(){
+		return workingTrack;
+	}
+	
+	/**
+	 * Swaps the two note groups supplied.
+	 * @param other - The note to swap with the first note of this conflict.
+	 * @param otherString
+	 */
+	public static void swap(List<MidiEvent> note1, Track string1, List<MidiEvent> note2, Track string2){
+		for (MidiEvent o: note1){
+			string2.add(o);
+			string1.remove(o);
+		}
+		for (MidiEvent m: note2){
+			string1.add(m);
+			string2.remove(m);
+		}
+	}
+	
 	public String toString(){
-		return "Conlict on string " + string + "\n"; 
+		return "Conflict on string " + string + "\n"; 
 	}
 }
