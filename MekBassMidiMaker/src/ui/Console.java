@@ -231,6 +231,8 @@ public class Console extends OutputStream {
 		case "config":
 			Slave.getConfig();
 			break;
+		case "help":
+			output("There is no help all hope is lost");
 		case "END":
 			System.exit(0);
 		default:

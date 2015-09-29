@@ -6,12 +6,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
+import solver.Cleaner;
+import solver.Conflict;
 import solver.MekString;
 import solver.GreedySolver;
 import solver.Solver;
@@ -20,17 +23,29 @@ import tools.Player;
 
 public class Slave {
 
-	static Sequence curMIDI;
+	private static Sequence curMIDI;
 	private UI ui;
 	private Console console;
 	private boolean guiMode;
 
 	private static String name = "";
-	private static long preposition;
+	private static long prepositionLength;
+	private static long prepositionDelay;
 	private static MekString[] setOfStrings;
+	private static int bassTrack = 2;
+
+	private static List<Conflict> setOfConflicts;
 
 	public Slave() throws IllegalArgumentException {
 
+	}
+
+	public static Sequence getSequence(){
+		return curMIDI;
+	}
+
+	public static void setSequence(Sequence m){
+		curMIDI = m;
 	}
 
 	public Console getConsole() {
@@ -39,6 +54,22 @@ public class Slave {
 
 	public UI getUI() {
 		return ui;
+	}
+
+	public static void setPrepositionLength(long l){
+		prepositionLength = l;
+	}
+
+	public static void setPrepositionDelay(long l){
+		prepositionDelay = l;
+	}
+
+	public static void setNumberOfStrings(int i){
+		setOfStrings = new MekString[i];
+	}
+
+	public static void setName(String n){
+		name = n;
 	}
 
 	void setUI(UI ui) {
@@ -61,13 +92,18 @@ public class Slave {
 		if (curMIDI != null) Player.play(curMIDI);
 	}
 
+	public static void setBassTrack(int i){
+		bassTrack = i;
+	}
+
 	protected void solve() {
 
 		if (curMIDI != null)
 			try {
 				Solver greedy = new GreedySolver();
-				curMIDI = TrackSplitter.split(curMIDI, 4, 2);
+				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
+				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
 				//while(hasConflicts()){
 				//get conflict
 				//serve users valid choices
@@ -131,7 +167,8 @@ public class Slave {
 	public static void setSettings(String n, long prepTime, long prepSize,MekString[] strings){
 		name = n;
 		setOfStrings = strings;
-		preposition = prepTime;
+		prepositionLength = prepSize;
+		prepositionDelay = prepTime;
 	}
 
 
@@ -144,7 +181,10 @@ public class Slave {
 			name = sc.next();
 			sc.next();
 			sc.next();
-			preposition = sc.nextLong();
+			prepositionLength = sc.nextLong();
+			sc.next();
+			sc.next();
+			prepositionDelay = sc.nextLong();
 			sc.next();
 			sc.next();
 			setOfStrings = new MekString[sc.nextInt()];
@@ -173,18 +213,19 @@ public class Slave {
 
 	public static void saveConfig(File fi){
 		try {
+
 			PrintStream ps = new PrintStream(fi);
 
 			ps.println("Name = " + name);
-			ps.println("Preposition = " + preposition);
+			ps.println("PrepositionLength = " + prepositionLength);
+			ps.println("PrepositionDelay = " + prepositionDelay);
 			ps.println("Strings = " + setOfStrings.length);
 			for(int i  = 0; i < setOfStrings.length; i++){
 				ps.println("LowNote = " + setOfStrings[i].lowNote);
 				ps.println("HighNote = " + setOfStrings[i].highNote);
 				String output = "";
 				for(int j = 0; j < setOfStrings[i].interval.length;j++){
-
-					output += setOfStrings[i].interval[j] + ",";
+					output += setOfStrings[i].interval[j] + ", ";
 				}
 				ps.println(output);
 			}
@@ -197,7 +238,8 @@ public class Slave {
 
 	public static void getConfig(){
 		System.out.println("Name = " + name);
-		System.out.println("Preposition = " + preposition);
+		System.out.println("PrepositionLength = " + prepositionLength);
+		System.out.println("PrepositionDelay = "  + prepositionDelay );
 		System.out.println("Strings = " + setOfStrings.length);
 		for(int i  = 0; i < setOfStrings.length; i++){
 			System.out.println("LowNote = " + setOfStrings[i].lowNote);
