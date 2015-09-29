@@ -173,6 +173,7 @@ public class Cleaner {
 	 * @return
 	 */
 	public static Sequence prePos(Sequence seq, long preTime, MekString[] strings, long length){
+		fixChannel(seq);
 		//for each track
 		for(int i = 1; i < seq.getTracks().length; i++){
 			Track cur = seq.getTracks()[i];
