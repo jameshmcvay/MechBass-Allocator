@@ -35,7 +35,7 @@ public class Cleaner {
 	}
 
 	/**
-	 * Turns all note ons with velocity 0 into note offs.
+	 * Turns all note ons with velocity 0 into note offs. This is mostly because I hate that functionality.
 	 * @param seq
 	 * @return
 	 */
@@ -62,6 +62,27 @@ public class Cleaner {
 			e.printStackTrace();
 		}
 		return seq;
+	}
+	
+	/**
+	 * This sets all notes on each string to the same distinct channel
+	 * @param seq
+	 */
+	public static void fixChannel(Sequence seq){
+		for(int i = 0; i < seq.getTracks().length; i++){
+			Track tr = seq.getTracks()[i];
+				for(int j = 0; j < tr.size(); j++){
+					MidiEvent event = tr.get(j);
+					if(event.getMessage() instanceof ShortMessage){
+						ShortMessage shrt = (ShortMessage) event.getMessage();
+						try {
+							shrt.setMessage(shrt.getCommand(), i, shrt.getData1(), shrt.getData2());
+						} catch (InvalidMidiDataException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
 	}
 
 	/**
