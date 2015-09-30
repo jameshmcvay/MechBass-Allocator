@@ -25,8 +25,8 @@ import tools.Player;
 public class Slave {
 
 	private static Sequence curMIDI;
-	private UI ui;
-	private Console console;
+	private static UI UI;
+	private static Console console;
 	private boolean guiMode;
 
 	private static Simulation sim;
@@ -39,7 +39,7 @@ public class Slave {
 	private static List<Conflict> setOfConflicts;
 
 	public Slave() throws IllegalArgumentException {
-
+		parse(new File("default.csv"));
 	}
 
 	public static Sequence getSequence(){
@@ -55,7 +55,7 @@ public class Slave {
 	}
 
 	public UI getUI() {
-		return ui;
+		return UI;
 	}
 
 	public static void setPrepositionLength(long l){
@@ -70,63 +70,89 @@ public class Slave {
 		setOfStrings = new MekString[i];
 	}
 
+	public static int getNumberOfStrings(){
+		return setOfStrings.length;
+	}
+
+	public static MekString[] getMekStringArray(){
+		return setOfStrings;
+	}
+
 	public static void setName(String n){
 		name = n;
 	}
 
-	void setUI(UI ui) {
-		this.ui = ui;
+	public static void setUI(UI newUi) {
+		UI = newUi;
 	}
 
 	void setSim(Simulation sim){
 		Slave.sim = sim;
 	}
 
-	void setConsole(Console console) {
-		this.console = console;
+	static void setConsole(Console newConsole) {
+		console = newConsole;
 	}
 
 	public void playerRelease() {
 		Player.release();
 	}
 
-	public void playerStop() {
+	public static void playerStop() {
 		Player.stop();
-		if (sim!=null) sim.pause();
+		microseconds = 0;
+		if (sim!=null) sim.stop();
 	}
 
-	protected void play() {
-		if (curMIDI != null) Player.play(curMIDI);
+	protected static void play() {
+		if (curMIDI != null) Player.play(curMIDI,microseconds);
 		if (sim != null) {
-			sim.stop();
-			sim.play();
+			if(microseconds == 0){
+				sim.stop();
+			}
+				sim.play();
 		}
+	}
+
+	protected static long microseconds = 0;
+
+	protected static void pause() {
+			if(curMIDI != null){
+				microseconds = Player.pause();
+			}
+			if(sim != null){
+				if(sim.isPlaying()){
+					sim.pause();
+				}
+			}
+
 	}
 
 	public static void setBassTrack(int i){
 		bassTrack = i;
 	}
 
-	protected void solve() {
+	protected static List<Conflict> solve() {
 
 		if (curMIDI != null)
 			try {
 				Solver greedy = new GreedySolver(setOfStrings);
 				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
-//				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
+				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
 
-				//while(hasConflicts()){
-				//get conflict
 				//serve users valid choices
 				//receive users choice
 				//call appropriate method
 
 				// give the simulation the new midi
 				if (sim!=null) sim.setSequence(curMIDI);
+				curMIDI = Cleaner.prePos(curMIDI, prepositionDelay, setOfStrings, prepositionLength);
+				return setOfConflicts;
 			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
 		}
+		return null;
 	}
 
 	protected static void save(String fileName) {
@@ -223,6 +249,7 @@ public class Slave {
 					time[j] = Long.parseLong(values[j].trim());
 				}
 				setOfStrings[i] = new MekString(low, high, time);
+				mekStringLength++;
 			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -274,8 +301,17 @@ public class Slave {
 		}
 	}
 
+	private static int mekStringLength = 0;
+
+	public static void addToMekString(MekString mekString) {
+		setOfStrings[mekStringLength++] = mekString;
+
+	}
+
 	public static MekString[] getStringConfig(){
 		if (setOfStrings != null) return Arrays.copyOf(setOfStrings, setOfStrings.length);
 		else return null;
 	}
+
+
 }

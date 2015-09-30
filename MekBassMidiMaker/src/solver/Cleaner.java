@@ -69,7 +69,7 @@ public class Cleaner {
 	 * This sets all notes on each string to the same distinct channel
 	 * @param seq
 	 */
-	public static void fixChannel(Sequence seq){
+	public static Sequence fixChannel(Sequence seq){
 		for(int i = 0; i < seq.getTracks().length; i++){
 			Track tr = seq.getTracks()[i];
 				for(int j = 0; j < tr.size(); j++){
@@ -84,6 +84,7 @@ public class Cleaner {
 					}
 				}
 			}
+		return seq;
 	}
 
 	/**
@@ -95,6 +96,8 @@ public class Cleaner {
 	 */
 	public static int scanTimings(Sequence seq, MekString[] strings){
 		int conflicts = 0;
+		float tickScaling = (float)seq.getMicrosecondLength()/1000;
+		tickScaling = tickScaling/(float)seq.getTickLength();
 		//for each track
 		for(int i = 0; i < seq.getTracks().length; i++){
 			Track cur = seq.getTracks()[i];
@@ -115,7 +118,8 @@ public class Cleaner {
 							if(prevIndex>0){
 								noteOff = (ShortMessage) cur.get(prevIndex).getMessage();
 								int note2 = noteOff.getData1();
-								if(strings[i].conflicting(note1, note2, cur.get(prevIndex).getTick() - cur.get(j).getTick())) conflicts++;
+//								System.out.println("stuff\n");
+								if(strings[i].conflicting(note1, note2, cur.get(prevIndex).getTick() - cur.get(j).getTick(), tickScaling)) conflicts++;
 							}
 						}
 					}
@@ -173,9 +177,12 @@ public class Cleaner {
 	 * @param length - How long the prepositioning note should be.
 	 * @return
 	 */
-	public static Sequence prePos(Sequence seq, long preTime, MekString[] strings, long length){
-		fixChannel(seq);
+	public static Sequence prePos(Sequence in, long preTime, MekString[] strings, long length){
+		Sequence seq = fixChannel(in);
 		//for each track
+		float tickScaling = (float)seq.getMicrosecondLength()/1000;
+		tickScaling = tickScaling/seq.getTickLength();
+		long preTicks = preTime / (long) tickScaling;
 		for(int i = 1; i < seq.getTracks().length; i++){
 			Track cur = seq.getTracks()[i];
 			//add a prepos event for each note that is not consecutive
@@ -197,10 +204,10 @@ public class Cleaner {
 								int note2 = noteOff.getData1();
 								//if the note is different and they don't clash
 								if(note2 != note1 ){
-									if( !strings[i-1].conflicting(note1, note2,  cur.get(j).getTick() - cur.get(prevIndex).getTick())){									
+									if( !strings[i-1].conflicting(note1, note2,  cur.get(j).getTick() - cur.get(prevIndex).getTick(), tickScaling)){									
 										try {
-											if((cur.get(j).getTick() - strings[i-1].difference(note1, note2)) - preTime < cur.get(prevIndex).getTick()){
-												System.out.printf("Warning: note overlap detected, %d previous note tick, %d prepos tick, Dropping note \n",cur.get(prevIndex).getTick(),(cur.get(j).getTick() - strings[i-1].difference(note1, note2)) - preTime);
+											if((cur.get(j).getTick() - strings[i-1].differenceTick(note1, note2, tickScaling)) - preTicks < cur.get(prevIndex).getTick()){
+												System.out.printf("Warning: note overlap detected, %d previous note tick, %d prepos tick, Dropping note \n",cur.get(prevIndex).getTick(),(cur.get(j).getTick() - strings[i-1].differenceTick(note1, note2, tickScaling)) - preTicks);
 												seq.getTracks()[0].add(cur.get(j));
 												cur.remove(cur.get(j));
 												if(cur.get(j).getMessage() instanceof ShortMessage){
@@ -212,10 +219,10 @@ public class Cleaner {
 												}
 											}
 											else{
-												//for some reason adding these on the same line ends up with the wrong note off tim
+												//for some reason adding these on the same line ends up with the wrong note off time
 												long time = cur.get(j).getTick();
-												time -= strings[i-1].difference(note1, note2);
-												time -= preTime;
+												time -= strings[i-1].differenceTick(note1, note2, tickScaling);
+												time -= preTicks;
 //												System.out.printf("Added Prepos for %d at: Note On %d note Off %d\n", note2, time, time + length);
 												cur.add(new MidiEvent(new ShortMessage(NOTE_ON,noteOn.getChannel(),noteOn.getData1(),1) , time));
 												cur.add(new MidiEvent(new ShortMessage(NOTE_OFF,noteOn.getChannel(),noteOn.getData1(),0) , time +  length));
@@ -250,7 +257,8 @@ public class Cleaner {
 				}
 			}
 		}
-		return seq;
+		System.out.println("Prepositioning added.");
+		return fixChannel(seq);
 	}
 
 	/**

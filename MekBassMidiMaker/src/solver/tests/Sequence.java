@@ -30,7 +30,7 @@ public class Sequence extends javax.sound.midi.Sequence{
 					if(e1.getMessage() instanceof ShortMessage && e2.getMessage() instanceof ShortMessage){
 						ShortMessage shrt1 = (ShortMessage) e1.getMessage();
 						ShortMessage shrt2 = (ShortMessage) e2.getMessage();
-						if(shrt1.getChannel() != shrt2.getChannel() ||
+						if(	shrt1.getChannel() != shrt2.getChannel() ||
 								shrt1.getCommand() != shrt2.getCommand() ||
 								shrt1.getData1() != shrt2.getData1() ||
 								shrt1.getData2() != shrt2.getData2()){

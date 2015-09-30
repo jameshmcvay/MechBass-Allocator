@@ -36,6 +36,7 @@ public class Simulation {
 	long drawStartTime;
 
 	private MekString[] strings = null;
+	private float[] picks = null;
 
 	private boolean playing = false;
 
@@ -49,9 +50,14 @@ public class Simulation {
 	public void setStrings(MekString[] newStrings){
 		strings = newStrings;
 		notes = Arrays.copyOfRange(notes, 1, notes.length);
-		System.out.println(notes.length);
+		picks = new float[strings.length];
 	}
 
+	/**
+	 *
+	 * @param sequence
+	 */
+	@SuppressWarnings("unchecked")
 	public void setSequence(Sequence sequence){
 		if (sequence == null) return;
 		this.seq = sequence;
@@ -61,6 +67,7 @@ public class Simulation {
 
 		Track[] tracks = seq.getTracks();
 		notes = new List[tracks.length];
+
 
 		// for each track
 		for (int j=0; j<tracks.length; ++j){
@@ -93,7 +100,6 @@ public class Simulation {
 			}
 		}
 		if (strings != null) notes = Arrays.copyOfRange(notes, 1, notes.length);
-		System.out.println(notes.length);
 	}
 
 	// something something threads
@@ -127,7 +133,7 @@ public class Simulation {
 		// get the dimensions of the canvas
 		double width = gc.getCanvas().getWidth();
 		double height= gc.getCanvas().getHeight();
-		double left = 20.0;
+		double left = 15.0;
 		long drawEnd = drawStartTime + (long) (width * hscale); // need to calculate this (width and hscale?)
 		// clear the draw area
 		gc.clearRect(0, 0, width, height);
@@ -167,26 +173,12 @@ public class Simulation {
 			double offset = 0;
 			int offsetNotes = 0;
 			double noteDiv = height / totalnotes;
-			// go through each string
-			for (int i=0; i<strings.length; ++i){
-				// and draw the top playable note, and the bottom playable note
-				for (int s=strings[i].lowNote, j=0; s<=strings[i].highNote; ++s, ++j){
-					// s is the note value, j is just a loop counter
-					gc.fillText(String.format("%d", s), 1, offset + (noteDiv)*j);
-				}
-				offsetNotes += strings[i].noteRange+1;
-				offset = ((double)offsetNotes)*(noteDiv);
-				// draw a divider between the strings
-				if (offsetNotes < totalnotes) gc.fillRect(0, offset+1-noteDiv, width, 1);
-
-			}
 
 
-			offset = 0;
+
 			Note n;
-			for (int t=0; t<notes.length; ++t){
+			for (int t=0; t<Math.min(notes.length, strings.length); ++t){
 
-				System.out.println(strings.length);
 				int length = notes[t].size();
 	//			 get the first (fully) visible note
 				int startIndex = 0;
@@ -207,6 +199,23 @@ public class Simulation {
 					gc.fillRect(left + end-note_tag_width, offset+(n.note-strings[t].lowNote)*noteDiv+note_tag_height/2, note_tag_width, note_tag_height);
 	//				}
 				}
+
+			}
+			gc.clearRect(0, 0, left, height);
+			gc.setFill(Color.GRAY);
+			gc.fillRect(left, 0, 1, height);
+			offset = 0;
+			// go through each string
+			for (int i=0; i<strings.length; ++i){
+				// and draw the top playable note, and the bottom playable note
+				for (int s=strings[i].lowNote, j=0; s<=strings[i].highNote; ++s, ++j){
+					// s is the note value, j is just a loop counter
+					gc.fillText(String.format("%d", s), 1, offset + (noteDiv)*j);
+				}
+				offsetNotes += strings[i].noteRange+1;
+				offset = ((double)offsetNotes)*(noteDiv);
+				// draw a divider between the strings
+				if (offsetNotes < totalnotes) gc.fillRect(0, offset+1-noteDiv, width, 1);
 
 			}
 		} else {

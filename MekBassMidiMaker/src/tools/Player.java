@@ -52,6 +52,15 @@ public class Player {
 		return false;
 	}
 
+	public static long pause() {
+		if(seq != null && seq.isRunning()){
+			seq.stop();
+			return seq.getMicrosecondPosition();
+		}
+		return 0;
+
+	}
+
 	/**
 	 * Release system resources taken by the sequencer
 	 */
@@ -78,4 +87,6 @@ public class Player {
 			System.err.println("File failed to load");
 		}
 	}
+
+
 }
