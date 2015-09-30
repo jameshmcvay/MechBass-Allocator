@@ -115,6 +115,7 @@ public class Slave {
 				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
 //				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
+
 				//while(hasConflicts()){
 				//get conflict
 				//serve users valid choices
@@ -173,6 +174,15 @@ public class Slave {
 
 	protected static void octaveDown() {
 		OctaveShifter.shiftOctave(curMIDI, -3);
+	}
+
+	/**
+	 * Like the octaveUp and OctaveDown methods above, but this method allows
+	 * you to specify how much to shift the octave by.
+	 * @param i How far to shift the Octave by (+'ve numbers for up, -'ve numbers for down).
+	 * */
+	protected static void shiftOctave(int i) {
+		OctaveShifter.shiftOctave(curMIDI, i);
 	}
 
 	public static void setSettings(String n, long prepTime, long prepSize,MekString[] strings){
