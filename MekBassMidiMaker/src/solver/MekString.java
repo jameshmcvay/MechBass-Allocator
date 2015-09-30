@@ -1,5 +1,7 @@
 package solver;
 
+import javax.sound.midi.Sequence;
+
 /**
  * Tuple for string information<p>
  * Contains: <br>
@@ -86,8 +88,8 @@ public class MekString {
 	 * @param duration - the time between note1 finishing and note 2 starting
 	 * @return the
 	 */
-	public boolean conflicting(int note1,int note2, long duration){
-		if(difference(note1,note2) > duration) return true;
+	public boolean conflicting(int note1,int note2, long duration, float scale){
+		if(differenceTick(note1,note2,scale) > duration) return true;
 		return false;
 	}
 
@@ -97,9 +99,15 @@ public class MekString {
 	 * @param note2
 	 * @return the min time between note1 and note2
 	 */
-	public long difference(int note1, int note2){
+	public long differenceTime(int note1, int note2){
 		if(note1<note2) return addIntervals(note1-lowNote,note2-lowNote);
 		else return addIntervals(note2-lowNote, note1-lowNote);
+	}
+	
+	public long differenceTick(int note1, int note2, float scale){
+		long thing = (long) scale*differenceTime(note1,note2);
+		System.out.printf("Difference in ticks: %d\n", thing);
+		return differenceTime(note1,note2)/(long)scale;
 	}
 	
 	public boolean playable(int i){
