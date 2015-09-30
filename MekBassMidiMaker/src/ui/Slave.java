@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -28,6 +29,7 @@ public class Slave {
 	private Console console;
 	private boolean guiMode;
 
+	private static Simulation sim;
 	private static String name = "";
 	private static long prepositionLength;
 	private static long prepositionDelay;
@@ -68,12 +70,24 @@ public class Slave {
 		setOfStrings = new MekString[i];
 	}
 
+	public static int getNumberOfStrings(){
+		return setOfStrings.length;
+	}
+
+	public static MekString[] getMekStringArray(){
+		return setOfStrings;
+	}
+
 	public static void setName(String n){
 		name = n;
 	}
 
 	void setUI(UI ui) {
 		this.ui = ui;
+	}
+
+	void setSim(Simulation sim){
+		Slave.sim = sim;
 	}
 
 	void setConsole(Console console) {
@@ -86,10 +100,15 @@ public class Slave {
 
 	public void playerStop() {
 		Player.stop();
+		if (sim!=null) sim.pause();
 	}
 
 	protected void play() {
 		if (curMIDI != null) Player.play(curMIDI);
+		if (sim != null) {
+			sim.stop();
+			sim.play();
+		}
 	}
 
 	public static void setBassTrack(int i){
@@ -100,15 +119,19 @@ public class Slave {
 
 		if (curMIDI != null)
 			try {
-				Solver greedy = new GreedySolver();
+				Solver greedy = new GreedySolver(setOfStrings);
 				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
-				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
+//				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
+
 				//while(hasConflicts()){
 				//get conflict
 				//serve users valid choices
 				//receive users choice
 				//call appropriate method
+
+				// give the simulation the new midi
+				if (sim!=null) sim.setSequence(curMIDI);
 			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
 		}
@@ -139,6 +162,7 @@ public class Slave {
 			File fi = new File(path);
 			if (fi != null) {
 				curMIDI = MidiSystem.getSequence(fi);
+				if (sim!= null) sim.setSequence(curMIDI);
 				System.out.print("successfully opened file \n");
 				return true;
 			}
@@ -160,8 +184,13 @@ public class Slave {
 		OctaveShifter.shiftOctave(curMIDI, -3);
 	}
 
-	public static void main(String args[]) {
-
+	/**
+	 * Like the octaveUp and OctaveDown methods above, but this method allows
+	 * you to specify how much to shift the octave by.
+	 * @param i How far to shift the Octave by (+'ve numbers for up, -'ve numbers for down).
+	 * */
+	protected static void shiftOctave(int i) {
+		OctaveShifter.shiftOctave(curMIDI, i);
 	}
 
 	public static void setSettings(String n, long prepTime, long prepSize,MekString[] strings){
@@ -202,6 +231,7 @@ public class Slave {
 					time[j] = Long.parseLong(values[j].trim());
 				}
 				setOfStrings[i] = new MekString(low, high, time);
+				mekStringLength++;
 			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -253,4 +283,15 @@ public class Slave {
 		}
 	}
 
+	private static int mekStringLength = 0;
+
+	public static void addToMekString(MekString mekString) {
+		setOfStrings[mekStringLength++] = mekString;
+
+	}
+
+	public static MekString[] getStringConfig(){
+		if (setOfStrings != null) return Arrays.copyOf(setOfStrings, setOfStrings.length);
+		else return null;
+	}
 }
