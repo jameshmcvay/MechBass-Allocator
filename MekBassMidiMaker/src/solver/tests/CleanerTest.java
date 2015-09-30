@@ -2,6 +2,8 @@ package solver.tests;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.Sequence;
@@ -14,6 +16,7 @@ import static javax.sound.midi.ShortMessage.*;
 import org.junit.Test;
 
 import solver.Cleaner;
+import solver.Conflict;
 import solver.MekString;
 import solver.GreedySolver;
 
@@ -313,7 +316,9 @@ public class CleanerTest {
 			seq.getTracks()[1].add(CleanerTest.makeNoteOff(1,200));
 			seq.getTracks()[0].add(CleanerTest.makeNote(1,150));
 			seq.getTracks()[0].add(CleanerTest.makeNoteOff(1,250));
-			//System.out.println(Cleaner.getConflicts(seq, new MekString[]{new MekString(1,2,new long[]{100})}).size());
+			List<Conflict> con = Cleaner.getConflicts(seq, new MekString[]{new MekString(1,2,new long[]{50000000})});
+			System.out.printf(con.get(0).toString());
+			System.out.printf(con.get(0).getConf().get(0).toString());
 			assertTrue(Cleaner.getConflicts(seq, new MekString[]{new MekString(1,2,new long[]{100})}).size() == 1);
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");
