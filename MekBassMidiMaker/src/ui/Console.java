@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -14,7 +16,9 @@ import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
 import javafx.scene.control.TextArea;
+import solver.Conflict;
 import solver.MekString;
+import solver.NoteConflict;
 import solver.Solver;
 import solver.TrackSplitter;
 import tools.Player;
@@ -51,6 +55,15 @@ public class Console extends OutputStream {
 	int i;
 	long prepTime;
 	long prepSize;
+
+	int resolution;
+	boolean fix = false;
+	List<NoteConflict> listOfNoteConflicts = new ArrayList<NoteConflict>();
+	Conflict curConflict;
+	//int numString = 0;
+	//List<Integer> listOfStrings = new ArrayList<Integer>();
+
+	List<Conflict> listOfConflicts;
 
 	/**
 	 * Create a console using for use within the gui.
@@ -102,6 +115,9 @@ public class Console extends OutputStream {
 		String rawInput = lines[lines.length - 1].trim();
 		if (setup) {
 			setupParse(rawInput);
+		}
+		if (fix) {
+			correctError();
 		} else {
 			parse(rawInput);
 		}
@@ -179,12 +195,13 @@ public class Console extends OutputStream {
 	 */
 	protected void parse(String rawInput) {
 		String[] input = rawInput.split("\\s+");
-		String command = input[0];
+		String command = input[0].toLowerCase();
 		commandStack.push(rawInput);
 		switch (command) {
 		case "d":
 			openConfig("openConfig default.csv");
 			break;
+		case "load":
 		case "open":
 			if (input.length > 1)
 				open(rawInput);
@@ -201,7 +218,10 @@ public class Console extends OutputStream {
 			if (input.length > 1) {
 				this.solve(rawInput);
 			} else
-				slave.solve();
+				listOfConflicts = slave.solve();
+			break;
+		case "fix":
+			correctError();
 			break;
 		case "play":
 			slave.play();
@@ -298,7 +318,39 @@ public class Console extends OutputStream {
 	protected void solve(String input) {
 		String FileName = input.substring(5).replace("\"", "").trim();
 		if (Slave.setCurMIDI(FileName)) {
-			slave.solve();
+			listOfConflicts = slave.solve();
+		}
+	}
+
+	protected void correctError() {
+		if (listOfConflicts.size() == 0){
+			output("No conflicts founds, no need to fix");
+			fix = false;
+			return;
+		}
+		switch (resolution) {
+		case 0:
+			for (Conflict c:listOfConflicts){
+				if (!c.resolved()){
+					curConflict = c;
+					listOfNoteConflicts = c.getConf();
+					resolution++;
+					break;
+				}
+			}
+		case 1:
+			System.out.println(listOfNoteConflicts);
+			output("The note "+curConflict.getNote()+" is conflicting");
+			output("The options are to:");
+			int i = 1;
+			for (NoteConflict nc:listOfNoteConflicts){
+				output("option "+i+", drop the note before in track "+nc.getTrack());
+				output("option "+(i+1)+", drop the note after in track "+nc.getTrack());
+				output("option "+(i+2)+", advance the end of the note before in track "+nc.getTrack());
+				output("option "+(i+3)+", delay the start of the note after in track "+nc.getTrack());
+				i=i+4;
+			}
+			output("type in the number of the option you would like to carryout");
 		}
 	}
 

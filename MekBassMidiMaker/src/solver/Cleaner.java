@@ -96,7 +96,8 @@ public class Cleaner {
 	 */
 	public static int scanTimings(Sequence seq, MekString[] strings){
 		int conflicts = 0;
-		float tickScaling = (float)seq.getMicrosecondLength()/seq.getTickLength();
+		float tickScaling = (float)seq.getMicrosecondLength()/1000;
+		tickScaling = tickScaling/(float)seq.getTickLength();
 		//for each track
 		for(int i = 0; i < seq.getTracks().length; i++){
 			Track cur = seq.getTracks()[i];
@@ -117,7 +118,7 @@ public class Cleaner {
 							if(prevIndex>0){
 								noteOff = (ShortMessage) cur.get(prevIndex).getMessage();
 								int note2 = noteOff.getData1();
-								System.out.println("stuff\n");
+//								System.out.println("stuff\n");
 								if(strings[i].conflicting(note1, note2, cur.get(prevIndex).getTick() - cur.get(j).getTick(), tickScaling)) conflicts++;
 							}
 						}
@@ -179,7 +180,8 @@ public class Cleaner {
 	public static Sequence prePos(Sequence in, long preTime, MekString[] strings, long length){
 		Sequence seq = fixChannel(in);
 		//for each track
-		float tickScaling = (float)seq.getMicrosecondLength()/seq.getTickLength();
+		float tickScaling = (float)seq.getMicrosecondLength()/1000;
+		tickScaling = tickScaling/seq.getTickLength();
 		long preTicks = preTime / (long) tickScaling;
 		for(int i = 1; i < seq.getTracks().length; i++){
 			Track cur = seq.getTracks()[i];
@@ -255,6 +257,7 @@ public class Cleaner {
 				}
 			}
 		}
+		System.out.println("Prepositioning added.");
 		return fixChannel(seq);
 	}
 

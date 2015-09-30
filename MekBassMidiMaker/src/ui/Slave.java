@@ -132,26 +132,27 @@ public class Slave {
 		bassTrack = i;
 	}
 
-	protected static void solve() {
+	protected static List<Conflict> solve() {
 
 		if (curMIDI != null)
 			try {
 				Solver greedy = new GreedySolver(setOfStrings);
 				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
-//				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
+				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
 
-				//while(hasConflicts()){
-				//get conflict
 				//serve users valid choices
 				//receive users choice
 				//call appropriate method
 
 				// give the simulation the new midi
 				if (sim!=null) sim.setSequence(curMIDI);
+				curMIDI = Cleaner.prePos(curMIDI, prepositionDelay, setOfStrings, prepositionLength);
+				return setOfConflicts;
 			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
 		}
+		return null;
 	}
 
 	protected static void save(String fileName) {
