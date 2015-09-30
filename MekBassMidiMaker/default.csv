@@ -1,0 +1,16 @@
+Name = Default
+PrepositionLength = 14
+PrepositionDelay = 16
+Strings = 4
+LowNote = 43
+HighNote = 56
+50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 
+LowNote = 38
+HighNote = 51
+50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 
+LowNote = 38
+HighNote = 46
+50, 50, 50, 50, 50, 50, 50, 50, 
+LowNote = 28
+HighNote = 41
+50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 

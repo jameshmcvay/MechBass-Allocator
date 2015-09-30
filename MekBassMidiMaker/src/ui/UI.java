@@ -11,7 +11,6 @@ import java.util.TimerTask;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
-import javax.sound.midi.Sequence;
 
 import solver.MekString;
 import javafx.application.Application;
@@ -26,15 +25,18 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
 import javafx.scene.text.Font;
@@ -60,13 +62,14 @@ public class UI extends Application{
 	TextArea textConsole = null; //the console
 	Simulation sim;
 	Timer timer;
+	int timerTime = 1000/60;
 
 	//Contains launches the application, for all intents and purposes, this is the contructor
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		//---------------------
 		//Popup window at the start
-		doPopUp();
+//		doPopUp();
 		//
 		//--------------------------
 
@@ -135,6 +138,7 @@ public class UI extends Application{
 	    primaryStage.show();
 
 	    sim = new Simulation();
+	    slave.setSim(sim);
 
 	 // set a run loop
 	    timer = new java.util.Timer();
@@ -145,15 +149,143 @@ public class UI extends Application{
 //		                label.update();
 //		                javafxcomponent.doSomething();
 //		            	System.out.println("test");
+		            	if (sim.isPlaying()) {
+		            		sim.addTime(timerTime);
+		            		sim.addDrawStartTime(timerTime);
+		            	}
 		            	sim.draw(leftCanvas.getGraphicsContext2D(), 1);
 
 //		            	sim.addDrawStartTime(14);
 		            }
 		        });
 		    }
-		}, 50, 50);
+		}, timerTime, timerTime);
+
+
+		/*
+		 * DEAN MAKING A MENU BAR:
+		 *
+		 * http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm
+		 * (Starting Point)
+		 *
+		 * */
+		setupMenuBar(scene);
 	}
 
+	private void setupMenuBar(Scene scene){
+		/*
+		 * DEAN MAKING A MENU BAR:
+		 *
+		 * http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm
+		 * (Starting Point)
+		 *
+		 * */
+		MenuBar menuBar = new MenuBar(); // The Bar where "| File | Edit | View |" will be
+        // --- Menu File
+        Menu menuFile = new Menu("File");
+        setupFileMenu(menuFile);
+        // --- Menu Edit
+        Menu menuPlay = new Menu("Playback");
+        setupEditMenu(menuPlay);
+        // --- Menu View
+        Menu menuHelp = new Menu("HALP! WOT DOO!?");
+        setupHelpMenu(menuHelp);
+
+        menuBar.getMenus().addAll(menuFile, menuPlay, menuHelp);
+
+        VBox vbox = new VBox(menuBar);
+
+        ((GridPane) scene.getRoot()).getChildren().addAll(vbox);
+	}
+
+	private void setupFileMenu(Menu menuFile){
+		MenuItem NC = new MenuItem("New Config");
+	        NC.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		doPopUp();
+	        	}
+	        });
+	    MenuItem OM = new MenuItem("Open MIDI File");
+	        OM.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		setCurrentMIDI();
+	    			//Remove and re-add the eventhandler, this is to avoid it
+	        		//being called upon changing the contents of the combobox
+	    			EventHandler<ActionEvent> temp = BassTrackComboBox.getOnAction();
+	    			BassTrackComboBox.setOnAction(null);
+	    			BassTrackComboBox.setItems(populateTrackNumberComboBox());
+	    			BassTrackComboBox.setOnAction(temp);
+	    		}
+	        });
+	    MenuItem SaM = new MenuItem("Save MIDI File");
+	        SaM.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		save();
+	        	}
+	        });
+	    MenuItem SoM = new MenuItem("Solve MIDI File");
+	        SoM.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		solve();
+	        	}
+	        });
+	    MenuItem Q = new MenuItem("Quit");
+	        Q.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		System.exit(0);
+	        	}
+	        });
+	    menuFile.getItems().addAll(NC, OM, SaM, SoM, Q);
+	}
+
+	private void setupEditMenu(Menu menuPlay) {
+		MenuItem Pl = new MenuItem("Play");
+	        Pl.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		play();
+	        	}
+	        });
+	    MenuItem St = new MenuItem("Stop");
+	        St.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		playerStop();
+	        	}
+	        });
+	    MenuItem OU = new MenuItem("Shift Octave Up");
+	        OU.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		Slave.shiftOctave(1);
+	        	}
+	        });
+	    MenuItem OD = new MenuItem("Shift Octave Down");
+	    	OD.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		Slave.shiftOctave(-1);
+	        	}
+	        });
+	    menuPlay.getItems().addAll(Pl, St, OU, OD);
+	}
+
+	private void setupHelpMenu(Menu menuHelp) {
+		MenuItem about = new MenuItem("About");
+			about.setOnAction(new EventHandler<ActionEvent>() {
+		    	public void handle(ActionEvent t) {		}
+		    });
+		MenuItem com = new MenuItem("Console Commands");
+		    com.setOnAction(new EventHandler<ActionEvent>() {
+		    	public void handle(ActionEvent t) {		}
+		    });
+		MenuItem FAQs = new MenuItem("FAQs");
+		    FAQs.setOnAction(new EventHandler<ActionEvent>() {
+		    	public void handle(ActionEvent t) {		}
+		    });
+		MenuItem controls = new MenuItem("Controls");
+			controls.setOnAction(new EventHandler<ActionEvent>() {
+		    	public void handle(ActionEvent t) {		}
+		    });
+		menuHelp.getItems().addAll(about, com, FAQs, controls);
+
+	}
 
 	private void doPopUp(){
 
@@ -408,6 +540,7 @@ public class UI extends Application{
 		BassTrackComboBox = new ComboBox<Integer>();
 		BassTrackComboBox.setItems(populateTrackNumberComboBox());
 		BassTrackComboBox.setOnAction(new EventHandler<ActionEvent>() {
+			@SuppressWarnings("unchecked")
 			@Override
 			public void handle(ActionEvent event) {
 				// TODO Auto-generated method stub
@@ -604,8 +737,8 @@ public class UI extends Application{
 			File fi = fileChooser("Select a MIDI file to open");
 
 			if(fi != null){
-				slave.setSequence(MidiSystem.getSequence(fi));
-				sim.setSequence(slave.getSequence());
+				Slave.setSequence(MidiSystem.getSequence(fi));
+				sim.setSequence(Slave.getSequence());
 			}
 
 		} catch (InvalidMidiDataException | IOException e) {
@@ -626,7 +759,7 @@ public class UI extends Application{
 			File fi = dirChoo.showDialog(null);
 			if(fi != null){
 				lastFileLocation = fi.getCanonicalFile().getParentFile();
-				slave.save(fi);
+				Slave.save(fi);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
