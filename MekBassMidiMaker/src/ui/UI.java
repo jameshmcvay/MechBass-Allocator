@@ -130,9 +130,9 @@ public class UI extends Application{
 	    Console console = new Console(getConsoleTextArea(),slave);
 		slave.setConsole(console);
 
-//	    PrintStream ps = new PrintStream(console, true);
-//	    System.setOut(ps);
-//	    System.setErr(ps);
+	    PrintStream ps = new PrintStream(console, true);
+	    System.setOut(ps);
+	    System.setErr(ps);
 
 	    primaryStage.setTitle("Blackle");
 	    primaryStage.setScene(scene);
