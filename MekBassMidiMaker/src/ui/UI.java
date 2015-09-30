@@ -96,7 +96,7 @@ public class UI extends Application{
 		rightCanvas.setWidth(rightCanvasWidth);
 		rightCanvas.setHeight(canvasHeight);
 
-		GridPane leftGUIGridPane = buildLeftGUI();
+//		GridPane leftGUIGridPane = buildLeftGUI();
 
 
 		textConsole.setPrefColumnCount(100);
@@ -678,18 +678,18 @@ public class UI extends Application{
 		//The inputfield, a combobox. Box is enumerated with an observableList with each of the tracks available
 		//If no file is loaded, only option is zero.
 		//Due to changable loaded files, the comboBox must be externalised.
-		BassTrackComboBox = new ComboBox<Integer>();
-		BassTrackComboBox.setItems(populateTrackNumberComboBox());
-		BassTrackComboBox.setOnAction(new EventHandler<ActionEvent>() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public void handle(ActionEvent event) {
-				// TODO Auto-generated method stub
-				if(event.getSource() instanceof ComboBox){
-					Slave.setBassTrack(((ComboBox<Integer>) event.getSource()).getValue());
-				}
-			}
-		});
+//		BassTrackComboBox = new ComboBox<Integer>();
+//		BassTrackComboBox.setItems(populateTrackNumberComboBox());
+//		BassTrackComboBox.setOnAction(new EventHandler<ActionEvent>() {
+//			@SuppressWarnings("unchecked")
+//			@Override
+//			public void handle(ActionEvent event) {
+//				// TODO Auto-generated method stub
+//				if(event.getSource() instanceof ComboBox){
+//					Slave.setBassTrack(((ComboBox<Integer>) event.getSource()).getValue());
+//				}
+//			}
+//		});
 //		//
 //		//--------------------------------
 //
@@ -730,11 +730,11 @@ public class UI extends Application{
 			options = FXCollections.observableArrayList();
 
 			for(int i = 0; i < Slave.getSequence().getTracks().length; i++){
+				System.out.println(i);
 				options.add(i);
 			}
 		}
 		else{
-
 			options = FXCollections.observableArrayList(0);
 		}
 		return options;
@@ -834,8 +834,7 @@ public class UI extends Application{
 			public void handle(ActionEvent event) {
 				// TODO Auto-generated method stub
 				if(event.getSource() instanceof ComboBox){
-					Integer bassTrack;
-					bassTrack = ((ComboBox<Integer>) event.getSource()).getValue();
+					Integer bassTrack = ((ComboBox<Integer>) event.getSource()).getValue();
 					Slave.setBassTrack(bassTrack);
 				}
 			}
