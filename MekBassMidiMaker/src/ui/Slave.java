@@ -96,7 +96,7 @@ public class Slave {
 		bassTrack = i;
 	}
 
-	protected void solve() {
+	protected List<Conflict> solve() {
 
 		if (curMIDI != null)
 			try {
@@ -104,14 +104,14 @@ public class Slave {
 				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
 				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
-				//while(hasConflicts()){
-				//get conflict
+				return setOfConflicts;
 				//serve users valid choices
 				//receive users choice
 				//call appropriate method
 			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
 		}
+		return null;
 	}
 
 	protected static void save(String fileName) {
