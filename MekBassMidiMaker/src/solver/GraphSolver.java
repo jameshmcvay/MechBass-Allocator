@@ -31,6 +31,8 @@ public class GraphSolver implements Solver {
 	 * @return The New Sequence
 	 */
 	public Sequence solve(Sequence seq){
+		float tickScale = (float)seq.getMicrosecondLength()/seq.getTickLength()*1000;
+		
 		// Initialise the nodes with the short messages
 		ArrayList<Node> allNodes = new ArrayList<>();
 		ArrayList<Node> truncatedNodes = new ArrayList<>();
@@ -76,7 +78,7 @@ public class GraphSolver implements Solver {
 				for (int o = 0; o < strings.length; o++){
 					if (node1.getStrings().contains(o) && node2.getStrings().contains(o)){
 						// If the 2 nodes can be on the same string, they MIGHT be neighbours
-						if (strings[o].conflicting(node1.getNote(),node2.getNote(), node1.getTick() - node2.getTick())){
+						if (strings[o].conflicting(node1.getNote(),node2.getNote(), node1.getTick() - node2.getTick(), tickScale)){
 							// If the 2 nodes can conflict, they ARE neighbours.
 							if (!node1.getNeighbours().contains(node2)) // If node1 DOESN'T KNOW node2 is a neighbour...
 								node1.addNeighbour(node2);				// Rectify this situation immediately.
