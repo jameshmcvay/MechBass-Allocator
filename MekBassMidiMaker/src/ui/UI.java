@@ -54,13 +54,14 @@ public class UI extends Application{
 	TextArea textConsole = null; //the console
 	Simulation sim;
 	Timer timer;
+	int timerTime = 1000/60;
 
 	//Contains launches the application, for all intents and purposes, this is the contructor
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		//---------------------
 		//Popup window at the start
-		doPopUp();
+//		doPopUp();
 		//
 		//--------------------------
 
@@ -123,15 +124,16 @@ public class UI extends Application{
 	    Console console = new Console(getConsoleTextArea(),slave);
 		slave.setConsole(console);
 
-	    PrintStream ps = new PrintStream(console, true);
-	    System.setOut(ps);
-	    System.setErr(ps);
+//	    PrintStream ps = new PrintStream(console, true);
+//	    System.setOut(ps);
+//	    System.setErr(ps);
 
 	    primaryStage.setTitle("Blackle");
 	    primaryStage.setScene(scene);
 	    primaryStage.show();
 
 	    sim = new Simulation();
+	    slave.setSim(sim);
 
 	 // set a run loop
 	    timer = new java.util.Timer();
@@ -142,13 +144,17 @@ public class UI extends Application{
 //		                label.update();
 //		                javafxcomponent.doSomething();
 //		            	System.out.println("test");
+		            	if (sim.isPlaying()) {
+		            		sim.addTime(timerTime);
+		            		sim.addDrawStartTime(timerTime);
+		            	}
 		            	sim.draw(leftCanvas.getGraphicsContext2D(), 1);
 
 //		            	sim.addDrawStartTime(14);
 		            }
 		        });
 		    }
-		}, 50, 50);
+		}, timerTime, timerTime);
 	}
 
 
