@@ -51,6 +51,24 @@ public class Console extends OutputStream {
 	int i;
 	long prepTime;
 	long prepSize;
+	
+	// Valid Commands so far:
+	String[] validCommands = {"d",		   // Sets the configuration to default - perfect for hysteria. 
+	                          "open",	   // Opens a MIDI file (specify filepath and name of file after open).
+	                          "openConfig",// Opens a config file (specify filepath and name of file after openConfig).
+	                          "solve",	   // Works the magic of the program to let the MIDI file play on MechBass.
+	                          "play",	   // Plays the sequence
+	                          "stop",	   // Stops the sequence
+	                          "octUp",	   // Shifts the Octave of all the notes in the sequence up by 3
+	                          "octDown",   // Shifts the Octave of all the notes in the sequence down by 3
+	                          "save",	   // Saves the current sequence.
+	                          "saveConfig",// Saves the current configuration.
+	                          "setup",	   // ???
+	                          "config",	   // ???
+	                          "help",	   // A SUPER INSPIRING MESSAGE TO FILL THE MEEKEST HEART WITH THE COURAGE OF A LION.
+	                          "END"		   // Ends the program's eternal misery and suffering at last. Such benevolence.
+	                          			   // ANYTHING ELSE: NAH BRUH.
+	};
 
 	/**
 	 * Create a console using for use within the gui.
