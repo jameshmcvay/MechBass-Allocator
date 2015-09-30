@@ -279,8 +279,8 @@ public class CleanerTest {
 			compare.getTracks()[1].add(CleanerTest.makeNote(2,220,1,1));
 			compare.getTracks()[1].add(CleanerTest.makeNoteOff(2,234,1));
 			long f = (long) ((float)seq.getMicrosecondLength()/(float)seq.getTickLength());
+			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{1000})},14);
 			System.out.printf("Track Length:\n uS = %d \n ticks: %d \n uS/ticks: %d\n",seq.getMicrosecondLength(),seq.getTickLength(),f);
-			Cleaner.prePos(seq,100,new MekString[]{new MekString(1,2,new long[]{100})},14);
 			assertTrue(seq.equals(compare));
 		} catch (InvalidMidiDataException e) {
 			fail("this shouldn't happen");

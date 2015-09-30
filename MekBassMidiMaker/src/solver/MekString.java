@@ -25,7 +25,7 @@ public class MekString {
 	 */
 	public final int noteRange;
 	/**
-	 * The Interval (in μs) between adjacent frets.<br>
+	 * The Interval (in ms) between adjacent frets.<br>
 	 * The time between the first and second frets would be in index 0
 	 */
 	public final long[] interval;
@@ -105,8 +105,8 @@ public class MekString {
 	}
 	
 	public long differenceTick(int note1, int note2, float scale){
-		long thing = (long) scale*differenceTime(note1,note2);
-		System.out.printf("Difference in ticks: %d\n", thing);
+		long thing = (long) ((float)differenceTime(note1,note2)/scale);
+//		System.out.printf("Difference in ticks: %d\n time: %d\n scale = %d\n", thing, differenceTime(note1,note2),(long)scale);
 		return differenceTime(note1,note2)/(long)scale;
 	}
 	
