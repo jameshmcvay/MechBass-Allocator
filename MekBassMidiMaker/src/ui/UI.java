@@ -1,5 +1,7 @@
 package ui;
 
+import helperCode.OctaveShifter;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -24,11 +26,15 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
 import javafx.scene.text.Font;
@@ -149,9 +155,136 @@ public class UI extends Application{
 		        });
 		    }
 		}, 50, 50);
+		
+		
+		
+		
+		
+		/*
+		 * DEAN MAKING A MENU BAR:
+		 * 
+		 * http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm
+		 * (Starting Point)
+		 * 
+		 * */
+		setupMenuBar(scene);
+	}
+	
+	private void setupMenuBar(Scene scene){
+		/*
+		 * DEAN MAKING A MENU BAR:
+		 * 
+		 * http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm
+		 * (Starting Point)
+		 * 
+		 * */
+		MenuBar menuBar = new MenuBar(); // The Bar where "| File | Edit | View |" will be	 
+        // --- Menu File
+        Menu menuFile = new Menu("File");
+        setupFileMenu(menuFile);
+        // --- Menu Edit
+        Menu menuPlay = new Menu("Playback");
+        setupEditMenu(menuPlay);
+        // --- Menu View
+        Menu menuHelp = new Menu("HALP! WOT DOO!?");
+        setupHelpMenu(menuHelp);
+        
+        menuBar.getMenus().addAll(menuFile, menuPlay, menuHelp);
+        
+        VBox vbox = new VBox(menuBar);
+        
+        ((GridPane) scene.getRoot()).getChildren().addAll(vbox);
 	}
 
-
+	private void setupFileMenu(Menu menuFile){
+		MenuItem NC = new MenuItem("New Config");
+	        NC.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		doPopUp();
+	        	}
+	        });
+	    MenuItem OM = new MenuItem("Open MIDI File");
+	        OM.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		setCurrentMIDI();
+	    			//Remove and re-add the eventhandler, this is to avoid it 
+	        		//being called upon changing the contents of the combobox
+	    			EventHandler<ActionEvent> temp = BassTrackComboBox.getOnAction();
+	    			BassTrackComboBox.setOnAction(null);
+	    			BassTrackComboBox.setItems(populateComboBox());
+	    			BassTrackComboBox.setOnAction(temp);
+	    		}
+	        });
+	    MenuItem SaM = new MenuItem("Save MIDI File");
+	        SaM.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		save();
+	        	}
+	        });
+	    MenuItem SoM = new MenuItem("Solve MIDI File");
+	        SoM.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		solve();
+	        	}
+	        });
+	    MenuItem Q = new MenuItem("Quit");
+	        Q.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		System.exit(0);
+	        	}
+	        });
+	    menuFile.getItems().addAll(NC, OM, SaM, SoM, Q);
+	}
+	
+	private void setupEditMenu(Menu menuPlay) {
+		MenuItem Pl = new MenuItem("Play");
+	        Pl.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		play();
+	        	}
+	        });
+	    MenuItem St = new MenuItem("Stop");
+	        St.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		playerStop();
+	        	}
+	        });
+	    MenuItem OU = new MenuItem("Shift Octave Up");
+	        OU.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		Slave.shiftOctave(1);
+	        	}
+	        });
+	    MenuItem OD = new MenuItem("Shift Octave Down");
+	    	OD.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		Slave.shiftOctave(-1);
+	        	}
+	        });
+	    menuPlay.getItems().addAll(Pl, St, OU, OD);	
+	}
+	
+	private void setupHelpMenu(Menu menuHelp) {
+		MenuItem about = new MenuItem("About");
+			about.setOnAction(new EventHandler<ActionEvent>() {
+		    	public void handle(ActionEvent t) {		}
+		    });
+		MenuItem com = new MenuItem("Console Commands");
+		    com.setOnAction(new EventHandler<ActionEvent>() {
+		    	public void handle(ActionEvent t) {		}
+		    });
+		MenuItem FAQs = new MenuItem("FAQs");
+		    FAQs.setOnAction(new EventHandler<ActionEvent>() {
+		    	public void handle(ActionEvent t) {		}
+		    });
+		MenuItem controls = new MenuItem("Controls");
+			controls.setOnAction(new EventHandler<ActionEvent>() {
+		    	public void handle(ActionEvent t) {		}
+		    });
+		menuHelp.getItems().addAll(about, com, FAQs, controls);
+		
+	}
+	
 	private void doPopUp(){
 
 		Stage stage = new Stage();
