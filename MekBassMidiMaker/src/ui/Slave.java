@@ -25,8 +25,8 @@ import tools.Player;
 public class Slave {
 
 	private static Sequence curMIDI;
-	private UI ui;
-	private Console console;
+	private static UI UI;
+	private static Console console;
 	private boolean guiMode;
 
 	private static Simulation sim;
@@ -39,7 +39,7 @@ public class Slave {
 	private static List<Conflict> setOfConflicts;
 
 	public Slave() throws IllegalArgumentException {
-
+		parse(new File("default.csv"));
 	}
 
 	public static Sequence getSequence(){
@@ -55,7 +55,7 @@ public class Slave {
 	}
 
 	public UI getUI() {
-		return ui;
+		return UI;
 	}
 
 	public static void setPrepositionLength(long l){
@@ -82,40 +82,57 @@ public class Slave {
 		name = n;
 	}
 
-	void setUI(UI ui) {
-		this.ui = ui;
+	public static void setUI(UI newUi) {
+		UI = newUi;
 	}
 
 	void setSim(Simulation sim){
 		Slave.sim = sim;
 	}
 
-	void setConsole(Console console) {
-		this.console = console;
+	static void setConsole(Console newConsole) {
+		console = newConsole;
 	}
 
 	public void playerRelease() {
 		Player.release();
 	}
 
-	public void playerStop() {
+	public static void playerStop() {
 		Player.stop();
-		if (sim!=null) sim.pause();
+		microseconds = 0;
+		if (sim!=null) sim.stop();
 	}
 
-	protected void play() {
-		if (curMIDI != null) Player.play(curMIDI);
+	protected static void play() {
+		if (curMIDI != null) Player.play(curMIDI,microseconds);
 		if (sim != null) {
-			sim.stop();
-			sim.play();
+			if(microseconds == 0){
+				sim.stop();
+			}
+				sim.play();
 		}
+	}
+
+	protected static long microseconds = 0;
+
+	protected static void pause() {
+			if(curMIDI != null){
+				microseconds = Player.pause();
+			}
+			if(sim != null){
+				if(sim.isPlaying()){
+					sim.pause();
+				}
+			}
+
 	}
 
 	public static void setBassTrack(int i){
 		bassTrack = i;
 	}
 
-	protected void solve() {
+	protected static void solve() {
 
 		if (curMIDI != null)
 			try {
@@ -294,4 +311,6 @@ public class Slave {
 		if (setOfStrings != null) return Arrays.copyOf(setOfStrings, setOfStrings.length);
 		else return null;
 	}
+
+
 }
