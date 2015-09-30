@@ -68,6 +68,14 @@ public class Slave {
 		setOfStrings = new MekString[i];
 	}
 
+	public static int getNumberOfStrings(){
+		return setOfStrings.length;
+	}
+
+	public static MekString[] getMekStringArray(){
+		return setOfStrings;
+	}
+
 	public static void setName(String n){
 		name = n;
 	}
@@ -202,6 +210,7 @@ public class Slave {
 					time[j] = Long.parseLong(values[j].trim());
 				}
 				setOfStrings[i] = new MekString(low, high, time);
+				mekStringLength++;
 			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -251,6 +260,13 @@ public class Slave {
 			}
 			System.out.println(output);
 		}
+	}
+
+	private static int mekStringLength = 0;
+
+	public static void addToMekString(MekString mekString) {
+		setOfStrings[mekStringLength++] = mekString;
+
 	}
 
 }

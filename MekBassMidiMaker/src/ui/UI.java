@@ -3,6 +3,8 @@ package ui;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -11,6 +13,7 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
+import solver.MekString;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -23,10 +26,13 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Control;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -63,9 +69,6 @@ public class UI extends Application{
 		doPopUp();
 		//
 		//--------------------------
-
-
-
 
 		primaryStage.setResizable(false);
 		//-----Create the set of buttons to be added to the graphics pane-------
@@ -127,7 +130,7 @@ public class UI extends Application{
 	    System.setOut(ps);
 	    System.setErr(ps);
 
-	    primaryStage.setTitle("Blackle");
+	    primaryStage.setTitle("Now With More Annoying Pop Ups");
 	    primaryStage.setScene(scene);
 	    primaryStage.show();
 
@@ -158,8 +161,10 @@ public class UI extends Application{
 		stage.initModality(Modality.APPLICATION_MODAL);
 		stage.setOpacity(1);
 		stage.setTitle("MIDIAllocator");
+
 		GridPane GPane = new GridPane();
 		stage.setScene(new Scene(GPane));
+
 			//#################
 			//Internal elems
 			Label openingLabel = new Label("Welcome to MIDIAllocator!");
@@ -188,13 +193,18 @@ public class UI extends Application{
 						e.printStackTrace();}}});
 			//
 			//################
+
 		GPane.add(openingLabel, 3, 0);
 		GPane.add(newConfigBtn,2,3);
 		GPane.add(loadConfigBtn,4,3);
 		stage.showAndWait();
 	}
+
+
 	Button setupNextBtn;
 	private int remainingStrings = 0;
+
+
 	private void doSetupWindow() {
 		Stage stage = new Stage();
 		stage.initModality(Modality.APPLICATION_MODAL);
@@ -202,6 +212,7 @@ public class UI extends Application{
 
 		GridPane gPane = new GridPane();
 		stage.setScene(new Scene(gPane));
+
 		//----------------------
 		//Name Label
 		Label nameLbl = new Label("Config Name: ");
@@ -263,33 +274,111 @@ public class UI extends Application{
 				Slave.setNumberOfStrings(  Integer.parseInt(numberOfStringsTxtFld. getText() ));
 				remainingStrings = Integer.parseInt(numberOfStringsTxtFld.getText());
 				if(remainingStrings > 0){
-					MekStringWindow();
-					((Stage)((Button)event.getSource()).getScene().getWindow()).close();
+//					((Stage)((Button)event.getSource()).getScene().getWindow()).close();
+						defineMekStringWindow(((Stage)((Button)event.getSource()).getScene().getWindow()));
 				}
 			}
 		});
 		//Add to gPane
 		gPane.add(setupNextBtn, 2, 5);
+
+		stage.show();
+	}
+
+	private void defineMekStringWindow(Stage stage2) {
+//		stage2.hide();
+		Stage stage = new Stage();
+		stage.initModality(Modality.APPLICATION_MODAL);
+		stage.setOpacity(1);
+		stage.setTitle("Define Your Strings");
+
+
+		GridPane mekStringGPane = new GridPane();
+		ScrollPane sc = new ScrollPane(mekStringGPane);
+		BorderPane bPane = new BorderPane(sc);
+		sc.setFitToHeight(true);
+		sc.setFitToWidth(false);
+
+		List<TextField> textFields = new ArrayList<TextField>();
+		Label titleLabel, lowNoteLabel, highNoteLabel, timingsLabel, endLineLabel;
+		TextField highNoteTxtFld, lowNoteTxtFld, timingsTxtFld;
+		String titleString = "Mekstring #";
+		int gridYAxis = 0;
+
+		while(remainingStrings > 0){
+			titleLabel = new Label(titleString + (Slave.getNumberOfStrings() - remainingStrings));
+			lowNoteLabel  = new Label("Lowest MIDI Note: "     );
+			highNoteLabel = new Label("Highest MIDI Note: "    );
+			timingsLabel  = new Label("Timings between notes: ");
+
+			lowNoteTxtFld  =  new TextField();
+			highNoteTxtFld =  new TextField();
+			timingsTxtFld  =  new TextField("[1,2,2]");
+			endLineLabel   = new Label("------------------");
+
+			textFields.add(lowNoteTxtFld );
+			textFields.add(highNoteTxtFld);
+			textFields.add(timingsTxtFld );
+
+
+			mekStringGPane.add(titleLabel    , 1 , gridYAxis++ );
+			mekStringGPane.add(lowNoteLabel  , 1 , gridYAxis   );
+			mekStringGPane.add(lowNoteTxtFld , 2 , gridYAxis++ );
+			mekStringGPane.add(highNoteLabel , 1 , gridYAxis   );
+			mekStringGPane.add(highNoteTxtFld, 2 , gridYAxis++ );
+			mekStringGPane.add(timingsLabel  , 1 , gridYAxis   );
+			mekStringGPane.add(timingsTxtFld , 2 , gridYAxis++ );
+			mekStringGPane.add(endLineLabel  , 1 , gridYAxis++ );
+//			gPane.add(endLineLabel  );
+
+			remainingStrings--;
+		}
+
+		Button but =  new Button();
+		but.setText("Next");
+		but.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+
+				int low = 0;
+				int high = 0 ;
+				long[] timings;
+				for(int i = 0; i < textFields.size();i++){
+
+					low = Integer.parseInt(textFields.get(i++).getText());
+					high = Integer.parseInt(textFields.get(i++).getText());
+					timings = new long[(high - low)];
+
+					if(textFields.get(i).getText().length() != 0){
+						int j = 0;
+						for(String s : textFields.get(i).getText().split(",")){
+							System.out.println(s + "\n\t\t" + timings.length);
+							timings[j] = Long.parseLong(s);
+						}
+						Slave.addToMekString(new MekString(low, high, timings));
+					}
+					else{
+						Slave.addToMekString(new MekString(low,high));
+					}
+
+				}
+				((Stage)stage.getOwner()).close();
+			}
+		});
+		mekStringGPane.add(but, 2, gridYAxis);
+		stage.setScene(new Scene(bPane,400, 300));
 		stage.showAndWait();
-	}
-
-	private void MekStringWindow() {
-
 
 	}
-	int stringsToDefine;
-	int stringsNumber;
+
+
 	String saveFileName = " ";
 	ComboBox<Integer> BassTrackComboBox;
+	Font defaultFont = new Font("FreeSans", 20);
 
 	private GridPane buildLeftGUI() {
 		GridPane GPane = new GridPane();
-
-		//---
-		//Default Font for text input
-		Font defaultFont = new Font("FreeSans", 20);
-		//---
-
 
 		//----------------------------------
 		//Define name input entry
@@ -317,7 +406,7 @@ public class UI extends Application{
 		//If no file is loaded, only option is zero.
 		//Due to changable loaded files, the comboBox must be externalised.
 		BassTrackComboBox = new ComboBox<Integer>();
-		BassTrackComboBox.setItems(populateComboBox());
+		BassTrackComboBox.setItems(populateTrackNumberComboBox());
 		BassTrackComboBox.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
@@ -372,7 +461,7 @@ public class UI extends Application{
 	 *
 	 * @return
 	 */
-	private ObservableList<Integer> populateComboBox(){
+	private ObservableList<Integer> populateTrackNumberComboBox(){
 		ObservableList<Integer> options;
 		if(Slave.getSequence() != null){
 
@@ -449,7 +538,7 @@ public class UI extends Application{
 			//Remove and re-add the eventhandler, this is to avoid it being called upon changing the contents of the combobox
 			EventHandler<ActionEvent> temp = BassTrackComboBox.getOnAction();
 			BassTrackComboBox.setOnAction(null);
-			BassTrackComboBox.setItems(populateComboBox());
+			BassTrackComboBox.setItems(populateTrackNumberComboBox());
 			BassTrackComboBox.setOnAction(temp);}});
 
 		Button saveBtn = new Button();//The Save Button
@@ -523,6 +612,7 @@ public class UI extends Application{
 			e.printStackTrace();
 		}
 	}
+
 
 	protected void save(){
 		try {
@@ -599,6 +689,4 @@ public class UI extends Application{
 			slave.setConsole(console);
 		}
 	}
-
-
 }
