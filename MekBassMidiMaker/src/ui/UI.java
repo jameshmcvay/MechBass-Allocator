@@ -125,9 +125,9 @@ public class UI extends Application{
 
 	    //TODO Make GUILISE
 	    slave = new Slave();
-	    slave.setUI(this);
+	    Slave.setUI(this);
 	    Console console = new Console(getConsoleTextArea(),slave);
-		slave.setConsole(console);
+		Slave.setConsole(console);
 
 	    PrintStream ps = new PrintStream(console, true);
 	    System.setOut(ps);
@@ -300,52 +300,6 @@ public class UI extends Application{
 		menuHelp.getItems().addAll(about, com, FAQs, controls);
 
 	}
-
-	private void doPopUp(){
-
-		Stage stage = new Stage();
-		stage.initModality(Modality.APPLICATION_MODAL);
-		stage.setOpacity(1);
-		stage.setTitle("MIDIAllocator");
-
-		GridPane GPane = new GridPane();
-		stage.setScene(new Scene(GPane));
-
-			//#################
-			//Internal elems
-			Label openingLabel = new Label("Welcome to MIDIAllocator!");
-			//
-			//Button for creating a new configuration
-			Button newConfigBtn = new Button("New Configuration");
-			newConfigBtn.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent event) {
-					doSetupWindow();}});
-			//
-			//Button for loading an existing config
-			Button loadConfigBtn = new Button("Load Configuration");
-			loadConfigBtn.setOnAction(new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent event) {
-					try {
-						File fi = fileChooser("Select a Configuration File");
-
-						if(fi != null){
-							Slave.parse(fi);
-							stage.close();
-						}
-					} catch (IOException | InvalidMidiDataException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();}}});
-			//
-			//################
-
-		GPane.add(openingLabel, 3, 0);
-		GPane.add(newConfigBtn,2,3);
-		GPane.add(loadConfigBtn,4,3);
-		stage.showAndWait();
-	}
-
 
 	Button setupNextBtn;
 	private int remainingStrings = 0;
@@ -567,8 +521,6 @@ public class UI extends Application{
 		//--------------------------------
 
 
-
-
 		//Input the number of strings, this will notify the main pane that Strings still need to be defined
 		Label stringLabel = new Label("Input Number of Strings: ");
 		stringLabel.setFont(defaultFont);
@@ -588,16 +540,6 @@ public class UI extends Application{
 		GPane.add(stringLabel, 0, 2);
 		GPane.add(stringsTextField,1,2);
 
-
-
-//		canvas.
-		/*
-		 * name
-		 * strings
-		 * octaves to shift
-		 * preposition
-		 * solver
-		 */
 		return GPane;
 	}
 
@@ -647,15 +589,19 @@ public class UI extends Application{
 	}
 
 	protected void solve() {
-		slave.solve();
+		Slave.solve();
+	}
+
+	protected void pause() {
+		Slave.pause();
 	}
 
 	protected void playerStop() {
-		slave.playerStop();
+		Slave.playerStop();
 	}
 
 	protected void play() {
-		slave.play();
+		Slave.play();
 	}
 
 	private FlowPane BuildButtons(){
@@ -707,9 +653,16 @@ public class UI extends Application{
 			@Override
 			public void handle(ActionEvent event) {solve();}});
 
+		Button pauseBtn = new Button();
+		pauseBtn.setText("Pause");
+		pauseBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {pause();}});
+
+
 		FlowPane buttonPanel =  new FlowPane();
 		buttonPanel.setPadding(new Insets(3, 0, 0, 3));
-		buttonPanel.getChildren().addAll( playBtn, stpBtn, saveBtn, loadBtn, solveBtn);
+		buttonPanel.getChildren().addAll( playBtn, pauseBtn, stpBtn, saveBtn, loadBtn, solveBtn);
 
 		return buttonPanel;
 	}
