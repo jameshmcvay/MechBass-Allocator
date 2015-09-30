@@ -132,7 +132,7 @@ public class Slave {
 		bassTrack = i;
 	}
 
-	protected List<Conflict> solve() {
+	protected static List<Conflict> solve() {
 
 		if (curMIDI != null)
 			try {
@@ -147,6 +147,7 @@ public class Slave {
 
 				// give the simulation the new midi
 				if (sim!=null) sim.setSequence(curMIDI);
+				curMIDI = Cleaner.prePos(curMIDI, prepositionDelay, setOfStrings, prepositionLength);
 				return setOfConflicts;
 			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
