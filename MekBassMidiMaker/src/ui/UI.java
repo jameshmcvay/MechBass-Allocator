@@ -202,9 +202,22 @@ public class UI extends Application{
 		MenuItem NC = new MenuItem("New Config");
 	        NC.setOnAction(new EventHandler<ActionEvent>() {
 	        	public void handle(ActionEvent t) {
-	        		doPopUp();
+	        		doSetupWindow();
 	        	}
 	        });
+        MenuItem OC = new MenuItem("Open Config");
+        OC.setOnAction(new EventHandler<ActionEvent>() {
+        	public void handle(ActionEvent t) {
+					try {
+						File fi = fileChooser("Select a Configuration File");
+
+						if(fi != null){
+							Slave.parse(fi);
+						}
+					} catch (IOException | InvalidMidiDataException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();}}
+        	});
 	    MenuItem OM = new MenuItem("Open MIDI File");
 	        OM.setOnAction(new EventHandler<ActionEvent>() {
 	        	public void handle(ActionEvent t) {
@@ -217,6 +230,7 @@ public class UI extends Application{
 	    			BassTrackComboBox.setOnAction(temp);
 	    		}
 	        });
+
 	    MenuItem SaM = new MenuItem("Save MIDI File");
 	        SaM.setOnAction(new EventHandler<ActionEvent>() {
 	        	public void handle(ActionEvent t) {
@@ -235,7 +249,7 @@ public class UI extends Application{
 	        		System.exit(0);
 	        	}
 	        });
-	    menuFile.getItems().addAll(NC, OM, SaM, SoM, Q);
+	    menuFile.getItems().addAll(NC, OC, OM, SaM, SoM, Q);
 	}
 
 	private void setupEditMenu(Menu menuPlay) {
