@@ -96,7 +96,7 @@ public class Cleaner {
 	 */
 	public static int scanTimings(Sequence seq, MekString[] strings){
 		int conflicts = 0;
-		float tickScaling = (float)seq.getMicrosecondLength()/1000;
+		float tickScaling = (float)seq.getMicrosecondLength()/10000;
 		tickScaling = tickScaling/(float)seq.getTickLength();
 		//for each track
 		for(int i = 0; i < seq.getTracks().length; i++){
@@ -180,9 +180,8 @@ public class Cleaner {
 	public static Sequence prePos(Sequence in, long preTime, MekString[] strings, long length){
 		Sequence seq = fixChannel(in);
 		//for each track
-		float tickScaling = (float)seq.getMicrosecondLength()/1000;
-		tickScaling = tickScaling/seq.getTickLength();
-		long preTicks = preTime / (long) tickScaling;
+		float tickScaling = 1;
+		long preTicks = (long) (tickScaling * preTime);
 		for(int i = 1; i < seq.getTracks().length; i++){
 			Track cur = seq.getTracks()[i];
 			//add a prepos event for each note that is not consecutive
@@ -253,6 +252,17 @@ public class Cleaner {
 								j++;
 							}
 						}
+					}
+				}
+				//if the note is a metamessage we need to check if it is a tempo change and if so change the tempo.
+				else if(midNoteOn instanceof MetaMessage){
+					MetaMessage meta = (MetaMessage) midNoteOn;
+					if(meta.getType() == 0x51){
+						byte[] data = meta.getData();
+						int tempo = (data[0] & 0xff) << 16 | (data[1] & 0xff) << 8 | (data[2] & 0xff);
+						tickScaling = 1000*seq.getResolution();
+						tickScaling = tickScaling / tempo;
+						preTicks = (long) (tickScaling * preTime);
 					}
 				}
 			}
