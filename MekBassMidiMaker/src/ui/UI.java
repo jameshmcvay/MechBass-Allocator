@@ -131,7 +131,7 @@ public class UI extends Application{
 	    //TODO Make GUILISE
 	    slave = new Slave();
 	    Slave.setUI(this);
-	    Console console = new Console(getConsoleTextInput(),slave);
+	    Console console = new Console(getConsoleTextInput(),getConsoleOutput(), slave);
 		Slave.setConsole(console);
 
 	    PrintStream ps = new PrintStream(console, true);
@@ -174,6 +174,7 @@ public class UI extends Application{
 		 * */
 		setupMenuBar(scene);
 	}
+
 
 	private void setupMenuBar(Scene scene){
 		/*
@@ -946,6 +947,11 @@ public class UI extends Application{
 		return textInputConsole;
 	}
 
+
+
+	private TextArea getConsoleOutput() {
+		return textOutputConsole;
+	}
 
 	private void handleConsoleKeyEvent(KeyEvent event){
 			switch (event.getCode() +"") { //added to the empty string for implicit conversion

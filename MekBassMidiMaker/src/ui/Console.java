@@ -34,7 +34,8 @@ import tools.Player;
 public class Console extends OutputStream {
 
 	boolean guiMode;
-	TextField area;
+	TextField textInputField;
+	TextArea textOutputField;
 	BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 	String input = "i";
 	Slave slave;
@@ -92,9 +93,10 @@ public class Console extends OutputStream {
 	 * @param slave
 	 *            The slave instance
 	 */
-	public Console(TextField text, Slave slave) {
+	public Console(TextField text, TextArea textOutputField, Slave slave) {
 		guiMode = true;
-		area = text;
+		textInputField = text;
+		this.textOutputField =  textOutputField;
 		this.slave = slave;
 	}
 
@@ -126,8 +128,8 @@ public class Console extends OutputStream {
 
 	protected void read(String text) {
 		if (text.equals("") || text == null || text.equals("\n")) {
-			area.setText("No command input");
-			area.appendText("");
+			textInputField.setText("No command input");
+			textInputField.appendText("");
 			return;
 		}
 		String[] lines = text.split("\n");
@@ -294,7 +296,7 @@ public class Console extends OutputStream {
 	}
 
 	protected void prevCommand() {
-		area.clear();
+		textInputField.clear();
 		this.SelectedCommand = prevCommand.pop();
 		output(allText + SelectedCommand);
 	}
@@ -397,7 +399,7 @@ public class Console extends OutputStream {
 	@Override
 	public void write(int i) throws IOException {
 		if (guiMode)
-			area.appendText(String.valueOf((char) i));
+			textInputField.appendText(String.valueOf((char) i));
 		else
 			System.out.write(i);
 	}
