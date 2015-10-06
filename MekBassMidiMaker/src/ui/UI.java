@@ -190,7 +190,7 @@ public class UI extends Application{
         Menu menuPlay = new Menu("Playback");
         setupEditMenu(menuPlay);
         // --- Menu View
-        Menu menuHelp = new Menu("HALP! WOT DOO!?");
+        Menu menuHelp = new Menu("Help");
         setupHelpMenu(menuHelp);
 
         menuBar.getMenus().addAll(menuFile, menuPlay, menuHelp);
