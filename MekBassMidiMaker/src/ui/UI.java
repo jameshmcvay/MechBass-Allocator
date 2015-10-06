@@ -148,12 +148,10 @@ public class UI extends Application{
 		    public void run() {
 		         Platform.runLater(new Runnable() {
 		            public void run() {
-//		                label.update();
-//		                javafxcomponent.doSomething();
-//		            	System.out.println("test");
 		            	if (sim.isPlaying()) {
-		            		sim.addTime(timerTime);
-		            		sim.addDrawStartTime(timerTime);
+		            		sim.tick();
+//		            		sim.addTime(timerTime);
+//		            		sim.addDrawStartTime(timerTime);
 		            	}
 		            	sim.draw(leftCanvas.getGraphicsContext2D(), 1);
 
@@ -190,7 +188,7 @@ public class UI extends Application{
         Menu menuPlay = new Menu("Playback");
         setupEditMenu(menuPlay);
         // --- Menu View
-        Menu menuHelp = new Menu("HALP! WOT DOO!?");
+        Menu menuHelp = new Menu("Help");
         setupHelpMenu(menuHelp);
 
         menuBar.getMenus().addAll(menuFile, menuPlay, menuHelp);
@@ -285,22 +283,193 @@ public class UI extends Application{
 	private void setupHelpMenu(Menu menuHelp) {
 		MenuItem about = new MenuItem("About");
 			about.setOnAction(new EventHandler<ActionEvent>() {
-		    	public void handle(ActionEvent t) {		}
+		    	public void handle(ActionEvent t) {
+		    		helpPopUps(0);
+		    	}
 		    });
 		MenuItem com = new MenuItem("Console Commands");
 		    com.setOnAction(new EventHandler<ActionEvent>() {
-		    	public void handle(ActionEvent t) {		}
+		    	public void handle(ActionEvent t) {
+		    		helpPopUps(1);
+		    	}
 		    });
 		MenuItem FAQs = new MenuItem("FAQs");
 		    FAQs.setOnAction(new EventHandler<ActionEvent>() {
-		    	public void handle(ActionEvent t) {		}
+		    	public void handle(ActionEvent t) {
+		    		helpPopUps(2);
+		    	}
 		    });
-		MenuItem controls = new MenuItem("Controls");
+		MenuItem controls = new MenuItem("Other Controls");
 			controls.setOnAction(new EventHandler<ActionEvent>() {
-		    	public void handle(ActionEvent t) {		}
+		    	public void handle(ActionEvent t) {
+		    		helpPopUps(3);
+		    	}
 		    });
 		menuHelp.getItems().addAll(about, com, FAQs, controls);
 
+	}
+
+
+	private void helpPopUps(int type){
+		// Set the Scene, and the stage.
+		Stage stage = new Stage();
+		stage.initModality(Modality.APPLICATION_MODAL);
+		stage.setOpacity(1);
+		GridPane GPane = new GridPane();
+		stage.setScene(new Scene(GPane));
+		TextArea text = new TextArea();
+		GPane.add(text, 0, 0);
+		stage.setResizable(false);
+		// Decide what help to give the user.
+		switch (type){
+		case 0:
+			// Set text.
+			stage.setTitle("About the MIDIAllocator");
+			text.setText
+			("This program was made at Victoria University for James, the "
+		   + "Creator of the MechBass. It was made by Andrew Palmer, Elliot "
+		   + "Wilde, Patrick Byers, Dean Newberry and Dylan Macdonald, with "
+		   + "early input from Greg Oswold, over the course of 12 weeks as part"
+		   + "of a course teaching Agile Programming Methodology.\n\n"
+		   + "The Purpose of this program is to strip the bass track out of a "
+		   + "MIDI file, then move the notes to different strings, such that it"
+		   + "can be played by James's MechBass.");
+
+			// Done.
+			break;
+
+		case 1:
+			stage.setTitle("Console Commands");
+			// Set text.
+			text.setText
+			("Console Commands:\nThese commands are case sensitive:\n\n"
+		   + ">>> d: Sets the configuration to default - perfect for hysteria "
+		   + "by Muse.\n"
+	       + ">>> open: Opens a MIDI file (specify filepath and name of file "
+	       + "after open).\n"
+           + ">>> openConfig: Opens a config file (specify filepath and name "
+           + "of file after openConfig).\n"
+           + ">>> solve: Works the magic of the program to let the MIDI file "
+           + "play on MechBass.\n"
+           + ">>> play: Plays the current MIDI file.\n"
+           + ">>> stop: Stops the current MIDI file.\n"
+           + ">>> octUp: Shifts the Octave of all the notes in the current MIDI"
+           + "file up by 3.\n"
+           + ">>> octDown: Shifts the Octave of all the notes in the current "
+           + "MIDI file down by 3.\n"
+           + ">>> save: Saves the current MIDI file.\n"
+           + ">>> saveConfig: Saves the current configuration.\n"
+           + ">>> setup: ???\n"
+           + ">>> config: ???\n"
+           + ">>> help: Slightly less useful help.\n"
+           + ">>> END: Ends the Program.");
+
+			// Done.
+			break;
+
+		case 2:
+			// Set text.
+			stage.setTitle("FAQs");
+			text.setText
+			("Q: Why did you make this program?\nA: Because James, the Creator "
+		   + "of MechBass has to painstakingly rearrange MIDI files by hand if "
+		   + "he wants to make a song play on MechBass. This way, with this "
+		   + "program he only has to alter a small number of notes to make the "
+		   + "song play, leaving more time for James to do... James stuff.\n\n"
+
+		   + "Q: What is MechBass?\nA: MechBass is a robot bass guitar. Yes, it"
+		   + "is *exactly* as awesome as it sounds. It was created by James, "
+		   + "and it is a fairly prominent fixture at most Open Days, used to "
+		   + "show off the Faculty of Engineering.\n\n"
+
+		   + "Q: What songs can MechBass play?\nA: Hysteria and Knights of "
+		   + "Cydonia by Muse definitely - the videos for them are on Youtube. "
+		   + "But with the creation of this program, we can (hopefully) expect "
+		   + "a lot more songs!\n\n"
+
+		   + "Q: Why is there there so many options to set Strings?\nA: THIS "
+		   + "program was originally meant to strip out the Bass track of a "
+		   + "MIDI file so MechBass could play it. However, in the future, "
+		   + "James may decide to make a different Mech-String-Instrument; if "
+		   + "this happens, the program should be ready to be used accordingly.");
+
+			// Done.
+			break;
+
+		case 3:
+			// Set text.
+			stage.setTitle("Other Controls");
+			text.setText
+			("NOT THE MENU BAR:\n\n==========\n\n"
+		   + "File Name: This is what your file will be called when you save "
+		   + "it.\n\n"
+
+		   + "Select Bass Track: The Track you will gut out of the MIDI file."
+		   + "if there is no MIDI file loaded, there will only be track 0.\n\n "
+
+		   + "Input Number of Strings: The number of Strings your "
+		   + "Mech-Instrument has. This is '4' for MechBass.\n\n"
+
+		   + "Play: Plays the current MIDI file.\n\n"
+
+		   + "Stop: Stops the current MIDI file.\n\n"
+
+		   + "Save: Saves the current MIDI file.\n\n"
+
+		   + "Load: Loads a MIDI file.\n\n"
+
+		   + "Solve: Guts the Selected Track out of the current MIDI file and "
+		   + "distributes them across a number of tracks equal to the number of"
+		   + "strings you have.\n\n==========\n\n"
+
+		   + "THE MENU BAR:\n\n==========\n\n"
+
+		   + "File ==> New Config: Allows you to more rigorously setup the "
+		   + "program.\n\n"
+
+		   + "File ==> Open MIDI File: Loads a MIDI file.\n\n"
+
+		   + "File ==> Save MIDI File: Saves the current MIDI file.\n\n"
+
+		   + "File ==> Solve MIDI File: Guts the Selected Track out of the "
+		   + "current MIDI file and distributes them across a number of tracks "
+		   + "equal to the number of strings you have.\n\n"
+
+		   + "File ==> Quit: ...Quits the program..."
+
+		   + "Playback ==> Play: Plays the current MIDI file.\n\n"
+
+		   + "Playback ==> Stop: Stops the current MIDI file.\n\n"
+
+		   + "Playback ==> Shift Octave Up: Shifts the Octave of all the notes "
+		   + "in the current MIDI file up by 1.\n\n"
+
+		   + "Help ==> About: A quick blurb about this program, and "
+		   + "why it was made.\n\n"
+
+		   + "Help ==> Console Commands: The commands you can use on"
+		   + "the Console.\n\n"
+
+		   + "Help ==> FAQs: Questions I think people might ask me "
+		   + "a lot. THIS MEANS WE HAVEN'T BEEN ASKED ENOUGH QUESTIONS FOR AN "
+		   + "FAQ.\n\n"
+
+		   + "Help ==> Other Controls: ... You can't be SERIOUS...\n"
+		   + "YOU ARE HERE.");
+
+			// Done
+			break;
+
+		default:
+			stage.setTitle("WHAT TH- HOW!? WHY?! WHAT DID YOU DO TO ME!?");
+			text.setText("Please forgive me. For you, there is no help. No hope.");
+			System.out.println("Please forgive me. For you, there is no help. No hope.");
+			break;
+		}
+		text.setEditable(false);
+		text.setWrapText(true);
+		text.setVisible(true);
+		stage.showAndWait();
 	}
 
 	Button setupNextBtn;
