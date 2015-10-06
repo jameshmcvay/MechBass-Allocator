@@ -105,9 +105,8 @@ public class MekString {
 	}
 	
 	public long differenceTick(int note1, int note2, float scale){
-		long thing = (long) ((float)differenceTime(note1,note2)/scale);
 //		System.out.printf("Difference in ticks: %d\n time: %d\n scale = %d\n", thing, differenceTime(note1,note2),(long)scale);
-		return differenceTime(note1,note2)/(long)scale;
+		return (long) (differenceTime(note1,note2)/scale);
 	}
 	
 	public boolean playable(int i){
