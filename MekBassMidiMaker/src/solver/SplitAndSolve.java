@@ -1,7 +1,9 @@
 package solver;
 
 import java.io.File;
+
 import solver.GreedySolver;
+
 import java.io.IOException;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -19,7 +21,8 @@ import tools.Player;
  *
  */
 public class SplitAndSolve {
-
+	private static MekString[] strings = new MekString[]{ new MekString(43, 56), new MekString(38, 51),
+		new MekString(33, 46), new MekString(28, 41)};
 
 	/**
 	 *
@@ -29,6 +32,9 @@ public class SplitAndSolve {
 	 */
 	public SplitAndSolve(Sequence seq, int tracks,int bass){
 		try{
+			for(MekString m: strings){
+				m.initTimings(300);
+			}
 			Solver blah =  new GreedySolver();
 			Sequence out = TrackSplitter.split(seq,tracks,bass);
 			out = blah.solve(out);
@@ -41,7 +47,7 @@ public class SplitAndSolve {
 			System.out.printf("Found %d unmoved events\n",out.getTracks()[0].size());
 //			seq.deleteTrack(seq.getTracks()[bass]);
 //			out.deleteTrack(out.getTracks()[0]);
-
+			out = Cleaner.prePos(out, 50, strings, 14);
 
 			try {
 				out = Cleaner.clean(out);
