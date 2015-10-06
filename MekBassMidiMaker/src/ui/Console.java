@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -80,6 +82,7 @@ public class Console extends OutputStream {
 	boolean fix = false;
 	List<NoteConflict> listOfNoteConflicts = new ArrayList<NoteConflict>();
 	Conflict curConflict;
+	Map<Integer, NoteConflict> corrections = new HashMap<Integer,NoteConflict>();
 	//int numString = 0;
 	//List<Integer> listOfStrings = new ArrayList<Integer>();
 
@@ -134,13 +137,15 @@ public class Console extends OutputStream {
 		}
 		String[] lines = text.split("\n");
 		String rawInput = lines[lines.length - 1].trim();
+		if(guiMode) {
 		output(rawInput);
 		textInputField.clear();
+		}
 		if (setup) {
 			setupParse(rawInput);
 		}
 		if (fix) {
-			correctError();
+			correctError(rawInput);
 		} else {
 			parse(rawInput);
 		}
@@ -244,7 +249,7 @@ public class Console extends OutputStream {
 				listOfConflicts = slave.solve();
 			break;
 		case "fix":
-			correctError();
+			correctError(rawInput);
 			break;
 		case "play":
 			slave.play();
@@ -344,7 +349,7 @@ public class Console extends OutputStream {
 		}
 	}
 
-	protected void correctError() {
+	protected void correctError(String input) {
 		if (listOfConflicts.size() == 0){
 			output("No conflicts founds, no need to fix");
 			fix = false;
@@ -353,19 +358,27 @@ public class Console extends OutputStream {
 		switch (resolution) {
 		case 0:
 			for (Conflict c:listOfConflicts){
-				if (!c.resolved()){
+				if (!c.resolved() && c.strings()!=0){
 					curConflict = c;
 					listOfNoteConflicts = c.getConf();
 					resolution++;
+					c.resolved();
 					break;
 				}
 			}
+			fix=false;
+			output("all errors fixed");
+			break;
 		case 1:
-			System.out.println(listOfNoteConflicts);
-			output("The note "+curConflict.getNote()+" is conflicting");
+			output("The note "+curConflict.getNote().getMessage().getMessage()[1]+" is conflicting");
 			output("The options are to:");
 			int i = 1;
+			corrections.clear();
 			for (NoteConflict nc:listOfNoteConflicts){
+				corrections.put(i, nc);
+				corrections.put(i+1, nc);
+				corrections.put(i+2, nc);
+				corrections.put(i+3, nc);
 				output("option "+i+", drop the note before in track "+nc.getTrack());
 				output("option "+(i+1)+", drop the note after in track "+nc.getTrack());
 				output("option "+(i+2)+", advance the end of the note before in track "+nc.getTrack());
@@ -373,6 +386,28 @@ public class Console extends OutputStream {
 				i=i+4;
 			}
 			output("type in the number of the option you would like to carryout");
+			resolution++;
+			break;
+		case 2:
+			int opt = Integer.parseInt(input);
+			int Action = opt%4;
+			NoteConflict nCon = corrections.get(opt);
+			switch(Action){
+			case 0:
+				nCon.dropFirst();
+				break;
+			case 1:
+				nCon.dropLast();
+				break;
+			case 2:
+				//TODO nCon.delayFirstEnd();
+				break;
+			case 3:
+				//TODO nCon.delaySecondStart();
+				break;
+			}
+			resolution=0;
+			correctError("");
 		}
 	}
 
