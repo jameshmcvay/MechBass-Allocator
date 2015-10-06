@@ -958,7 +958,8 @@ public class UI extends Application{
 			case "ENTER":
 				slave.getConsole().read(textInputConsole.getText());
 	            break;
-
+			case "UP":
+				slave.getConsole().CallPrevious();
 			default:
 				break;
 			}
