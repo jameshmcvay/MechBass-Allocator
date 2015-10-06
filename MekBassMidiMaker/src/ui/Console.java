@@ -16,6 +16,7 @@ import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence;
 
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import solver.Conflict;
 import solver.MekString;
 import solver.NoteConflict;
@@ -33,7 +34,7 @@ import tools.Player;
 public class Console extends OutputStream {
 
 	boolean guiMode;
-	TextArea area;
+	TextField area;
 	BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 	String input = "i";
 	Slave slave;
@@ -55,9 +56,9 @@ public class Console extends OutputStream {
 	int i;
 	long prepTime;
 	long prepSize;
-	
+
 	// Valid Commands so far:
-	String[] validCommands = {"d",		   // Sets the configuration to default - perfect for hysteria. 
+	String[] validCommands = {"d",		   // Sets the configuration to default - perfect for hysteria.
 	                          "open",	   // Opens a MIDI file (specify filepath and name of file after open).
 	                          "openConfig",// Opens a config file (specify filepath and name of file after openConfig).
 	                          "solve",	   // Works the magic of the program to let the MIDI file play on MechBass.
@@ -91,7 +92,7 @@ public class Console extends OutputStream {
 	 * @param slave
 	 *            The slave instance
 	 */
-	public Console(TextArea text, Slave slave) {
+	public Console(TextField text, Slave slave) {
 		guiMode = true;
 		area = text;
 		this.slave = slave;

@@ -62,7 +62,8 @@ public class UI extends Application{
 	protected static String args[];
 
 	Slave slave;
-	TextArea textConsole = null; //the console
+	TextArea textOutputConsole = null;
+	TextField textInputConsole = null; //the console
 	Simulation sim;
 	Timer timer;
 	int timerTime = 1000/60;
@@ -82,9 +83,15 @@ public class UI extends Application{
 		GridPane gridPane = new GridPane();
 
 		//Initialise the console
-		textConsole = new TextArea();
+		textInputConsole = new TextField();
+		textOutputConsole =  new TextArea();
+
 		leftCanvasWidth = width * (3.0 / 4.0);
 		double canvasHeight = height * 0.667;
+
+//		textOutputConsole.setPrefColumnCount(100);
+//		textOutputConsole.setPrefWidth(width);
+		textOutputConsole.setPrefHeight(height * 0.332);
 
 
 		Canvas leftCanvas = new Canvas();
@@ -99,12 +106,7 @@ public class UI extends Application{
 //		GridPane leftGUIGridPane = buildLeftGUI();
 
 
-		textConsole.setPrefColumnCount(100);
-		textConsole.setPrefRowCount(10);
-		textConsole.setWrapText(true);
-		textConsole.setPrefWidth(leftCanvasWidth);
-		textConsole.setPrefHeight(height * 0.332);
-		textConsole.setUserData("TextConsole");
+
 
 //		GridPane rightLowPanel = new GridPane();
 
@@ -113,12 +115,13 @@ public class UI extends Application{
 
 		//Add elems to the gridPane
 		gridPane.add(leftCanvas, 0, 0);
-		gridPane.add(textConsole, 0, 1);
+		gridPane.add(textOutputConsole, 0, 1);
+		gridPane.add(textInputConsole, 0, 2);
 		gridPane.add(buttonPanel, 1, 0);
 
 		Scene scene =  new Scene(gridPane,width,height);
 
-	    textConsole.setOnKeyReleased(new EventHandler<KeyEvent>() {
+	    textInputConsole.setOnKeyReleased(new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
 				handleConsoleKeyEvent(event);
@@ -128,14 +131,14 @@ public class UI extends Application{
 	    //TODO Make GUILISE
 	    slave = new Slave();
 	    Slave.setUI(this);
-	    Console console = new Console(getConsoleTextArea(),slave);
+	    Console console = new Console(getConsoleTextInput(),slave);
 		Slave.setConsole(console);
 
 	    PrintStream ps = new PrintStream(console, true);
 	    System.setOut(ps);
 	    System.setErr(ps);
 
-	    primaryStage.setTitle("MIDIAllocator");
+	    primaryStage.setTitle("DuckDuckGo");//primaryStage.setTitle("MIDIAllocator");
 	    primaryStage.setScene(scene);
 	    primaryStage.show();
 
@@ -939,15 +942,15 @@ public class UI extends Application{
 	}
 
 
-	public TextArea getConsoleTextArea(){
-		return textConsole;
+	public TextField getConsoleTextInput(){
+		return textInputConsole;
 	}
 
 
 	private void handleConsoleKeyEvent(KeyEvent event){
 			switch (event.getCode() +"") { //added to the empty string for implicit conversion
 			case "ENTER":
-				slave.getConsole().read(textConsole.getText());
+				slave.getConsole().read(textInputConsole.getText());
 	            break;
 
 			default:
