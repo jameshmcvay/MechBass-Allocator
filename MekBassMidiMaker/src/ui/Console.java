@@ -285,7 +285,6 @@ public class Console extends OutputStream {
 			output("Command not recongnized");
 		}
 		prevCommand = commandStack;
-		// allText = area.getText();
 	}
 
 	/**
@@ -399,7 +398,8 @@ public class Console extends OutputStream {
 	}
 
 	protected void CallPrevious(){
-
+		String command = prevCommand.pop();
+		textInputField.setText(command);
 	}
 
 	@Override
