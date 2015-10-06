@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Sequence;
@@ -32,8 +33,11 @@ public class Simulation {
 
 	private Sequence seq=null;
 	List<Note>[] notes = null;
+	int resolution;
 	long position;
 	long drawStartTime;
+
+	long lastTickTime;
 
 	private MekString[] strings = null;
 	private float[] picks = null;
@@ -65,6 +69,9 @@ public class Simulation {
 	@SuppressWarnings("unchecked")
 	public void setSequence(Sequence sequence){
 		if (sequence == null) return;
+		this.resolution = sequence.getResolution();
+		System.out.println("Resolution: " + resolution);
+		int bpm = 0;
 		this.seq = sequence;
 //		this.position = 0;
 //		this.drawStartTime = 0;
@@ -80,7 +87,7 @@ public class Simulation {
 			Map<Integer, Integer> progress = new HashMap<Integer, Integer>();
 			notes[j] = new ArrayList<Note>();
 			Track tr = tracks[j];
-			for (int i=0; i<tr.size(); ++i){
+			for (int i=0; i<tr.size() ; ++i){
 				MidiMessage mid = tr.get(i).getMessage();
 				if (mid instanceof ShortMessage){
 					ShortMessage shrt = (ShortMessage) mid;
@@ -94,16 +101,28 @@ public class Simulation {
 //							System.out.println("Note: " + shrt.getData1() + ", No corresponding note on");
 							break;
 						}
-						Note n = new Note(shrt.getData1(), on.getTick() , tr.get(i).getTick());
+						Note n = new Note(shrt.getData1(),
+										  (long) (on.getTick() * (60000. / (bpm * resolution))),
+										  (long) (tr.get(i).getTick()* (60000. / (bpm * resolution))) );
 						notes[j].add(n);
 						break;
 
 						default:
 //							System.out.println("other note");
 					}
+				} else if (mid instanceof MetaMessage){
+//					sequence.getResolution()
+					MetaMessage met = (MetaMessage) mid;
+					if (met.getType() == 0x51){
+						byte[] data = met.getData();
+						bpm =  60000000 / ((data[0] & 0xff) << 16 | (data[1] & 0xff) << 8 | (data[2] & 0xff));
+//						System.out.printf("Track %d, Timestamp: %d, Tempo Change: %d %f\n", j, tr.get(i).getTick(),bpm, (60000. / (bpm * resolution)));
+
+					}
 				}
 			}
 		}
+
 		strings = Slave.getMekStringArray();
 		if (strings != null) {
 //			notes = Arrays.copyOfRange(notes, 1, notes.length);
@@ -114,16 +133,19 @@ public class Simulation {
 	// something something threads
 	public void play(){
 		playing = true;
+//		lastTickTime = System.currentTimeMillis();
 	}
 
 	public void pause(){
 		playing = false;
+		lastTickTime = 0;
 	}
 
 	public void stop(){
 		playing = false;
 		position = 0;
 		drawStartTime = 0;
+		lastTickTime = 0;
 	}
 
 	public long addDrawStartTime(long add){
@@ -138,6 +160,15 @@ public class Simulation {
 		return position=set;
 	}
 
+	public void tick(){
+		long time = System.currentTimeMillis();
+		if (lastTickTime != 0) {
+			addTime(time-lastTickTime);
+			addDrawStartTime(time-lastTickTime);
+		}
+		lastTickTime = time;
+	}
+
 	public long tick(long time){
 		if (picks==null) return time;
 		// move the picks
@@ -150,6 +181,7 @@ public class Simulation {
 	}
 
 	public void draw(GraphicsContext gc, double hscale){
+//		long time = System.currentTimeMillis();
 		// get the dimensions of the canvas
 		double width = gc.getCanvas().getWidth();
 		double height= gc.getCanvas().getHeight();
@@ -164,10 +196,9 @@ public class Simulation {
 
 
 		// us/tick
-		double usPerTick = 1;
 		// correction to make the size of seqments timing independent
-		if (seq!=null) usPerTick = (double)seq.getMicrosecondLength()/seq.getTickLength();
-		hscale /= 4.0/usPerTick*1000.0; // 2.0 is magic
+//		if (seq!=null) usPerTick = (double)seq.getMicrosecondLength()/seq.getTickLength();
+//		hscale /= 4.0/usPerTick*1000.0; // 2.0 is magic
 //		if (seq!=null) usPerTick = (double)seq.getTickLength()/seq.getMicrosecondLength();
 //		hscale = 1; // 2.0 is magic
 //		System.out.println(usPerTick);
@@ -179,14 +210,14 @@ public class Simulation {
 		do {
 			u+=200;
 //			System.out.println(u);
-			double pos = u/usPerTick*1000.0;
+			double pos = u;
 //			System.out.println(pos);
 			if ((pos-drawStartTime)*hscale < width && (pos-drawStartTime)*hscale > left-100){
 				gc.fillRect(left + (pos-drawStartTime)*hscale, height - 2, 2, height);
 				gc.fillText(String.format("%#.2f", u/1000.0),
 						left+(pos-drawStartTime-10)*hscale, height-10-(u%100)/20);
 			}
-		} while ((u/usPerTick*1000.0-drawStartTime)*hscale < width);
+		} while ((u-drawStartTime)*hscale < width);
 		// then, if we don't have a sequence to display, we don't have anything to display
 		if (seq==null) return;
 		strings = Slave.getMekStringArray();
