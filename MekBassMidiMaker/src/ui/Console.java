@@ -134,6 +134,8 @@ public class Console extends OutputStream {
 		}
 		String[] lines = text.split("\n");
 		String rawInput = lines[lines.length - 1].trim();
+		output(rawInput);
+		textInputField.clear();
 		if (setup) {
 			setupParse(rawInput);
 		}
@@ -396,10 +398,14 @@ public class Console extends OutputStream {
 		}
 	}
 
+	protected void CallPrevious(){
+
+	}
+
 	@Override
 	public void write(int i) throws IOException {
 		if (guiMode)
-			textInputField.appendText(String.valueOf((char) i));
+			textOutputField.appendText(String.valueOf((char) i));
 		else
 			System.out.write(i);
 	}
