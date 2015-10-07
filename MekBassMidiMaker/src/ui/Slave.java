@@ -132,6 +132,10 @@ public class Slave {
 		bassTrack = i;
 	}
 
+	public static int getBassTrack(){
+		return bassTrack;
+	}
+
 	protected static List<Conflict> solve() {
 
 		if (curMIDI != null)
@@ -163,6 +167,10 @@ public class Slave {
 				System.out.println("Could not save file");
 			}
 		}
+	}
+
+	protected List<Conflict> getConflicts(){
+		return setOfConflicts;
 	}
 
 	protected static void save(File fileName) {

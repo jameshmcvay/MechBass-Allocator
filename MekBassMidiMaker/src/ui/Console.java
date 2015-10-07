@@ -1,7 +1,5 @@
 package ui;
 
-import helperCode.OctaveShifter;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -13,18 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.Sequence;
-
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import solver.Conflict;
 import solver.MekString;
 import solver.NoteConflict;
-import solver.Solver;
-import solver.TrackSplitter;
-import tools.Player;
 
 /**
  * The console used in both the GUI and non-GUI modes, it is responsible for
@@ -135,8 +126,7 @@ public class Console extends OutputStream {
 			textInputField.appendText("");
 			return;
 		}
-		String[] lines = text.split("\n");
-		String rawInput = lines[lines.length - 1].trim();
+		String rawInput = text.trim();
 		if(guiMode) {
 		output(rawInput);
 		textInputField.clear();
@@ -144,7 +134,7 @@ public class Console extends OutputStream {
 		if (setup) {
 			setupParse(rawInput);
 		}
-		if (fix) {
+		else if (fix) {
 			correctError(rawInput);
 		} else {
 			parse(rawInput);
@@ -246,22 +236,23 @@ public class Console extends OutputStream {
 			if (input.length > 1) {
 				this.solve(rawInput);
 			} else
-				listOfConflicts = slave.solve();
+				listOfConflicts = Slave.solve();
 			break;
 		case "fix":
+			listOfConflicts = slave.getConflicts();
 			correctError(rawInput);
 			break;
 		case "play":
-			slave.play();
+			Slave.play();
 			break;
 		case "stop":
-			slave.playerStop();
+			Slave.playerStop();
 			break;
 		case "octUp":
-			slave.octaveUp();
+			Slave.octaveUp();
 			break;
 		case "octDown":
-			slave.octaveDown();
+			Slave.octaveDown();
 			break;
 		case "save":
 			if (input.length > 1) {
@@ -282,6 +273,12 @@ public class Console extends OutputStream {
 		case "config":
 			Slave.getConfig();
 			break;
+		case "basstrack":
+			if (input.length > 1){
+				this.setBassTrack(rawInput);
+			}
+			else output("Bass track is set to track "+Slave.getBassTrack());
+			break;
 		case "help":
 			output("There is no help all hope is lost");
 		case "END":
@@ -301,11 +298,6 @@ public class Console extends OutputStream {
 		return guiMode;
 	}
 
-	protected void prevCommand() {
-		textInputField.clear();
-		this.SelectedCommand = prevCommand.pop();
-		output(allText + SelectedCommand);
-	}
 
 	protected void open(String input) {
 		String FileName = input.substring(4).replace("\"", "").trim();
@@ -332,6 +324,12 @@ public class Console extends OutputStream {
 		Slave.saveConfig(fi);
 	}
 
+	protected void setBassTrack(String input){
+		int track = Integer.parseInt(input.substring(9).replace("\"", "").trim());
+		Slave.setBassTrack(track);
+		output("Bass Track is now set to track "+track);
+	}
+
 	protected void save(String input) {
 		String fileName = input.substring(4).replace("\"", "").trim();
 		Slave.save(fileName);
@@ -345,7 +343,7 @@ public class Console extends OutputStream {
 	protected void solve(String input) {
 		String FileName = input.substring(5).replace("\"", "").trim();
 		if (Slave.setCurMIDI(FileName)) {
-			listOfConflicts = slave.solve();
+			listOfConflicts = Slave.solve();
 		}
 	}
 
@@ -357,6 +355,7 @@ public class Console extends OutputStream {
 		}
 		switch (resolution) {
 		case 0:
+			Boolean solved = true;
 			for (Conflict c:listOfConflicts){
 				if (!c.resolved() && c.strings()!=0){
 					curConflict = c;
@@ -366,9 +365,11 @@ public class Console extends OutputStream {
 					break;
 				}
 			}
+			if(!solved){
 			fix=false;
 			output("all errors fixed");
-			break;
+			return;
+			}
 		case 1:
 			output("The note "+curConflict.getNote().getMessage().getMessage()[1]+" is conflicting");
 			output("The options are to:");
@@ -387,7 +388,7 @@ public class Console extends OutputStream {
 			}
 			output("type in the number of the option you would like to carryout");
 			resolution++;
-			break;
+			return;
 		case 2:
 			int opt = Integer.parseInt(input);
 			int Action = opt%4;
