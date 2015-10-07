@@ -16,6 +16,7 @@ import javax.sound.midi.Sequence;
 
 import solver.Cleaner;
 import solver.Conflict;
+import solver.GraphSolver;
 import solver.MekString;
 import solver.GreedySolver;
 import solver.Solver;
@@ -141,8 +142,10 @@ public class Slave {
 		if (curMIDI != null)
 			try {
 				Solver greedy = new GreedySolver(setOfStrings);
+				Solver graph = new GraphSolver(setOfStrings);
 				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
-				curMIDI = greedy.solve(curMIDI);
+				//curMIDI = greedy.solve(curMIDI);
+				curMIDI = graph.solve(curMIDI);
 				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
 
 				//serve users valid choices
