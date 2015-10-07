@@ -144,8 +144,8 @@ public class Slave {
 				Solver greedy = new GreedySolver(setOfStrings);
 				Solver graph = new GraphSolver(setOfStrings);
 				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
-				//curMIDI = greedy.solve(curMIDI);
-				curMIDI = graph.solve(curMIDI);
+				curMIDI = greedy.solve(curMIDI);
+//				curMIDI = graph.solve(curMIDI);
 				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
 
 				//serve users valid choices
@@ -153,8 +153,8 @@ public class Slave {
 				//call appropriate method
 
 				// give the simulation the new midi
-				if (sim!=null) sim.setSequence(curMIDI);
 				curMIDI = Cleaner.prePos(curMIDI, prepositionDelay, setOfStrings, prepositionLength);
+				if (sim!=null) sim.setSequence(curMIDI);
 				return setOfConflicts;
 			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
