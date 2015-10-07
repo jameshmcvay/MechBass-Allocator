@@ -1,27 +1,21 @@
 package ui;
 
-import helperCode.OctaveShifter;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.Sequence;
-
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import solver.Conflict;
 import solver.MekString;
 import solver.NoteConflict;
-import solver.Solver;
-import solver.TrackSplitter;
-import tools.Player;
 
 /**
  * The console used in both the GUI and non-GUI modes, it is responsible for
@@ -33,12 +27,14 @@ import tools.Player;
 public class Console extends OutputStream {
 
 	boolean guiMode;
-	TextArea area;
+	TextField textInputField;
+	TextArea textOutputField;
 	BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 	String input = "i";
 	Slave slave;
 	Stack<String> prevCommand = new Stack<String>();
 	Stack<String> commandStack = new Stack<String>();
+	Stack<String> nextCommand = new Stack<String>();
 	String SelectedCommand;
 	String allText;
 
@@ -55,31 +51,40 @@ public class Console extends OutputStream {
 	int i;
 	long prepTime;
 	long prepSize;
-	
+
 	// Valid Commands so far:
-	String[] validCommands = {"d",		   // Sets the configuration to default - perfect for hysteria. 
-	                          "open",	   // Opens a MIDI file (specify filepath and name of file after open).
-	                          "openConfig",// Opens a config file (specify filepath and name of file after openConfig).
-	                          "solve",	   // Works the magic of the program to let the MIDI file play on MechBass.
-	                          "play",	   // Plays the sequence
-	                          "stop",	   // Stops the sequence
-	                          "octUp",	   // Shifts the Octave of all the notes in the sequence up by 3
-	                          "octDown",   // Shifts the Octave of all the notes in the sequence down by 3
-	                          "save",	   // Saves the current sequence.
-	                          "saveConfig",// Saves the current configuration.
-	                          "setup",	   // ???
-	                          "config",	   // ???
-	                          "help",	   // A SUPER INSPIRING MESSAGE TO FILL THE MEEKEST HEART WITH THE COURAGE OF A LION.
-	                          "END"		   // Ends the program's eternal misery and suffering at last. Such benevolence.
-	                          			   // ANYTHING ELSE: NAH BRUH.
+	String[] validCommands = { "d", // Sets the configuration to default -
+									// perfect for hysteria.
+			"open", // Opens a MIDI file (specify filepath and name of file
+					// after open).
+			"openConfig",// Opens a config file (specify filepath and name of
+							// file after openConfig).
+			"solve", // Works the magic of the program to let the MIDI file play
+						// on MechBass.
+			"play", // Plays the sequence
+			"stop", // Stops the sequence
+			"octUp", // Shifts the Octave of all the notes in the sequence up by
+						// 3
+			"octDown", // Shifts the Octave of all the notes in the sequence
+						// down by 3
+			"save", // Saves the current sequence.
+			"saveConfig",// Saves the current configuration.
+			"setup", // ???
+			"config", // ???
+			"help", // A SUPER INSPIRING MESSAGE TO FILL THE MEEKEST HEART WITH
+					// THE COURAGE OF A LION.
+			"END" // Ends the program's eternal misery and suffering at last.
+					// Such benevolence.
+					// ANYTHING ELSE: NAH BRUH.
 	};
 
 	int resolution;
 	boolean fix = false;
 	List<NoteConflict> listOfNoteConflicts = new ArrayList<NoteConflict>();
 	Conflict curConflict;
-	//int numString = 0;
-	//List<Integer> listOfStrings = new ArrayList<Integer>();
+	Map<Integer, NoteConflict> corrections = new HashMap<Integer, NoteConflict>();
+	// int numString = 0;
+	// List<Integer> listOfStrings = new ArrayList<Integer>();
 
 	List<Conflict> listOfConflicts;
 
@@ -91,9 +96,10 @@ public class Console extends OutputStream {
 	 * @param slave
 	 *            The slave instance
 	 */
-	public Console(TextArea text, Slave slave) {
+	public Console(TextField text, TextArea textOutputField, Slave slave) {
 		guiMode = true;
-		area = text;
+		textInputField = text;
+		this.textOutputField = textOutputField;
 		this.slave = slave;
 	}
 
@@ -125,17 +131,19 @@ public class Console extends OutputStream {
 
 	protected void read(String text) {
 		if (text.equals("") || text == null || text.equals("\n")) {
-			area.setText("No command input");
-			area.appendText("");
+			textInputField.setText("No command input");
+			textInputField.appendText("");
 			return;
 		}
-		String[] lines = text.split("\n");
-		String rawInput = lines[lines.length - 1].trim();
+		String rawInput = text.trim();
+		if (guiMode) {
+			output(rawInput);
+			textInputField.clear();
+		}
 		if (setup) {
 			setupParse(rawInput);
-		}
-		if (fix) {
-			correctError();
+		} else if (fix) {
+			correctError(rawInput);
 		} else {
 			parse(rawInput);
 		}
@@ -236,22 +244,23 @@ public class Console extends OutputStream {
 			if (input.length > 1) {
 				this.solve(rawInput);
 			} else
-				listOfConflicts = slave.solve();
+				listOfConflicts = Slave.solve();
 			break;
 		case "fix":
-			correctError();
+			listOfConflicts = slave.getConflicts();
+			correctError(rawInput);
 			break;
 		case "play":
-			slave.play();
+			Slave.play();
 			break;
 		case "stop":
-			slave.playerStop();
+			Slave.playerStop();
 			break;
 		case "octUp":
-			slave.octaveUp();
+			Slave.octaveUp();
 			break;
 		case "octDown":
-			slave.octaveDown();
+			Slave.octaveDown();
 			break;
 		case "save":
 			if (input.length > 1) {
@@ -272,6 +281,12 @@ public class Console extends OutputStream {
 		case "config":
 			Slave.getConfig();
 			break;
+		case "basstrack":
+			if (input.length > 1) {
+				this.setBassTrack(rawInput);
+			} else
+				output("Bass track is set to track " + Slave.getBassTrack());
+			break;
 		case "help":
 			output("There is no help all hope is lost");
 		case "END":
@@ -280,7 +295,7 @@ public class Console extends OutputStream {
 			output("Command not recongnized");
 		}
 		prevCommand = commandStack;
-		// allText = area.getText();
+		nextCommand.empty();
 	}
 
 	/**
@@ -290,12 +305,6 @@ public class Console extends OutputStream {
 	 */
 	protected boolean getGUIMode() {
 		return guiMode;
-	}
-
-	protected void prevCommand() {
-		area.clear();
-		this.SelectedCommand = prevCommand.pop();
-		output(allText + SelectedCommand);
 	}
 
 	protected void open(String input) {
@@ -323,6 +332,13 @@ public class Console extends OutputStream {
 		Slave.saveConfig(fi);
 	}
 
+	protected void setBassTrack(String input) {
+		int track = Integer.parseInt(input.substring(9).replace("\"", "")
+				.trim());
+		Slave.setBassTrack(track);
+		output("Bass Track is now set to track " + track);
+	}
+
 	protected void save(String input) {
 		String fileName = input.substring(4).replace("\"", "").trim();
 		Slave.save(fileName);
@@ -336,39 +352,80 @@ public class Console extends OutputStream {
 	protected void solve(String input) {
 		String FileName = input.substring(5).replace("\"", "").trim();
 		if (Slave.setCurMIDI(FileName)) {
-			listOfConflicts = slave.solve();
+			listOfConflicts = Slave.solve();
 		}
 	}
 
-	protected void correctError() {
-		if (listOfConflicts.size() == 0){
+	protected void correctError(String input) {
+		if (listOfConflicts.size() == 0) {
 			output("No conflicts founds, no need to fix");
 			fix = false;
 			return;
 		}
 		switch (resolution) {
 		case 0:
-			for (Conflict c:listOfConflicts){
-				if (!c.resolved()){
+			Boolean solved = true;
+			for (Conflict c : listOfConflicts) {
+				if (!c.resolved() && c.strings() != 0) {
 					curConflict = c;
 					listOfNoteConflicts = c.getConf();
 					resolution++;
+					c.resolved();
 					break;
 				}
 			}
+			if (!solved) {
+				fix = false;
+				output("all errors fixed");
+				return;
+			}
 		case 1:
-			System.out.println(listOfNoteConflicts);
-			output("The note "+curConflict.getNote()+" is conflicting");
+			output("The note "
+					+ curConflict.getNote().getMessage().getMessage()[1]
+					+ " is conflicting");
 			output("The options are to:");
 			int i = 1;
-			for (NoteConflict nc:listOfNoteConflicts){
-				output("option "+i+", drop the note before in track "+nc.getTrack());
-				output("option "+(i+1)+", drop the note after in track "+nc.getTrack());
-				output("option "+(i+2)+", advance the end of the note before in track "+nc.getTrack());
-				output("option "+(i+3)+", delay the start of the note after in track "+nc.getTrack());
-				i=i+4;
+			corrections.clear();
+			for (NoteConflict nc : listOfNoteConflicts) {
+				corrections.put(i, nc);
+				corrections.put(i + 1, nc);
+				corrections.put(i + 2, nc);
+				corrections.put(i + 3, nc);
+				output("option " + i + ", drop the note before in track "
+						+ nc.getTrack());
+				output("option " + (i + 1) + ", drop the note after in track "
+						+ nc.getTrack());
+				output("option " + (i + 2)
+						+ ", advance the end of the note before in track "
+						+ nc.getTrack());
+				output("option " + (i + 3)
+						+ ", delay the start of the note after in track "
+						+ nc.getTrack());
+				i = i + 4;
 			}
 			output("type in the number of the option you would like to carryout");
+			resolution++;
+			return;
+		case 2:
+			int opt = Integer.parseInt(input);
+			int Action = opt % 4;
+			NoteConflict nCon = corrections.get(opt);
+			switch (Action) {
+			case 0:
+				nCon.dropFirst();
+				break;
+			case 1:
+				nCon.dropLast();
+				break;
+			case 2:
+				// TODO nCon.delayFirstEnd();
+				break;
+			case 3:
+				// TODO nCon.delaySecondStart();
+				break;
+			}
+			resolution = 0;
+			correctError("");
 		}
 	}
 
@@ -393,10 +450,28 @@ public class Console extends OutputStream {
 		}
 	}
 
+	protected void CallPrevious() {
+		if (!prevCommand.isEmpty()) {
+			nextCommand.push(textInputField.getText());
+			String command = prevCommand.pop();
+			textInputField.setText(command);
+			textInputField.positionCaret(textInputField.getLength());
+		}
+	}
+
+	protected void callNext(){
+		if (!nextCommand.isEmpty()) {
+			prevCommand.push(textInputField.getText());
+			String command = nextCommand.pop();
+			textInputField.setText(command);
+			textInputField.positionCaret(textInputField.getLength());
+		}
+	}
+
 	@Override
 	public void write(int i) throws IOException {
 		if (guiMode)
-			area.appendText(String.valueOf((char) i));
+			textOutputField.appendText(String.valueOf((char) i));
 		else
 			System.out.write(i);
 	}

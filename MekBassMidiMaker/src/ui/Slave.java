@@ -16,6 +16,7 @@ import javax.sound.midi.Sequence;
 
 import solver.Cleaner;
 import solver.Conflict;
+import solver.GraphSolver;
 import solver.MekString;
 import solver.GreedySolver;
 import solver.Solver;
@@ -132,13 +133,19 @@ public class Slave {
 		bassTrack = i;
 	}
 
+	public static int getBassTrack(){
+		return bassTrack;
+	}
+
 	protected static List<Conflict> solve() {
 
 		if (curMIDI != null)
 			try {
 				Solver greedy = new GreedySolver(setOfStrings);
+				Solver graph = new GraphSolver(setOfStrings);
 				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
+//				curMIDI = graph.solve(curMIDI);
 				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
 
 				//serve users valid choices
@@ -146,8 +153,8 @@ public class Slave {
 				//call appropriate method
 
 				// give the simulation the new midi
-				if (sim!=null) sim.setSequence(curMIDI);
 				curMIDI = Cleaner.prePos(curMIDI, prepositionDelay, setOfStrings, prepositionLength);
+				if (sim!=null) sim.setSequence(curMIDI);
 				return setOfConflicts;
 			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
@@ -163,6 +170,10 @@ public class Slave {
 				System.out.println("Could not save file");
 			}
 		}
+	}
+
+	protected List<Conflict> getConflicts(){
+		return setOfConflicts;
 	}
 
 	protected static void save(File fileName) {

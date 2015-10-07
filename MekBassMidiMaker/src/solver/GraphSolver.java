@@ -17,7 +17,7 @@ public class GraphSolver implements Solver {
 	public GraphSolver(MekString[] str){
 		strings = str;
 	}
-//#YOLOSWAG
+
 	/**
 	 * Takes a Sequence, and splits it up into a pre-defined number of tracks,
 	 * dropping notes that do not fit within the constraints of the tracks,
@@ -146,6 +146,7 @@ public class GraphSolver implements Solver {
 						}
 					}
 				}// End of for each loop using "in" from stringNums as the variable
+				System.out.println(mode);
 				node.setStringToPlayOn(mode);
 			}// End of else clause.
 		}// End of ANOTHER for loop using "j" as the variable
@@ -157,8 +158,7 @@ public class GraphSolver implements Solver {
 			}
 			else{
 				seq.getTracks()[n.getStringToPlayOn()+1].add(tr.get(eventIndex));
-				if (!tr.remove(tr.get(eventIndex)))
-					eventIndex++;
+				eventIndex++;
 			}
 		}		
 		return seq;
