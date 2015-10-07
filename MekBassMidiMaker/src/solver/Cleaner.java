@@ -320,7 +320,7 @@ public class Cleaner {
 			}
 		}
 		System.out.println("Prepositioning added.");
-		Cleaner.clean(seq);
+//		Cleaner.clean(seq);
 		return fixChannel(seq);
 	}
 
