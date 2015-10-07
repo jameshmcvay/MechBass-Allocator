@@ -174,7 +174,7 @@ public class UI extends Application{
 //		            		sim.addTime(timerTime);
 //		            		sim.addDrawStartTime(timerTime);
 		            	}
-		            	sim.draw(leftCanvas.getGraphicsContext2D(), 1);
+		            	sim.draw(leftCanvas.getGraphicsContext2D(), 0.5);
 
 //		            	sim.addDrawStartTime(14);
 		            }
