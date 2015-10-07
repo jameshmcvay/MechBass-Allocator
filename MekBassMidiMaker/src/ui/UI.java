@@ -151,8 +151,8 @@ public class UI extends Application{
 		Slave.setConsole(console);
 
 	    PrintStream ps = new PrintStream(console, true);
-	    System.setOut(ps);
-	    System.setErr(ps);
+//	    System.setOut(ps);
+//	    System.setErr(ps);
 	    textInputConsole.requestFocus();
 
 	    primaryStage.setTitle("Windows Live");//primaryStage.setTitle("MIDIAllocator");
@@ -745,6 +745,9 @@ public class UI extends Application{
 			options = FXCollections.observableArrayList();
 
 			for(int i = 0; i < Slave.getSequence().getTracks().length; i++){
+//				System.out.println(Slave.getSequence().getTracks()[i].get(0).);
+
+
 				System.out.println(i);
 				options.add(i);
 			}
@@ -772,7 +775,7 @@ public class UI extends Application{
 	}
 
 	private FlowPane buildLeftPanel(){
-		double buttonMaxWidth = 800;
+		double buttonMaxWidth = 8000;
 		double buttonMaxHeight = 100;
 	    Button playBtn = new Button();//The play button
 		playBtn.setText("Play");
@@ -855,14 +858,23 @@ public class UI extends Application{
 			}
 		});
 
+		Button cleanButton = new Button("Clean");
+		cleanButton.setMaxWidth(buttonMaxWidth);
+		cleanButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {clean();}});
 
 
 		FlowPane buttonPanel =  new FlowPane(Orientation.VERTICAL);
 		buttonPanel.setColumnHalignment(HPos.LEFT);
 		buttonPanel.setPadding(new Insets(3, 0, 0, 3));
-		buttonPanel.getChildren().addAll( playBtn, pauseBtn, stpBtn, saveBtn, loadBtn, solveBtn, BassTrackComboBox);
+		buttonPanel.getChildren().addAll( playBtn, pauseBtn, stpBtn, saveBtn, loadBtn, solveBtn, cleanButton, BassTrackComboBox);
 
 		return buttonPanel;
+	}
+
+	protected void clean() {
+		Slave.clean();
 	}
 
 //	private void drawShapes(GraphicsContext gc) {
