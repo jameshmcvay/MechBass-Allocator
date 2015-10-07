@@ -37,10 +37,11 @@ public class Simulation {
 	long position;
 	long drawStartTime;
 
-	long lastTickTime;
+	long lastTickTime=0;
 
 	private MekString[] strings = null;
-	private float[] picks = null;
+	private double[] picks = null;
+	private int[] pickTarget = null;
 
 	private boolean playing = false;
 
@@ -52,14 +53,21 @@ public class Simulation {
 	}
 
 	public void setStrings(MekString[] newStrings){
+		if (newStrings==null) return;
 		strings = newStrings;
 //		notes = Arrays.copyOfRange(notes, 1, notes.length);
-		picks = new float[strings.length];
-		// we cheat here and just sets the pick position to the first note on each string
-//		for (int i=0; i<Math.min(notes.length, strings.length); ++i){
-//			picks[i] = notes[i].get(0).note;
-//		}
-//		System.out.println("hi");
+		picks = new double[strings.length];
+		pickTarget = new int[strings.length];
+		// we cheat here and just set the pick position to the first note on each string (or the lowest note on the string)
+		for (int i=0; i<Math.min(notes.length, strings.length); ++i){
+//			System.out.println(notes[i].size());
+			if (notes[i].isEmpty()){
+				picks[i] = strings[i].lowNote;
+			} else {
+				picks[i] = notes[i].get(0).note;
+			}
+			pickTarget[i] = -1;
+		}
 	}
 
 	/**
@@ -70,7 +78,6 @@ public class Simulation {
 	public void setSequence(Sequence sequence){
 		if (sequence == null) return;
 		this.resolution = sequence.getResolution();
-		System.out.println("Resolution: " + resolution);
 		int bpm = 0;
 		this.seq = sequence;
 //		this.position = 0;
@@ -101,9 +108,13 @@ public class Simulation {
 //							System.out.println("Note: " + shrt.getData1() + ", No corresponding note on");
 							break;
 						}
-						Note n = new Note(shrt.getData1(),
+						Note n = new Note(shrt.getData1(), // the maths is to convert MIDI ticks to ms
 										  (long) (on.getTick() * (60000. / (bpm * resolution))),
-										  (long) (tr.get(i).getTick()* (60000. / (bpm * resolution))) );
+										  (long) (tr.get(i).getTick()* (60000. / (bpm * resolution))),
+										  on.getMessage().getMessage()[2]);
+//						System.out.print(on.getMessage().getMessage()[2] + "\t");
+//						System.out.println(shrt.getData2());
+//						System.out.println(n.velocity);
 						notes[j].add(n);
 						break;
 
@@ -111,13 +122,11 @@ public class Simulation {
 //							System.out.println("other note");
 					}
 				} else if (mid instanceof MetaMessage){
-//					sequence.getResolution()
+					// get the bpm changes
 					MetaMessage met = (MetaMessage) mid;
 					if (met.getType() == 0x51){
 						byte[] data = met.getData();
 						bpm =  60000000 / ((data[0] & 0xff) << 16 | (data[1] & 0xff) << 8 | (data[2] & 0xff));
-//						System.out.printf("Track %d, Timestamp: %d, Tempo Change: %d %f\n", j, tr.get(i).getTick(),bpm, (60000. / (bpm * resolution)));
-
 					}
 				}
 			}
@@ -146,15 +155,16 @@ public class Simulation {
 		position = 0;
 		drawStartTime = 0;
 		lastTickTime = 0;
+		setStrings(strings);
 	}
 
 	public long addDrawStartTime(long add){
 		return drawStartTime+=add;
 	}
 
-	public long addTime(long add){
-		return tick(position+=add);
-	}
+//	public long addTime(long add){
+//		return tick(position+=add);
+//	}
 
 	public long setTime(long set){
 		return position=set;
@@ -162,9 +172,11 @@ public class Simulation {
 
 	public void tick(){
 		long time = System.currentTimeMillis();
+		long diff = time-lastTickTime;
 		if (lastTickTime != 0) {
-			addTime(time-lastTickTime);
-			addDrawStartTime(time-lastTickTime);
+//			addTime(diff);
+			tick(diff);
+			addDrawStartTime(diff);
 		}
 		lastTickTime = time;
 	}
@@ -173,8 +185,62 @@ public class Simulation {
 		if (picks==null) return time;
 		// move the picks
 		for (int i=0; i<picks.length; ++i){
+			// if the pick has no target, go to the next string
+//			System.out.printf("%.1f\tt:%d\t", picks[i], pickTarget[i]);
+			if (pickTarget[i] == -1) {
+				int c = notes.length - strings.length;
+				Note n;
+				try{
+					n = notes[i+c].get(getIndexAtTime(drawStartTime, notes[i+c]));
+				} catch (IndexOutOfBoundsException e){
+//					System.out.println("ex");
+					continue;
+				}
+				if (n.velocity==1){ // this means it is a preposition
+					pickTarget[i] = n.note;
+				} else {
+//					System.out.println("nan");
+					continue;
+				}
+			}
+			// get the target
+			int target = pickTarget[i];
+//			System.out.printf("t:%d\t", pickTarget[i]);
+			// get the distance
+			double distance =  target - picks[i];
+			// get the direction
+			int dir = Long.signum(new Float(distance).longValue());
+			distance = Math.abs(distance);
+
+//			System.out.printf("loc:%.2f\ttar:%d\tdist:%.1f\tdir:%d\t", picks[i], target, distance, dir);
+			// have float(pick), int(dest), int(target)
+			// get the velocity (time between frets)
+			int a = (int) Math.round(picks[i]), b = (int) (Math.round(picks[i])+dir);
+//			System.out.printf("a:%d\tb:%d\t%d\t", a, b, strings[i].lowNote);
+//			long delta = strings[i].interval[Math.min(a,b)-strings[i].lowNote];// +
+//					strings[i].interval[Math.max(a,b)-strings[i].lowNote];
+
+			long delta = strings[i].differenceTime(Math.min(a,b), Math.max(a, b));
+//			System.out.printf("delta:%d\t", delta);
+			double move = 1./(delta/(float)time);
+//			System.out.printf("mov:%f\t", move);
+//			System.out.println("\ttime:[" + time + "]");
+			if (Double.isInfinite(move)) {
+				pickTarget[i] = -1;
+				continue;
+			}
+			// use that to move the picks
+			picks[i] = picks[i]+move*dir;
+			//check if it has moved too far, then set the target to -1
+//			System.out.println(picks[i]);
+			if (Math.signum(picks[i]-target) == Integer.signum(dir)){
+//				System.out.println("stahp");
+				picks[i] = pickTarget[i];
+				pickTarget[i] = -1;
+			}
 
 		}
+//		System.out.println();
 
 
 		return time;
@@ -183,39 +249,31 @@ public class Simulation {
 	public void draw(GraphicsContext gc, double hscale){
 //		long time = System.currentTimeMillis();
 		// get the dimensions of the canvas
-		double width = gc.getCanvas().getWidth();
-		double height= gc.getCanvas().getHeight();
+		double top = 15.0;
 		double left = 15.0;
+		double width = gc.getCanvas().getWidth();
+		double height= gc.getCanvas().getHeight()-top;
 		long drawEnd = drawStartTime + (long) (width * hscale); // need to calculate this (width and hscale?)
 		// clear the draw area
-		gc.clearRect(0, 0, width, height);
+		gc.clearRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
 		// draw a vertical line on the right to seperate the pane from the settings
 		gc.setFill(Color.GREY);
-		gc.fillRect(width-1, 1, width, height);
+		gc.fillRect(width-1, 1, width, height+top);
 		gc.setFont(Font.font(gc.getFont().getFamily(), 9));;
 
-
-		// us/tick
-		// correction to make the size of seqments timing independent
-//		if (seq!=null) usPerTick = (double)seq.getMicrosecondLength()/seq.getTickLength();
-//		hscale /= 4.0/usPerTick*1000.0; // 2.0 is magic
-//		if (seq!=null) usPerTick = (double)seq.getTickLength()/seq.getMicrosecondLength();
-//		hscale = 1; // 2.0 is magic
-//		System.out.println(usPerTick);
-
-		// put timing marks on the bottom
+		////////////////////////////////////////
+		// Draw timing marks
+		////////////////////////////////////////
 		long u= 0;
 		gc.setFill(Color.GRAY);
-//		System.out.println(u);
 		do {
+			// this is the increment in ms for the display
 			u+=200;
-//			System.out.println(u);
 			double pos = u;
-//			System.out.println(pos);
 			if ((pos-drawStartTime)*hscale < width && (pos-drawStartTime)*hscale > left-100){
-				gc.fillRect(left + (pos-drawStartTime)*hscale, height - 2, 2, height);
+				gc.fillRect(left + (pos-drawStartTime)*hscale, height+top - 2, 2, height);
 				gc.fillText(String.format("%#.2f", u/1000.0),
-						left+(pos-drawStartTime-10)*hscale, height-10-(u%100)/20);
+						left+(pos-drawStartTime-10)*hscale, height-10+top-(u%100)/20);
 			}
 		} while ((u-drawStartTime)*hscale < width);
 		// then, if we don't have a sequence to display, we don't have anything to display
@@ -228,37 +286,48 @@ public class Simulation {
 			for (int i=0; i<strings.length; ++i){
 				totalnotes += strings[i].noteRange +1;
 			}
-			double offset = 0;
 			int offsetNotes = 0;
 			double noteDiv = height / totalnotes;
+			double offset = noteDiv;
 
 
 			////////////////////////////////////////
 			// Draw the notes
 			////////////////////////////////////////
 			Note n;
-			for (int t=0; t<Math.min(notes.length, strings.length); ++t){
+			int loopEnd = Math.min(notes.length, strings.length);
+			int c = 0; // this is a correction for if track0 has not yet been removed
+			if (notes.length == strings.length+1){
+				c = 1;
+			}
+			for (int t=0; t<loopEnd; ++t){
 
-				int length = notes[t].size();
+				int length = notes[t+c].size();
 	//			 get the first (fully) visible note
 				int startIndex = 0;
 				// and start at that point
 				// set how far down we start
 				if (t>0) offset += noteDiv*(strings[t-1].noteRange+1);
 				for (int i=startIndex; i<length; ++i){
-					n = notes[t].get(i);
+					n = notes[t+c].get(i);
 
 					double start = (n.start-drawStartTime)*hscale;
 					double end = (n.end-drawStartTime)*hscale;
 //					System.out.println(start + "\t" + end);
+					int lowNote = strings[t].lowNote;
 
-					gc.setFill(Color.BLACK);
-					gc.fillRect(left + start, offset+(n.note-strings[t].lowNote)*noteDiv-noteDiv/2 ,n.duration*hscale, note_tag_width);
+					if (n.velocity==1) {
+						gc.setFill(Color.BLANCHEDALMOND);
+					} else {
+						gc.setFill(Color.BLACK);
+					}
+					gc.setFill(Color.grayRgb(n.velocity));
+					gc.fillRect(left + start, offset+(n.note-lowNote)*noteDiv-noteDiv/2 ,n.duration*hscale, note_tag_width);
 					gc.setFill(Color.GREEN);
-					gc.fillRect(left + start, offset+(n.note-strings[t].lowNote)*noteDiv-(noteDiv/2+note_tag_height/2), note_tag_width, note_tag_height);
+					gc.fillRect(left + start, offset+(n.note-lowNote)*noteDiv-(noteDiv/2+note_tag_height/2), note_tag_width, note_tag_height);
 					gc.setFill(Color.RED);
-					gc.fillRect(left + end-note_tag_width, offset+(n.note-strings[t].lowNote)*noteDiv-(noteDiv/2+note_tag_height/2), note_tag_width, note_tag_height);
-	//				}
+					gc.fillRect(left + end-note_tag_width, offset+(n.note-lowNote)*noteDiv-(noteDiv/2+note_tag_height/2), note_tag_width, note_tag_height);
+					gc.fillText(String.format("%d:%d",t, n.note), left+start, offset+(n.note-lowNote)*noteDiv-noteDiv);
 				}
 
 			}
@@ -267,8 +336,8 @@ public class Simulation {
 			////////////////////////////////////////
 			gc.clearRect(0, 0, left, height);
 			gc.setFill(Color.GRAY);
-			gc.fillRect(left, 0, 1, height);
-			offset = 0;
+			gc.fillRect(left, 0, 1, height+top);
+			offset = noteDiv;
 			// go through each string
 			for (int i=0; i<strings.length; ++i){
 				// and draw the top playable note, and the bottom playable note
@@ -277,7 +346,7 @@ public class Simulation {
 					gc.fillText(String.format("%d", s), 1, offset + (noteDiv)*j);
 				}
 				offsetNotes += strings[i].noteRange+1;
-				offset = ((double)offsetNotes)*(noteDiv);
+				offset = ((double)offsetNotes+1)*(noteDiv);
 				// draw a divider between the strings
 				if (offsetNotes < totalnotes) gc.fillRect(0, offset+1-noteDiv, width, 1);
 			}
@@ -285,10 +354,17 @@ public class Simulation {
 			//////////////////////////////////////////
 			// Draw the picks
 			//////////////////////////////////////////
+			offset = noteDiv;
+			offsetNotes = 0;
 			if (picks!=null){
 				for (int i=0; i<strings.length; ++i){
+					gc.setFill(Color.TURQUOISE.darker());
+					gc.fillRect(left, offset - noteDiv/2 + (noteDiv) * (picks[i]-strings[i].lowNote), 4, 4);
 
 
+
+					offsetNotes += strings[i].noteRange+1;
+					offset = ((double)offsetNotes+1)*(noteDiv);
 
 				}
 			}
@@ -329,7 +405,7 @@ public class Simulation {
 	 * @return
 	 */
 	private int getIndexAtTime(long time, List<Note> track){
-		int ind = Arrays.binarySearch(track.toArray(), new Note(0, time, 0));
+		int ind = Arrays.binarySearch(track.toArray(), new Note(0, time, 0, 0));
 		if (ind < 0) return -ind-1;
 		else return ind;
 	}
@@ -339,12 +415,14 @@ public class Simulation {
 		final long start;
 		final long end;
 		final long duration;
+		final int velocity;
 
-		private Note(int note, long start, long end){
+		private Note(int note, long start, long end, int velocity){
 			this.note = note;
 			this.start = start;
 			this.end = end;
 			this.duration = end-start;
+			this.velocity = velocity;
 		}
 
 		@Override
@@ -356,10 +434,10 @@ public class Simulation {
 //	@Test
 //	public void getIndexTest(){
 //		List<Note> notes = new ArrayList<Note>();
-//		notes.add(new Note(1, 10, 10));
-//		notes.add(new Note(2, 20, 20));
-//		notes.add(new Note(3, 30, 10));
-//		notes.add(new Note(6, 60, 10));
+//		notes.add(new Note(1, 10, 10, 0));
+//		notes.add(new Note(2, 20, 20, 0));
+//		notes.add(new Note(3, 30, 10, 0));
+//		notes.add(new Note(6, 60, 10, 0));
 //
 //		for (int i=0; i<70; i+=10){
 //			System.out.print(i + "\t" + getIndexAtTime(i, notes) + "\t");

@@ -165,7 +165,9 @@ public class Cleaner {
 	}
 	
 	/**
-	 * Adds time to the start of the sequence (doesn't move metamessages with 0 ticks)
+	 * Adds time to the start of the sequence (doesn't move metamessages with 0 ticks.)
+	 * Currently adds weird display error
+	 * 
 	 * @param seq
 	 * @param ticks
 	 * @return
@@ -176,7 +178,11 @@ public class Cleaner {
 			for (int j = 0; j < tr.size(); j++){
 				MidiEvent event = tr.get(j);
 				if(event.getTick() > 0 || event.getMessage() instanceof ShortMessage){
+//					System.out.printf("Moved event %d from %d to %d\n",j,event.getTick(),event.getTick() + ticks);
 					event.setTick(event.getTick() + ticks);
+				}
+				else{
+//					System.out.printf("didnt move event %d, Short: %b Meta: %b Tick: %d\n",j,event.getMessage() instanceof ShortMessage,event.getMessage() instanceof MetaMessage, event.getTick() );
 				}
 			}
 		}
@@ -198,12 +204,13 @@ public class Cleaner {
 	 */
 	public static Sequence prePos(Sequence in, long preTime, MekString[] strings, long length){
 		Sequence seq = fixChannel(in);
+		Cleaner.addTicks(seq, 800);
 		//for each track
 		float tickScaling = 1;
 		long preTicks = (long) (tickScaling * preTime);
 		for(int i = 1; i < seq.getTracks().length; i++){
 			Track cur = seq.getTracks()[i];
-			System.out.printf("Track %d\n", i);
+//			System.out.printf("Track %d\n", i);
 			//add a prepos event for each note that is not consecutive
 			for(int j = 0; j < cur.size(); j++){
 //				System.out.printf("Index %d\n ",j);
@@ -217,23 +224,24 @@ public class Cleaner {
 							//find the previous note off
 							ShortMessage noteOff;
 							int prevIndex = getPrev(j,cur);
-							System.out.printf("prev index %d\n", prevIndex);
+//							System.out.printf("prev index %d\n", prevIndex);
 							if(prevIndex > 0){
 								noteOff = (ShortMessage) cur.get(prevIndex).getMessage();
 								int note2 = noteOff.getData1();
 								//if the note is different and they don't clash
 								if(note2 != note1){
 									long difference = cur.get(j).getTick() - cur.get(prevIndex).getTick();
-									System.out.printf("Difference of %d\n", difference);
+//									System.out.printf("Difference of %d\n", difference);
 									//if( !strings[i-1].conflicting(note1, note2, difference - preTicks, tickScaling)){									
 										try {
 											long tick = cur.get(j).getTick() - strings[i-1].differenceTick(note1, note2, tickScaling);
-											System.out.printf("\nTick for prepos = %d, Tick for prev note = %d", tick, cur.get(prevIndex).getTick());
+//											System.out.printf("\nTick for prepos = %d, Tick for prev note = %d", tick, cur.get(prevIndex).getTick());
 											if(tick - preTicks < cur.get(prevIndex).getTick()){
-												System.out.printf("Warning: note overlap detected, %d previous note tick, %d prepos tick, Dropping note \n",cur.get(prevIndex).getTick(),(cur.get(j).getTick() - strings[i-1].differenceTick(note1, note2, tickScaling)) - preTicks);
+//												System.out.printf("Warning: note overlap detected, %d previous note tick, %d prepos tick, Dropping note \n",cur.get(prevIndex).getTick(),(cur.get(j).getTick() - strings[i-1].differenceTick(note1, note2, tickScaling)) - preTicks);
 												drop:
 												for(int k = j; k < cur.size(); k++){
 													if(cur.get(k).getMessage() instanceof ShortMessage){
+//														System.out.printf("Dropping note: %d", k);
 														ShortMessage off = (ShortMessage) cur.get(k).getMessage();
 														seq.getTracks()[0].add(cur.get(k));
 														cur.remove(cur.get(k));
@@ -250,19 +258,19 @@ public class Cleaner {
 												long time = cur.get(j).getTick();
 												time -= strings[i-1].differenceTick(note1, note2, tickScaling);
 												time -= preTicks;
-												System.out.printf("Added Prepos for %d at: Note On %d note Off %d\n", note2, time, time + length);
+//												System.out.printf("Added Prepos for %d at: Note On %d note Off %d\n", note2, time, time + length);
 												cur.add(new MidiEvent(new ShortMessage(NOTE_ON,noteOn.getChannel(),noteOn.getData1(),1) , time));
 												cur.add(new MidiEvent(new ShortMessage(NOTE_OFF,noteOn.getChannel(),noteOn.getData1(),0) , time +  length));
 												j++;
 											}
 										} catch (ArrayIndexOutOfBoundsException e) {
-											System.out.println(e + "\n");
+//											System.out.println(e + "\n");
 											e.printStackTrace();
 										} catch (InvalidMidiDataException e) {
-											System.out.println(e + "\n");
+//											System.out.println(e + "\n");
 											e.printStackTrace();
 										}
-									System.out.printf("Added prepos for");
+//									System.out.printf("Added prepos for");
 									//} else {
 //										dropping:
 //										for(int k = j; k < cur.size(); k++){
@@ -280,7 +288,7 @@ public class Cleaner {
 //									}
 								}
 								else{
-									System.out.printf("Notes are the same");
+//									System.out.printf("Notes are the same (%d and %d)",note1,note2);
 								}
 							}
 							else if(prevIndex == 0){
@@ -306,12 +314,13 @@ public class Cleaner {
 						tickScaling = 1000*seq.getResolution();
 						tickScaling = tickScaling / tempo;
 						preTicks = (long) (tickScaling * preTime);
-						System.out.printf("timing changed.");
+//						System.out.printf("timing changed.");
 					}
 				}
 			}
 		}
 		System.out.println("Prepositioning added.");
+		Cleaner.clean(seq);
 		return fixChannel(seq);
 	}
 
