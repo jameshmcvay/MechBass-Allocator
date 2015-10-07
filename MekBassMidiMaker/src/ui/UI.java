@@ -3,6 +3,7 @@ package ui;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -22,6 +23,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -39,6 +41,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
@@ -92,6 +95,7 @@ public class UI extends Application{
 //		textOutputConsole.setPrefColumnCount(100);
 //		textOutputConsole.setPrefWidth(width);
 		textOutputConsole.setPrefHeight(height * 0.332);
+		textOutputConsole.setEditable(false);
 
 
 		Canvas leftCanvas = new Canvas();
@@ -105,8 +109,16 @@ public class UI extends Application{
 
 //		GridPane leftGUIGridPane = buildLeftGUI();
 
-
-
+		/*
+		 * DEAN MAKING A MENU BAR:
+		 *
+		 * http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm
+		 * (Starting Point)
+		 *
+		 * */
+		MenuBar menuBar = setupMenuBar();
+		buttonPanel.autosize();
+		buttonPanel.alignmentProperty().setValue(Pos.TOP_RIGHT);
 
 //		GridPane rightLowPanel = new GridPane();
 
@@ -114,10 +126,14 @@ public class UI extends Application{
 //		drawShapes(gc);
 
 		//Add elems to the gridPane
-		gridPane.add(leftCanvas, 0, 0);
-		gridPane.add(textOutputConsole, 0, 1);
-		gridPane.add(textInputConsole, 0, 2);
-		gridPane.add(buttonPanel, 1, 0);
+		gridPane.add(menuBar,0,0);
+		gridPane.add(leftCanvas, 0, 1);
+		gridPane.add(textOutputConsole, 0, 2);
+		gridPane.add(textInputConsole, 0, 3);
+		gridPane.add(buttonPanel, 0, 1);
+
+		GridPane.setHgrow(textOutputConsole, Priority.ALWAYS);
+		GridPane.setHgrow(textInputConsole, Priority.ALWAYS);
 
 		Scene scene =  new Scene(gridPane,width,height);
 
@@ -128,7 +144,6 @@ public class UI extends Application{
 			}
 		});
 
-	    //TODO Make GUILISE
 	    slave = new Slave();
 	    Slave.setUI(this);
 	    Console console = new Console(getConsoleTextInput(),getConsoleOutput(), slave);
@@ -137,9 +152,11 @@ public class UI extends Application{
 	    PrintStream ps = new PrintStream(console, true);
 	    System.setOut(ps);
 	    System.setErr(ps);
+	    textInputConsole.requestFocus();
 
-	    primaryStage.setTitle("DuckDuckGo");//primaryStage.setTitle("MIDIAllocator");
+	    primaryStage.setTitle("Windows Live");//primaryStage.setTitle("MIDIAllocator");
 	    primaryStage.setScene(scene);
+
 	    primaryStage.show();
 
 	    sim = new Simulation();
@@ -165,18 +182,11 @@ public class UI extends Application{
 		}, timerTime, timerTime);
 
 
-		/*
-		 * DEAN MAKING A MENU BAR:
-		 *
-		 * http://docs.oracle.com/javafx/2/ui_controls/menu_controls.htm
-		 * (Starting Point)
-		 *
-		 * */
-		setupMenuBar(scene);
+
 	}
 
 
-	private void setupMenuBar(Scene scene){
+	private MenuBar setupMenuBar(){
 		/*
 		 * DEAN MAKING A MENU BAR:
 		 *
@@ -185,6 +195,8 @@ public class UI extends Application{
 		 *
 		 * */
 		MenuBar menuBar = new MenuBar(); // The Bar where "| File | Edit | View |" will be
+//		menuBar.setMinWidth(width * (2/3));
+//		menuBar.setMaxWidth(width * (2/3));
         // --- Menu File
         Menu menuFile = new Menu("File");
         setupFileMenu(menuFile);
@@ -197,9 +209,9 @@ public class UI extends Application{
 
         menuBar.getMenus().addAll(menuFile, menuPlay, menuHelp);
 
-        VBox vbox = new VBox(menuBar);
-
-        ((GridPane) scene.getRoot()).getChildren().addAll(vbox);
+//        VBox vbox = new VBox(menuBar);
+        return menuBar;
+//        ((GridPane) scene.getRoot()).getChildren().addAll(vbox);
 	}
 
 	private void setupFileMenu(Menu menuFile){
