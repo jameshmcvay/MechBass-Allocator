@@ -151,8 +151,8 @@ public class UI extends Application{
 		Slave.setConsole(console);
 
 	    PrintStream ps = new PrintStream(console, true);
-	    System.setOut(ps);
-	    System.setErr(ps);
+//	    System.setOut(ps);
+//	    System.setErr(ps);
 	    textInputConsole.requestFocus();
 
 	    primaryStage.setTitle("Windows Live");//primaryStage.setTitle("MIDIAllocator");
@@ -745,6 +745,7 @@ public class UI extends Application{
 			options = FXCollections.observableArrayList();
 
 			for(int i = 0; i < Slave.getSequence().getTracks().length; i++){
+//				System.out.println(Slave);
 				System.out.println(i);
 				options.add(i);
 			}
