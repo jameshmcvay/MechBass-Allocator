@@ -37,6 +37,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
@@ -972,6 +973,7 @@ public class UI extends Application{
 	            break;
 			case "UP":
 				slave.getConsole().CallPrevious();
+				break;
 			default:
 				break;
 			}
