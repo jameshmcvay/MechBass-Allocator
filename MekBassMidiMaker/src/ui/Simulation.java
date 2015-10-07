@@ -186,61 +186,62 @@ public class Simulation {
 		// move the picks
 		for (int i=0; i<picks.length; ++i){
 			// if the pick has no target, go to the next string
-//			System.out.printf("%.1f\tt:%d\t", picks[i], pickTarget[i]);
+			//ystem.out.printf("%.1f\tt:%d\t", picks[i], pickTarget[i]);
 			if (pickTarget[i] == -1) {
 				int c = notes.length - strings.length;
 				Note n;
 				try{
 					n = notes[i+c].get(getIndexAtTime(drawStartTime, notes[i+c]));
 				} catch (IndexOutOfBoundsException e){
-//					System.out.println("ex");
+					//ystem.out.println("ex");
 					continue;
 				}
 				if (n.velocity==1){ // this means it is a preposition
 					pickTarget[i] = n.note;
 				} else {
-//					System.out.println("nan");
+					//ystem.out.println("nan");
 					continue;
 				}
 			}
 			// get the target
 			int target = pickTarget[i];
-//			System.out.printf("t:%d\t", pickTarget[i]);
+			//ystem.out.printf("t:%d\t", pickTarget[i]);
 			// get the distance
 			double distance =  target - picks[i];
 			// get the direction
 			int dir = Long.signum(new Float(distance).longValue());
 			distance = Math.abs(distance);
 
-//			System.out.printf("loc:%.2f\ttar:%d\tdist:%.1f\tdir:%d\t", picks[i], target, distance, dir);
+			//ystem.out.printf("loc:%.2f\ttar:%d\tdist:%.1f\tdir:%d\t", picks[i], target, distance, dir);
 			// have float(pick), int(dest), int(target)
 			// get the velocity (time between frets)
 			int a = (int) Math.round(picks[i]), b = (int) (Math.round(picks[i])+dir);
-//			System.out.printf("a:%d\tb:%d\t%d\t", a, b, strings[i].lowNote);
+			//ystem.out.printf("a:%d\tb:%d\t%d\t", a, b, strings[i].lowNote);
 //			long delta = strings[i].interval[Math.min(a,b)-strings[i].lowNote];// +
 //					strings[i].interval[Math.max(a,b)-strings[i].lowNote];
 
 			long delta = strings[i].differenceTime(Math.min(a,b), Math.max(a, b));
-//			System.out.printf("delta:%d\t", delta);
+			//ystem.out.printf("delta:%d\t", delta);
 			double move = 1./(delta/(float)time);
-//			System.out.printf("mov:%f\t", move);
-//			System.out.println("\ttime:[" + time + "]");
+			//ystem.out.printf("mov:%f\t", move);
+			//ystem.out.println("\ttime:[" + time + "]");
 			if (Double.isInfinite(move)) {
+				picks[i] = pickTarget[i];
 				pickTarget[i] = -1;
 				continue;
 			}
 			// use that to move the picks
 			picks[i] = picks[i]+move*dir;
 			//check if it has moved too far, then set the target to -1
-//			System.out.println(picks[i]);
+			//ystem.out.println(picks[i]);
 			if (Math.signum(picks[i]-target) == Integer.signum(dir)){
-//				System.out.println("stahp");
+				//ystem.out.println("stahp");
 				picks[i] = pickTarget[i];
 				pickTarget[i] = -1;
 			}
 
 		}
-//		System.out.println();
+		//ystem.out.println();
 
 
 		return time;
@@ -406,8 +407,16 @@ public class Simulation {
 	 */
 	private int getIndexAtTime(long time, List<Note> track){
 		int ind = Arrays.binarySearch(track.toArray(), new Note(0, time, 0, 0));
-		if (ind < 0) return -ind-1;
-		else return ind;
+		if (ind < 0) ind =  -ind-1;
+		// check the note at the index to see if 'time' fits in, if not, get the index before and check that
+		Note n = track.get(ind);
+		if (time < n.start){
+			Note n2 = track.get(ind-1);
+			if (time >= n2.start && time < n2.end){
+				ind--;
+			}
+		}
+		return ind;
 	}
 
 	private class Note implements Comparable<Note>{
