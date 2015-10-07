@@ -324,5 +324,10 @@ public class Slave {
 		else return null;
 	}
 
+	public static void clean() {
+		Cleaner.clean(getSequence());
+
+	}
+
 
 }
