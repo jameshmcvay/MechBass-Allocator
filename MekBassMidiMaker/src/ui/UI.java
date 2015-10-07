@@ -972,6 +972,9 @@ public class UI extends Application{
 	            break;
 			case "UP":
 				slave.getConsole().CallPrevious();
+				break;
+			case "DOWN":
+				slave.getConsole().callNext();
 			default:
 				break;
 			}
