@@ -143,7 +143,7 @@ public class Slave {
 			try {
 				Solver greedy = new GreedySolver(setOfStrings);
 				Solver graph = new GraphSolver(setOfStrings);
-				curMIDI = TrackSplitter.split(curMIDI, 4, bassTrack);
+				curMIDI = TrackSplitter.split(curMIDI, setOfStrings.length, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
 //				curMIDI = graph.solve(curMIDI);
 				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
