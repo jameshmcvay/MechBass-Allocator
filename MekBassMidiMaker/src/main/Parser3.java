@@ -221,6 +221,65 @@ public class Parser3 {
 	}
 	
 	/**
+	 * author: Dean Newberry
+	 * 
+	 * A constructor that allows the user to pass in a Sequence.
+	 * 
+	 * This method was created as a convenience for when the MIDI File
+	 * or Filename is unavailable, but a sequence is.
+	 * 
+	 * Please note that this is VERY VERY nearly like the setUpParser() method,
+	 * but it doesn't use the file.
+	 * 
+	 * REQUIRES: A Sequence object of a MIDI file.
+	 * ENSURES: A new instance of Parser3 that will actually do 
+	 * 		semi-coherent things.
+	 * */
+	public Parser3(Sequence s){
+		midiFile = null;
+		ready = false;
+		boolean problem = false;
+		// Set the sequencer - the thing that allows MIDI files to be played
+		try {
+			sequencer = MidiSystem.getSequencer();
+		} catch (MidiUnavailableException e) {
+			System.out.println("There is a problem with this MIDI file!");
+			problem = true;
+			e.printStackTrace();
+		}
+		// Set the sequence to be examined to the sequence passed in...
+		try {
+			sequencer.setSequence(s);
+		} catch (InvalidMidiDataException e) {
+			System.out.println("There is a problem with this MIDI file!");
+			problem = true;
+			e.printStackTrace();
+		}
+		// ... And store the sequence.
+		try{
+			sequence = s;
+			tracks = sequence.getTracks();
+		}
+		catch (NullPointerException e){
+			System.out.println("There is a problem with this MIDI Sequence!");
+			problem = true;
+			e.printStackTrace();
+		}
+		bytelists.clear();
+		trackNames.clear();
+		for (ArrayList<String> al : trackInstruments)
+			al.clear();
+		trackInstruments.clear();
+		ticks.clear();
+		
+		if (ready == problem){
+			// if there are no problems...
+			ready = true;
+			// the parser is READY!
+		}		
+	}
+	
+	/**
 	 * Returns the file.
 	 * 
 	 * I consider this method "ABSOLUTELY safe" because the Parser 
