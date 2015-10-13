@@ -4,14 +4,28 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
-
+/**
+ * 
+ * @author Andrew
+ *
+ */
 public class Sequence extends javax.sound.midi.Sequence{
 
+	/**
+	 * Creates a Sequence, exactly like javax.sound.midi.Sequence, but it has an equals method
+	 * @param divisionType
+	 * @param resolution
+	 * @param numTracks
+	 * @throws InvalidMidiDataException
+	 */
 	public Sequence(float divisionType, int resolution, int numTracks)
 			throws InvalidMidiDataException {
 		super(divisionType, resolution, numTracks);
 	}
 
+	/**
+	 * Returns true if this and the input object contain all the same items.
+	 */
 	public boolean equals(Object o){
 		if(o instanceof Sequence){
 			Sequence seq = (Sequence) o;
@@ -38,17 +52,6 @@ public class Sequence extends javax.sound.midi.Sequence{
 							return false;
 						}
 					}
-//					else if(e1.getMessage() instanceof MetaMessage && e2.getMessage() instanceof MetaMessage){
-//						MetaMessage mta1 = (MetaMessage) e1.getMessage();
-//						MetaMessage mta2 = (MetaMessage) e2.getMessage();
-//						if(mta1.getType() != mta2.getType() ||
-//								mta1.getData() != mta2.getData()) return false;
-//					}
-//					else if(e1.getMessage() instanceof SysexMessage && e2.getMessage() instanceof SysexMessage){
-//						SysexMessage sys1 = (SysexMessage) e1.getMessage();
-//						SysexMessage sys2 = (SysexMessage) e2.getMessage();
-//						if(sys1.getData() != sys2.getData())return false;
-//					}
 					else{
 						return false;
 					}
