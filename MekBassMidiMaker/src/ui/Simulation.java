@@ -219,9 +219,13 @@ public class Simulation {
 			//ystem.out.printf("a:%d\tb:%d\t%d\t", a, b, strings[i].lowNote);
 //			long delta = strings[i].interval[Math.min(a,b)-strings[i].lowNote];// +
 //					strings[i].interval[Math.max(a,b)-strings[i].lowNote];
-
-			long delta = strings[i].differenceTime(Math.min(a,b), Math.max(a, b));
-			//ystem.out.printf("delta:%d\t", delta);
+			long delta = 50;
+			try {
+			delta = strings[i].differenceTime(Math.min(a,b), Math.max(a, b));
+			} catch (IndexOutOfBoundsException e){
+				System.err.println("There was a problem getting the time between notes, was one of them out of range of the string?");
+			}
+//			System.out.printf("delta:%d\t", delta);
 			double move = 1./(delta/(float)time);
 			//ystem.out.printf("mov:%f\t", move);
 			//ystem.out.println("\ttime:[" + time + "]");
@@ -297,7 +301,7 @@ public class Simulation {
 			////////////////////////////////////////
 			Note n;
 			int loopEnd = Math.min(notes.length, strings.length);
-			int c = 0; // this is a correction for if track0 has not yet been removed
+			int c = 0; // this is a correction for if track0 has not yet been removed/cleaned
 			if (notes.length == strings.length+1){
 				c = 1;
 			}
@@ -371,7 +375,7 @@ public class Simulation {
 			}
 
 
-		} else {
+		} else { /** endif (strings !=null) **/
 
 		// archive for visualisation
 			Note n;
@@ -411,10 +415,7 @@ public class Simulation {
 		// check the note at the index to see if 'time' fits in, if not, get the index before and check that
 		Note n = track.get(ind);
 		if (time < n.start){
-			Note n2 = track.get(ind-1);
-			if (time >= n2.start && time < n2.end){
 				ind--;
-			}
 		}
 		return ind;
 	}
