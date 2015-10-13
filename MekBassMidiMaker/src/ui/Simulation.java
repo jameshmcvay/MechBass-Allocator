@@ -32,12 +32,12 @@ public class Simulation {
 	private static int note_len_height = 2;
 
 	private Sequence seq=null;
-	List<Note>[] notes = null;
-	int resolution;
-	long position;
-	long drawStartTime;
+	private List<Note>[] notes = null;
+	private int resolution;
+	private long position;
+	private long drawStartTime;
 
-	long lastTickTime=0;
+	private long lastTickTime=0;
 
 	private MekString[] strings = null;
 	private double[] picks = null;
@@ -45,6 +45,9 @@ public class Simulation {
 
 	private boolean playing = false;
 
+	/**
+	 * Creates a new Simulation object. Nothing really actually happens when this is called
+	 */
 	public Simulation(){
 	}
 
@@ -55,12 +58,10 @@ public class Simulation {
 	public void setStrings(MekString[] newStrings){
 		if (newStrings==null) return;
 		strings = newStrings;
-//		notes = Arrays.copyOfRange(notes, 1, notes.length);
 		picks = new double[strings.length];
 		pickTarget = new int[strings.length];
 		// we cheat here and just set the pick position to the first note on each string (or the lowest note on the string)
 		for (int i=0; i<Math.min(notes.length, strings.length); ++i){
-//			System.out.println(notes[i].size());
 			if (notes[i].isEmpty()){
 				picks[i] = strings[i].lowNote;
 			} else {
@@ -134,22 +135,31 @@ public class Simulation {
 
 		strings = Slave.getMekStringArray();
 		if (strings != null) {
-//			notes = Arrays.copyOfRange(notes, 1, notes.length);
+			if (notes.length==strings.length+1){
+			notes = Arrays.copyOfRange(notes, 1, notes.length);
+			}
 			setStrings(strings);
 		}
 	}
 
-	// something something threads
+	/**
+	 * Sets the Simulation to begin playing, should normally be called in conjunction with Sequence.play
+	 */
 	public void play(){
 		playing = true;
-//		lastTickTime = System.currentTimeMillis();
 	}
 
+	/**
+	 * Halts simulation playback at the current time, should normally be called in conjunction with Sequence.pause
+	 */
 	public void pause(){
 		playing = false;
 		lastTickTime = 0;
 	}
 
+	/**
+	 * Stops simulation playback resetting the time to zero, should normally be called in conjunction with Sequence.stop
+	 */
 	public void stop(){
 		playing = false;
 		position = 0;
@@ -158,30 +168,17 @@ public class Simulation {
 		setStrings(strings);
 	}
 
-	public long addDrawStartTime(long add){
-		return drawStartTime+=add;
-	}
-
-//	public long addTime(long add){
-//		return tick(position+=add);
-//	}
-
-	public long setTime(long set){
-		return position=set;
-	}
-
 	public void tick(){
 		long time = System.currentTimeMillis();
 		long diff = time-lastTickTime;
 		if (lastTickTime != 0) {
-//			addTime(diff);
 			tick(diff);
-			addDrawStartTime(diff);
+			drawStartTime+=diff;
 		}
 		lastTickTime = time;
 	}
 
-	public long tick(long time){
+	private long tick(long time){
 		if (picks==null) return time;
 		// move the picks
 		for (int i=0; i<picks.length; ++i){
@@ -205,30 +202,23 @@ public class Simulation {
 			}
 			// get the target
 			int target = pickTarget[i];
-			//ystem.out.printf("t:%d\t", pickTarget[i]);
 			// get the distance
 			double distance =  target - picks[i];
 			// get the direction
 			int dir = Long.signum(new Float(distance).longValue());
 			distance = Math.abs(distance);
 
-			//ystem.out.printf("loc:%.2f\ttar:%d\tdist:%.1f\tdir:%d\t", picks[i], target, distance, dir);
 			// have float(pick), int(dest), int(target)
 			// get the velocity (time between frets)
 			int a = (int) Math.round(picks[i]), b = (int) (Math.round(picks[i])+dir);
-			//ystem.out.printf("a:%d\tb:%d\t%d\t", a, b, strings[i].lowNote);
-//			long delta = strings[i].interval[Math.min(a,b)-strings[i].lowNote];// +
-//					strings[i].interval[Math.max(a,b)-strings[i].lowNote];
-			long delta = 50;
-			try {
-			delta = strings[i].differenceTime(Math.min(a,b), Math.max(a, b));
-			} catch (IndexOutOfBoundsException e){
-				System.err.println("There was a problem getting the time between notes, was one of them out of range of the string?");
-			}
-//			System.out.printf("delta:%d\t", delta);
+//			long delta = 50;
+//			try {
+			long delta = strings[i].differenceTime(Math.min(a,b), Math.max(a, b));
+//			} catch (IndexOutOfBoundsException e){
+//				System.err.println("There was a problem getting the time between notes, was one of them out of range of the string?");
+//				System.err.printf("%d\t%d\t%d\t%d\t%d\n", i, a, b, strings[i].lowNote, strings[i].highNote);
+//			}
 			double move = 1./(delta/(float)time);
-			//ystem.out.printf("mov:%f\t", move);
-			//ystem.out.println("\ttime:[" + time + "]");
 			if (Double.isInfinite(move)) {
 				picks[i] = pickTarget[i];
 				pickTarget[i] = -1;
@@ -237,17 +227,12 @@ public class Simulation {
 			// use that to move the picks
 			picks[i] = picks[i]+move*dir;
 			//check if it has moved too far, then set the target to -1
-			//ystem.out.println(picks[i]);
 			if (Math.signum(picks[i]-target) == Integer.signum(dir)){
-				//ystem.out.println("stahp");
 				picks[i] = pickTarget[i];
 				pickTarget[i] = -1;
 			}
 
 		}
-		//ystem.out.println();
-
-
 		return time;
 	}
 
@@ -258,7 +243,6 @@ public class Simulation {
 		double left = 15.0;
 		double width = gc.getCanvas().getWidth();
 		double height= gc.getCanvas().getHeight()-top;
-		long drawEnd = drawStartTime + (long) (width * hscale); // need to calculate this (width and hscale?)
 		// clear the draw area
 		gc.clearRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
 		// draw a vertical line on the right to seperate the pane from the settings
@@ -318,7 +302,6 @@ public class Simulation {
 
 					double start = (n.start-drawStartTime)*hscale;
 					double end = (n.end-drawStartTime)*hscale;
-//					System.out.println(start + "\t" + end);
 					int lowNote = strings[t].lowNote;
 
 					if (n.velocity==1) {
@@ -366,11 +349,8 @@ public class Simulation {
 					gc.setFill(Color.TURQUOISE.darker());
 					gc.fillRect(left, offset - noteDiv/2 + (noteDiv) * (picks[i]-strings[i].lowNote), 4, 4);
 
-
-
 					offsetNotes += strings[i].noteRange+1;
 					offset = ((double)offsetNotes+1)*(noteDiv);
-
 				}
 			}
 
@@ -413,13 +393,26 @@ public class Simulation {
 		int ind = Arrays.binarySearch(track.toArray(), new Note(0, time, 0, 0));
 		if (ind < 0) ind =  -ind-1;
 		// check the note at the index to see if 'time' fits in, if not, get the index before and check that
-		Note n = track.get(ind);
-		if (time < n.start){
+//		Note n = track.get(ind);
+		if (time < track.get(ind).start){
 				ind--;
 		}
 		return ind;
 	}
 
+	/**
+	 * Tuple representing a note from a midi sequence.<br><br>
+	 * Stores:<br>
+	 * The note (in range 0-255)<br>
+	 * The start and end times (in ms)<br>
+	 * The duration of the note (end-start)<br>
+	 * The Velocity of the note<br><br>
+	 *
+	 * The note is also comparable with other notes on their start time
+	 *
+	 * @author Elliot Wilde
+	 *
+	 */
 	private class Note implements Comparable<Note>{
 		final int note;
 		final long start;
@@ -440,31 +433,4 @@ public class Simulation {
 			return Long.compare(this.start, other.start);
 		}
 	}
-
-//	@Test
-//	public void getIndexTest(){
-//		List<Note> notes = new ArrayList<Note>();
-//		notes.add(new Note(1, 10, 10, 0));
-//		notes.add(new Note(2, 20, 20, 0));
-//		notes.add(new Note(3, 30, 10, 0));
-//		notes.add(new Note(6, 60, 10, 0));
-//
-//		for (int i=0; i<70; i+=10){
-//			System.out.print(i + "\t" + getIndexAtTime(i, notes) + "\t");
-//			if (getIndexAtTime(i, notes) < 0){
-//				System.out.println(notes.get((-getIndexAtTime(i, notes))-1).start);
-//			} else {
-//				System.out.println(notes.get(getIndexAtTime(i, notes)).start);
-//			}
-//			System.out.print(i+1 + "\t" + getIndexAtTime(i+1, notes) + "\t");
-//			if (getIndexAtTime(i+1, notes) < 0){
-//				System.out.println(notes.get((-getIndexAtTime(i+1, notes))-1).start);
-//			} else {
-//				System.out.println(notes.get(getIndexAtTime(i+1, notes)).start);
-//			}
-//		}
-//
-//	}
-
-
 }
