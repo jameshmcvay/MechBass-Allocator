@@ -196,6 +196,7 @@ public class Parser3 {
 	public Parser3(String fileName){
 		midiFile = new File(fileName);
 		setUpParser();
+		quietParse();
 	}
 	
 	/**
@@ -217,6 +218,7 @@ public class Parser3 {
 	public Parser3(File file){
 		midiFile = file;
 		setUpParser();
+		quietParse();
 	}
 	
 	/**
@@ -238,6 +240,7 @@ public class Parser3 {
 		midiFile = null;
 		sequence = s;
 		setUpParserSeq();
+		quietParse();
 	}
 	
 	/**
@@ -639,11 +642,14 @@ public class Parser3 {
 	}
 	
 	public void parse(){
+		// If the parser isn't set up properly... 
 		if (!ready){
 			System.out.println("The parser is not ready. "
 			+ "Please specify a proper file to load data.");
 			return;
+			// Tell the user and do nothing.
 		}
+		// Otherwise...
 		int trackNo = tracks.length;
 		System.out.println("Number of Tracks = " + trackNo);
 		
@@ -925,7 +931,40 @@ public class Parser3 {
 			return;
 		}
 		else{
-			new Parser3(args[0].toString()).parse();
+			Sequencer seq = null;
+			Sequence s = null;
+			File file = new File(args[0].toString());
+			try {
+				seq = MidiSystem.getSequencer();
+			} catch (MidiUnavailableException e) {
+				e.printStackTrace();
+			}
+			// Set the sequence to be examined to the midiFile...
+			try {
+				seq.setSequence(MidiSystem.getSequence(file));
+			} catch (InvalidMidiDataException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			// ... And store the sequence.
+			try{
+				s = seq.getSequence();
+			}
+			catch (NullPointerException e){
+				e.printStackTrace();
+			}
+			Parser3 p = new Parser3(s);
+			System.out.println("Track Names:\n");
+			for (String st : p.getTrackNames())
+				System.out.println("\t" + st);
+			System.out.println();
+			System.out.println("=====");
+			System.out.println();
+			System.out.println("Track Instruments:\n");
+			for (ArrayList<String> st : p.getTrackInstruments())
+				System.out.println("\t" + st);
 		}
 	}
 
