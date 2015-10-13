@@ -264,6 +264,8 @@ public class CleanerTest {
 		}
 	}
 	
+	//This test wont pass, as it was built using tick numbers for prepositioning before
+	//We moved to ms like we should have been. the expected output has not been updated.
 	@Test
 	public void preposOneStringNoConTwoNotes(){
 		try {
