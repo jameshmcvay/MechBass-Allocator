@@ -196,7 +196,6 @@ public class Parser3 {
 	public Parser3(String fileName){
 		midiFile = new File(fileName);
 		setUpParser();
-		parse();
 	}
 	
 	/**
@@ -237,46 +236,8 @@ public class Parser3 {
 	 * */
 	public Parser3(Sequence s){
 		midiFile = null;
-		ready = false;
-		boolean problem = false;
-		// Set the sequencer - the thing that allows MIDI files to be played
-		try {
-			sequencer = MidiSystem.getSequencer();
-		} catch (MidiUnavailableException e) {
-			System.out.println("There is a problem with this MIDI file!");
-			problem = true;
-			e.printStackTrace();
-		}
-		// Set the sequence to be examined to the sequence passed in...
-		try {
-			sequencer.setSequence(s);
-		} catch (InvalidMidiDataException e) {
-			System.out.println("There is a problem with this MIDI file!");
-			problem = true;
-			e.printStackTrace();
-		}
-		// ... And store the sequence.
-		try{
-			sequence = s;
-			tracks = sequence.getTracks();
-		}
-		catch (NullPointerException e){
-			System.out.println("There is a problem with this MIDI Sequence!");
-			problem = true;
-			e.printStackTrace();
-		}
-		bytelists.clear();
-		trackNames.clear();
-		for (ArrayList<String> al : trackInstruments)
-			al.clear();
-		trackInstruments.clear();
-		ticks.clear();
-		
-		if (ready == problem){
-			// if there are no problems...
-			ready = true;
-			// the parser is READY!
-		}		
+		sequence = s;
+		setUpParserSeq();
 	}
 	
 	/**
@@ -441,7 +402,6 @@ public class Parser3 {
 			return tracks[i];
 	}
 	
-	
 	/**
 	 * author: Dean Newberry
 	 * 
@@ -487,7 +447,6 @@ public class Parser3 {
 		return trackNames.get(i);
 	}
 	
-	
 /**
 	 * author: Dean Newberry
 	 * 
@@ -501,7 +460,6 @@ public class Parser3 {
 	public ArrayList<ArrayList<String>> getTrackInstruments() {
 		return trackInstruments;
 	}
-
 	
 	/**
 	 * author: Dean Newberry
@@ -617,6 +575,67 @@ public class Parser3 {
 			ready = true;
 			// the parser is READY!
 		}
+	}
+	
+	/**
+	 * author: Dean Newberry
+	 * 
+	 * Sets the parser up to parse the Sequence. 
+	 * THIS METHOD *WILL* FAIL IF INAPPROPRIATE INPUTS WERE USED FOR
+	 * CONSTRUCTORS/setFile METHODS.
+	 * 
+	 * ALSO, this method should ONLY be used if the Parser is instantiated 
+	 * from a sequence.
+	 * 
+	 * I consider this method "safe", with the caveat that the file has been
+	 * properly specified and has not changed.
+	 * 
+	 * IF THIS METHOD IS *NOT* CALLED ON IT'S OWN, 
+	 * I CANNOT GUARANTEE IT'S BEHAVIOUR.
+	 * 
+	 * REQUIRES: The File the Parser is using MUST be a valid MIDI file.
+	 * ENSURES: The Parser will be set up and ready to parse the MIDI file.
+	 * */
+	public void setUpParserSeq(){
+		ready = false;
+		boolean problem = false;
+		// Set the sequencer - the thing that allows MIDI files to be played
+		try {
+			sequencer = MidiSystem.getSequencer();
+		} catch (MidiUnavailableException e) {
+			System.out.println("There is a problem with this MIDI file!");
+			problem = true;
+			e.printStackTrace();
+		}
+		// Set the sequence to be examined to the sequence passed in...
+		try {
+			sequencer.setSequence(sequence);
+		} catch (InvalidMidiDataException e) {
+			System.out.println("There is a problem with this MIDI file!");
+			problem = true;
+			e.printStackTrace();
+		}
+		// ... And store the sequence.
+		try{
+			tracks = sequence.getTracks();
+		}
+		catch (NullPointerException e){
+			System.out.println("There is a problem with this MIDI Sequence!");
+			problem = true;
+			e.printStackTrace();
+		}
+		bytelists.clear();
+		trackNames.clear();
+		for (ArrayList<String> al : trackInstruments)
+			al.clear();
+		trackInstruments.clear();
+		ticks.clear();
+		
+		if (ready == problem){
+			// if there are no problems...
+			ready = true;
+			// the parser is READY!
+		}		
 	}
 	
 	public void parse(){
@@ -900,6 +919,7 @@ public class Parser3 {
 		A, ASharp,
 		B
 	}
+	
 	public static void main(String[] args) {
 		if (args.length < 1){
 			return;
