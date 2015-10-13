@@ -50,6 +50,10 @@ public class NoteConflict{
 		return played1.get(0).getTick();
 	}
 	
+	/**
+	 * Returns the latest tick in the conflict
+	 * @return
+	 */
 	public long maxTick(){
 		return played2.get(played2.size() - 1).getTick();
 	}
@@ -100,14 +104,28 @@ public class NoteConflict{
 		play();
 	}
 	
+	/**
+	 * Returns true if shortening the first note of the conflict could resolve it.
+	 * @param time
+	 * @return
+	 */
 	public boolean delayFirstPossible(long time){
 		return(played1.get(0).getTick() < played1.get(played1.size()-1).getTick() - time);
 	}
 	
+
+	/**
+	 * Returns true if shortening the second note of the conflict could resolve it.
+	 * @param time
+	 * @return
+	 */
 	public boolean delaySecondPossible(long time){
 		return(dropped.get(0).getTick() + time < dropped.get(dropped.size()-1).getTick());
 	}
 	
+	/**
+	 * Move all events relating to the first note in the conflict to track 0.
+	 */
 	private void drop1(){
 		for(MidiEvent d: played1){
 			dropTrack.add(d);
@@ -115,6 +133,9 @@ public class NoteConflict{
 		}
 	}
 	
+	/**
+	 * Move all events relating to the last note in the conflict to track 0.
+	 */
 	private void drop2(){
 		for(MidiEvent d: played2){
 			dropTrack.add(d);
@@ -122,6 +143,9 @@ public class NoteConflict{
 		}
 	}
 	
+	/**
+	 * Move the dropped note from track 0 to the track the conflicting notes are on.
+	 */
 	private void play(){
 		for(MidiEvent d: dropped){
 			workingTrack.add(d);
@@ -129,6 +153,10 @@ public class NoteConflict{
 		}
 	}
 	
+	/**
+	 * returns the track the notes invlved in this conflict that have note been dropped are on.
+	 * @return
+	 */
 	public Track getTrack(){
 		return workingTrack;
 	}
@@ -149,6 +177,9 @@ public class NoteConflict{
 		}
 	}
 	
+	/**
+	 * Prints which string this noteconflict is on.
+	 */
 	public String toString(){
 		return "Conflict on string " + string + "\n"; 
 	}

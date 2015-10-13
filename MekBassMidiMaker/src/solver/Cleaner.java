@@ -453,6 +453,7 @@ public class Cleaner {
 										}
 									}
 								}
+								//add the note after the dropped note as well, in case it is relevant
 								List<MidiEvent> play2 = new ArrayList<MidiEvent>();
 								addConf2:
 								for(int j = conflictIndex; j < seq.getTracks()[k].size(); j++){
@@ -477,6 +478,7 @@ public class Cleaner {
 							}
 						}
 					}
+					//add the note conflict to the conflict list.
 					conflicts.add(con);
 				}
 			}

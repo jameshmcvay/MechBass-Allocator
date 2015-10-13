@@ -1,7 +1,5 @@
 package solver;
 
-import javax.sound.midi.Sequence;
-
 /**
  * Tuple for string information<p>
  * Contains: <br>
@@ -104,11 +102,23 @@ public class MekString {
 		else return addIntervals(note2-lowNote, note1-lowNote);
 	}
 	
+	/**
+	 * Checks the minimum number of ticks between the specified notes on this string.
+	 * @param note1
+	 * @param note2
+	 * @param scale - a float value for conversion between ticks and ms
+	 * @return
+	 */
 	public long differenceTick(int note1, int note2, float scale){
 //		System.out.printf("Difference in ticks: %d\n time: %d\n scale = %d\n", thing, differenceTime(note1,note2),(long)scale);
 		return (long) (differenceTime(note1,note2)*scale);
 	}
 	
+	/**
+	 * Returns true if this string can play the specified note.
+	 * @param i
+	 * @return
+	 */
 	public boolean playable(int i){
 		if(i>=lowNote && i<=highNote) return true;
 		return false;

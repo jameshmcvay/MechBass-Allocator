@@ -20,6 +20,11 @@ import tools.Player;
  * @author Andrew Palmer
  *
  */
+
+//-----------------------------------------------------------------------------------------------------
+//------------- This is a test setup from before we had working gui, probably not needed --------------
+//-----------------------------------------------------------------------------------------------------
+
 public class SplitAndSolve {
 	private static MekString[] strings = new MekString[]{ new MekString(43, 56), new MekString(38, 51),
 		new MekString(33, 46), new MekString(28, 41)};
