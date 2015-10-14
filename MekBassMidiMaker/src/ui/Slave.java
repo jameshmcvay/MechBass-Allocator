@@ -45,12 +45,12 @@ public class Slave {
 
 	protected static long microseconds = 0;
 	private static int mekStringCursor = 0;
+	private static boolean cleaned = false;
+
 	
 	/**
 	 * A constructor for the Slave. It loads the default program configuration.
 	 * */
-	private static boolean cleaned = false;
-
 	public Slave() throws IllegalArgumentException {
 		parse(new File("default.csv"));
 	}
