@@ -38,6 +38,7 @@ public class Console extends OutputStream {
 	Stack<String> nextCommand = new Stack<String>(); //The commands called after the currently selected commands
 	String SelectedCommand; //The currently selected command
 
+
 	//Fields for use in setup of configuration
 	int state; //state of configuration setup we are currently in
 	int curString; //the string we are currently setting in the configuration
@@ -134,7 +135,7 @@ public class Console extends OutputStream {
 	 *
 	 * @param text The string of text to parse
 	 */
-	private void read(String text) {
+	protected void read(String text) {
 		if (text.equals("") || text == null || text.equals("\n")) {
 			textInputField.setText("No command input");
 			textInputField.appendText("");
@@ -507,7 +508,7 @@ public class Console extends OutputStream {
 	/**
 	 * set the command in the input field to be the command issued previous to the one currently displayed there.
 	 */
-	private void CallPrevious() {
+	protected void CallPrevious() {
 		if (!prevCommand.isEmpty()) {
 			nextCommand.push(textInputField.getText());
 			String command = prevCommand.pop();
