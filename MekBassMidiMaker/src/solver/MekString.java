@@ -59,8 +59,8 @@ public class MekString {
 	 * Initialises all note delays to i
 	 */
 	public void initTimings(long i){
-		for(long j: interval){
-			j = i;
+		for(int j = 0; j < interval.length; j++){
+			interval[j] = i;
 		}
 	}
 	
