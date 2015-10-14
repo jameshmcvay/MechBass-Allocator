@@ -157,8 +157,8 @@ public class UI extends Application{
 		Slave.setConsole(console);
 
 	    PrintStream ps = new PrintStream(console, true);
-	    System.setOut(ps);
-	    System.setErr(ps);
+//	    System.setOut(ps);
+//	    System.setErr(ps);
 	    textInputConsole.requestFocus();
 
 	    primaryStage.setTitle("Gazoogle");//primaryStage.setTitle("MIDIAllocator");
@@ -241,6 +241,10 @@ public class UI extends Application{
 						// TODO Auto-generated catch block
 						e.printStackTrace();}}
         	});
+        MenuItem SC = new MenuItem("Save Config");
+        SC.setOnAction(new EventHandler<ActionEvent>() {
+        	public void handle(ActionEvent t) {	saveConfig();	}
+        	});
 	    MenuItem OM = new MenuItem("Open MIDI File");
 	        OM.setOnAction(new EventHandler<ActionEvent>() {
 	        	public void handle(ActionEvent t) {
@@ -272,7 +276,7 @@ public class UI extends Application{
 	        		System.exit(0);
 	        	}
 	        });
-	    menuFile.getItems().addAll(NC, OC, OM, SaM, SoM, Q);
+	    menuFile.getItems().addAll(NC, OC, SC, OM, SaM, SoM, Q);
 	}
 
 	private void setupEditMenu(Menu menuPlay) {
@@ -280,6 +284,12 @@ public class UI extends Application{
 	        Pl.setOnAction(new EventHandler<ActionEvent>() {
 	        	public void handle(ActionEvent t) {
 	        		play();
+	        	}
+	        });
+	    MenuItem Pa = new MenuItem("Pause");
+	        Pa.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		pause();
 	        	}
 	        });
 	    MenuItem St = new MenuItem("Stop");
@@ -300,7 +310,7 @@ public class UI extends Application{
 	        		Slave.shiftOctave(-1);
 	        	}
 	        });
-	    menuPlay.getItems().addAll(Pl, St, OU, OD);
+	    menuPlay.getItems().addAll(Pl, Pa, St, OU, OD);
 	}
 
 	private void setupHelpMenu(Menu menuHelp) {
@@ -485,7 +495,7 @@ public class UI extends Application{
 		default:
 			stage.setTitle("WHAT TH- HOW!? WHY?! WHAT DID YOU DO TO ME!?");
 			text.setText("Please forgive me. For you, there is no help. No hope.");
-			System.out.println("Please forgive me. For you, there is no help. No hope.");
+			//system.out.println("Please forgive me. For you, there is no help. No hope.");
 			break;
 		}
 		text.setEditable(false);
@@ -557,15 +567,18 @@ public class UI extends Application{
 		setupNextBtn.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				Slave.setName(             nameTxtFld.                             getText()  );
-				Slave.setPrepositionLength(Long.parseLong  (prepositionTxtFld.     getText() ));
-				Slave.setPrepositionDelay( Long.parseLong  (PrepositionDelayTxtFld.getText() ));
-				Slave.setNumberOfStrings(  Integer.parseInt(numberOfStringsTxtFld. getText() ));
-				remainingStrings = Integer.parseInt(numberOfStringsTxtFld.getText());
+				tempName              = (nameTxtFld.                             getText()  );
+				tempPrepositionLength = (Long.parseLong  (prepositionTxtFld.     getText() ));
+				tempPrepositionDelay  = (Long.parseLong  (PrepositionDelayTxtFld.getText() ));
+				tempNumberOfStrings   = (Integer.parseInt(numberOfStringsTxtFld. getText() ));
+				remainingStrings = tempNumberOfStrings;
+
 				if(remainingStrings > 0){
 //					((Stage)((Button)event.getSource()).getScene().getWindow()).close();
-						defineMekStringWindow(((Stage)((Button)event.getSource()).getScene().getWindow()));
+					defineMekStringWindow(((Stage)((Button)event.getSource()).getScene().getWindow()));
+
 				}
+				stage.close();
 			}
 		});
 		//Add to gPane
@@ -573,6 +586,12 @@ public class UI extends Application{
 
 		stage.show();
 	}
+
+	String tempName = "";
+	Long tempPrepositionLength;
+	Long tempPrepositionDelay;
+	int tempNumberOfStrings;
+
 
 	private void defineMekStringWindow(Stage stage2) {
 //		stage2.hide();
@@ -593,9 +612,9 @@ public class UI extends Application{
 		TextField highNoteTxtFld, lowNoteTxtFld, timingsTxtFld;
 		String titleString = "Mekstring #";
 		int gridYAxis = 0;
-
+		int i = 0;
 		while(remainingStrings > 0){
-			titleLabel = new Label(titleString + (Slave.getNumberOfStrings() - remainingStrings));
+			titleLabel = new Label(titleString + i++);
 			lowNoteLabel  = new Label("Lowest MIDI Note: "     );
 			highNoteLabel = new Label("Highest MIDI Note: "    );
 			timingsLabel  = new Label("Timings between notes: ");
@@ -630,6 +649,11 @@ public class UI extends Application{
 			@Override
 			public void handle(ActionEvent event) {
 
+				Slave.setName(tempName);
+				Slave.setPrepositionDelay(tempPrepositionDelay);
+				Slave.setPrepositionDelay(tempPrepositionLength);
+				Slave.setNumberOfStrings(tempNumberOfStrings);
+
 				int low = 0;
 				int high = 0 ;
 				long[] timings;
@@ -642,9 +666,11 @@ public class UI extends Application{
 					if(textFields.get(i).getText().length() != 0){
 						int j = 0;
 						for(String s : textFields.get(i).getText().split(",")){
-							System.out.println(s + "\n\t\t" + timings.length);
+							//system.out.println(s + "\n\t\t" + timings.length);
 							timings[j] = Long.parseLong(s);
 						}
+
+						//system.out.println(timings.toString());
 						Slave.addToMekString(new MekString(low, high, timings));
 					}
 					else{
@@ -652,7 +678,7 @@ public class UI extends Application{
 					}
 
 				}
-				((Stage)stage.getOwner()).close();
+				stage.close();
 			}
 		});
 		mekStringGPane.add(but, 2, gridYAxis);
@@ -680,7 +706,7 @@ public class UI extends Application{
 
 				String out = "";
 					out = parser.getTrackName(i);
-				System.out.println(out);
+				////system.out.println(out);
 				options.add(i + " - " + out);
 			}
 		}
@@ -693,7 +719,7 @@ public class UI extends Application{
 
 
 	private FlowPane buildLeftPanel(){
-		double buttonMaxWidth = 8000;
+		double buttonMaxWidth = 300;
 		double buttonMaxHeight = 100;
 	    Button playBtn = new Button();//The play button
 		playBtn.setText("Play");
@@ -720,12 +746,7 @@ public class UI extends Application{
 		loadBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
 			//call to setCurrMIDI
 			@Override
-			public void handle(ActionEvent event){setCurrentMIDI();
-			//Remove and re-add the eventhandler, this is to avoid it being called upon changing the contents of the combobox
-			EventHandler<ActionEvent> temp = BassTrackComboBox.getOnAction();
-			BassTrackComboBox.setOnAction(null);
-			BassTrackComboBox.setItems(populateTrackNumberComboBox());
-			BassTrackComboBox.setOnAction(temp);}});
+			public void handle(ActionEvent event){load();}});
 
 		Button saveBtn = new Button();//The Save Button
 		saveBtn.setText("Save");
@@ -776,7 +797,7 @@ public class UI extends Application{
 		//If no file is loaded, only option is zero.
 		//Due to changable loaded files, the comboBox must be externalised.
 		BassTrackComboBox = new ComboBox<String>();
-		BassTrackComboBox.setPromptText("Bass Track");
+		BassTrackComboBox.setPromptText("Please Select a Bass Track");
 		BassTrackComboBox.setMaxWidth(buttonMaxWidth);
 		BassTrackComboBox.setMaxHeight(buttonMaxHeight);
 		BassTrackComboBox.setItems(populateTrackNumberComboBox());
@@ -786,10 +807,15 @@ public class UI extends Application{
 			public void handle(ActionEvent event) {
 				// TODO Auto-generated method stub
 				if(event.getSource() instanceof ComboBox){
-					Integer bassTrack = Integer.parseInt(((
-							(ComboBox<String>) event.getSource()).getValue().charAt(0) + "")
-							);
+					try{
+						Integer bassTrack = Integer.parseInt(((
+								(ComboBox<String>) event.getSource()).getValue().charAt(0) + "")
+								);
 					Slave.setBassTrack(bassTrack);
+					}
+					catch(NumberFormatException e){
+						load();
+					}
 				}
 			}
 		});
@@ -833,18 +859,16 @@ public class UI extends Application{
 
 
 
-	protected void reload() {
-		try {
-			playerStop();
-			Slave.setSequence(MidiSystem.getSequence(currentFile));
-			sim.setSequence(Slave.getSequence());
-		} catch (InvalidMidiDataException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
+	protected void load() {
+		setCurrentMIDI();
+		//Remove and re-add the eventhandler, this is to avoid it being called upon changing the contents of the combobox
+		EventHandler<ActionEvent> temp = BassTrackComboBox.getOnAction();
+		BassTrackComboBox.setOnAction(null);
+		BassTrackComboBox.setItems(populateTrackNumberComboBox());
+		BassTrackComboBox.setOnAction(temp);
+
 	}
-
-
 
 	File lastFileLocation;
 	File currentFile;
@@ -883,13 +907,13 @@ public class UI extends Application{
 
 	protected void octaveDown() {
 		Slave.octaveDown();
-		//TODO testme
+		sim.setSequence(Slave.getSequence());
 	}
 
 
 	protected void octaveUp() {
 		Slave.octaveUp();
-		//TODO testme
+		sim.setSequence(Slave.getSequence());
 
 	}
 
@@ -938,6 +962,25 @@ public class UI extends Application{
 		slave.playerStop();
 		slave.playerRelease();
 		timer.cancel();
+	}
+
+
+	protected void reload() {
+		try {
+			playerStop();
+			Slave.setSequence(MidiSystem.getSequence(currentFile));
+			sim.setSequence(Slave.getSequence());
+		} catch (InvalidMidiDataException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	protected void saveConfig(){
+		File saveFile =  new FileChooser().showSaveDialog(null);
+		if(saveFile != null){
+			Slave.saveConfig(saveFile);
+		}
 	}
 
 	public TextField getConsoleTextInput(){
