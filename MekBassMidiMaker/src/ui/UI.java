@@ -489,7 +489,7 @@ public class UI extends Application{
 		default:
 			stage.setTitle("WHAT TH- HOW!? WHY?! WHAT DID YOU DO TO ME!?");
 			text.setText("Please forgive me. For you, there is no help. No hope.");
-			System.out.println("Please forgive me. For you, there is no help. No hope.");
+			//system.out.println("Please forgive me. For you, there is no help. No hope.");
 			break;
 		}
 		text.setEditable(false);
@@ -660,11 +660,11 @@ public class UI extends Application{
 					if(textFields.get(i).getText().length() != 0){
 						int j = 0;
 						for(String s : textFields.get(i).getText().split(",")){
-							System.out.println(s + "\n\t\t" + timings.length);
+							//system.out.println(s + "\n\t\t" + timings.length);
 							timings[j] = Long.parseLong(s);
 						}
 
-						System.out.println(timings.toString());
+						//system.out.println(timings.toString());
 						Slave.addToMekString(new MekString(low, high, timings));
 					}
 					else{
@@ -700,7 +700,7 @@ public class UI extends Application{
 
 				String out = "";
 					out = parser.getTrackName(i);
-				System.out.println(out);
+				////system.out.println(out);
 				options.add(i + " - " + out);
 			}
 		}
@@ -853,23 +853,6 @@ public class UI extends Application{
 
 
 
-	protected void reload() {
-		try {
-			playerStop();
-			Slave.setSequence(MidiSystem.getSequence(currentFile));
-			sim.setSequence(Slave.getSequence());
-		} catch (InvalidMidiDataException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	protected void saveConfig(){
-		File saveFile =  new FileChooser().showSaveDialog(null);
-		if(saveFile != null){
-			Slave.saveConfig(saveFile);
-		}
-	}
 
 	File lastFileLocation;
 	File currentFile;
@@ -908,13 +891,13 @@ public class UI extends Application{
 
 	protected void octaveDown() {
 		Slave.octaveDown();
-		//TODO testme
+		sim.setSequence(Slave.getSequence());
 	}
 
 
 	protected void octaveUp() {
 		Slave.octaveUp();
-		//TODO testme
+		sim.setSequence(Slave.getSequence());
 
 	}
 
@@ -963,6 +946,25 @@ public class UI extends Application{
 		slave.playerStop();
 		slave.playerRelease();
 		timer.cancel();
+	}
+
+
+	protected void reload() {
+		try {
+			playerStop();
+			Slave.setSequence(MidiSystem.getSequence(currentFile));
+			sim.setSequence(Slave.getSequence());
+		} catch (InvalidMidiDataException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	protected void saveConfig(){
+		File saveFile =  new FileChooser().showSaveDialog(null);
+		if(saveFile != null){
+			Slave.saveConfig(saveFile);
+		}
 	}
 
 	public TextField getConsoleTextInput(){
