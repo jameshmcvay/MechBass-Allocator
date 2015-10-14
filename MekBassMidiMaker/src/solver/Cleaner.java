@@ -15,11 +15,8 @@ import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
 
 /**
- * @author Andrew Palmer
- */
-
-/**
  *cleaner cuts the excess events after solving and adds pre-positioning.
+ * @author Andrew Palmer
  */
 public class Cleaner {
 
@@ -66,7 +63,7 @@ public class Cleaner {
 		}
 		return seq;
 	}
-	
+
 	/**
 	 * This sets all notes on each string to the same distinct channel.
 	 * ie. all notes on string 1 are set to channel 1. This should be run
@@ -97,7 +94,7 @@ public class Cleaner {
 	 * Scans a track for any events which can't be played due to transition interval
 	 * This can be used to ensure that all conflicts are resolved.
 	 * @param seq - The sequence to be checked
-	 * @param inter - The transition interval in s^(-6)
+	 * @param inter - The transition interval in ms
 	 * @param strings - the information on notes played by and intervals on the strings
 	 * @return the number of conflicting notes
 	 */
@@ -147,7 +144,7 @@ public class Cleaner {
 		if(scanTimings(seq,strings) > 0) return true;
 		return false;
 	}
-	
+
 
 	/**
 	 * Gets the previous note off
@@ -155,7 +152,7 @@ public class Cleaner {
 	private static int getPrev(int index, Track cur){
 		return getPrev(index, cur, NOTE_OFF);
 	}
-	
+
 	/**
 	 * Gets the previous note of a specified command
 	 */
@@ -173,11 +170,11 @@ public class Cleaner {
 		}
 		return 0;
 	}
-	
+
 	/**
 	 * Adds time to the start of the sequence (doesn't move metamessages with 0 ticks.)
 	 * Currently adds weird display error.
-	 * 
+	 *
 	 * @param seq
 	 * @param ticks
 	 * @return
@@ -199,13 +196,13 @@ public class Cleaner {
 	 * Adds pre positioning notes to the MIDI so MechBass can play it. Prepositioning notes
 	 * need to occur some time before each different consecutive note, so that the MechBass
 	 * can move frets to play it.
-	 * 
+	 *
 	 * This assumes that track 0 exists as the dropped note area.
 	 * It also makes the prepositioning notes on the same channel as the
-	 * note it is prepositioning for.	
-	 *  
+	 * note it is prepositioning for.
+	 *
 	 * @param seq - The sequence to add prepositioning to.
-	 * @param preTime - The time in ?¿½?¿½s to add before the string MUST be prepositioned.
+	 * @param preTime - The time in ms to add before the string MUST be prepositioned.
 	 * @param strings - The data for the strings it is to be played on.
 	 * @param length - How long the prepositioning note should be.
 	 * @return
@@ -235,7 +232,7 @@ public class Cleaner {
 								int note2 = noteOff.getData1();
 								//if the note is different and they don't clash
 								if(note2 != note1){
-									//uncomment the following two lines to print the amount of time between each note pair. 
+									//uncomment the following two lines to print the amount of time between each note pair.
 										try {
 											long tick = cur.get(j).getTick() - strings[i-1].differenceTick(note1, note2, tickScaling);
 											if(tick - preTicks < cur.get(prevIndex).getTick()){
@@ -249,7 +246,7 @@ public class Cleaner {
 														//index decremented as we are removing objects from the track
 														k--;
 														if(off.getCommand() == NOTE_OFF){
-															break drop;		
+															break drop;
 														}
 													}
 												}
@@ -264,7 +261,7 @@ public class Cleaner {
 												//for some reason adding these on the same line ends up with the wrong note off time
 												cur.add(new MidiEvent(new ShortMessage(NOTE_ON,noteOn.getChannel(),noteOn.getData1(),1) , time));
 												cur.add(new MidiEvent(new ShortMessage(NOTE_OFF,noteOn.getChannel(),noteOn.getData1(),0) , time +  length));
-												//index incremented as we added things, purely time saving here. 
+												//index incremented as we added things, purely time saving here.
 												j++;
 											}
 										} catch (ArrayIndexOutOfBoundsException e) {
@@ -328,7 +325,7 @@ public class Cleaner {
 		}
 		return curIndex;
 	}
-	
+
 	/**
 	 * Cuts a section of a sequence out for playback.
 	 * @param seq - The base sequence
@@ -351,24 +348,24 @@ public class Cleaner {
 					}
 				}
 			}
-			
+
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
 		}
 		return retSeq;
 	}
-	
-	
+
+
 	/**
 	 * Makes a List of Conflict objects. Conflict objects contain a list of note pairs (noteConflict classes)
 	 * where the second note in each pair is the same dropped note, the first note of each pair is the preceding
 	 * note that it conflicts with. A note pair exists for each string the dropped note could be played on.
-	 * 
+	 *
 	 * Currently this functionality is unused as we can't display the conflict in a useful way to the user, such that
 	 * they could make a proper decision on how to resolve it.
-	 * 
+	 *
 	 * This should occur, and all conflicts should be resolved after solving, but before preositioning.
-	 * 
+	 *
 	 * @param seq
 	 * @param strings - The set of MekStrings
 	 * @return
@@ -438,7 +435,7 @@ public class Cleaner {
 										}
 									}
 								}
-								
+
 								//add the note notes to the conflict
 								NoteConflict conflict = new NoteConflict(dropped, play1, play2, track, dropTrack, k-1);
 								con.addConf(conflict);
