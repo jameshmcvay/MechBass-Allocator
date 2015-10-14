@@ -241,6 +241,10 @@ public class UI extends Application{
 						// TODO Auto-generated catch block
 						e.printStackTrace();}}
         	});
+        MenuItem SC = new MenuItem("Save Config");
+        SC.setOnAction(new EventHandler<ActionEvent>() {
+        	public void handle(ActionEvent t) {	saveConfig();	}
+        	});
 	    MenuItem OM = new MenuItem("Open MIDI File");
 	        OM.setOnAction(new EventHandler<ActionEvent>() {
 	        	public void handle(ActionEvent t) {
@@ -272,7 +276,7 @@ public class UI extends Application{
 	        		System.exit(0);
 	        	}
 	        });
-	    menuFile.getItems().addAll(NC, OC, OM, SaM, SoM, Q);
+	    menuFile.getItems().addAll(NC, OC, SC, OM, SaM, SoM, Q);
 	}
 
 	private void setupEditMenu(Menu menuPlay) {
