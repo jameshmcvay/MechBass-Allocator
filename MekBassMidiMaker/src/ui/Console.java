@@ -22,31 +22,41 @@ import solver.MekString;
  */
 public class Console extends OutputStream {
 
-	boolean guiMode;
+	boolean guiMode; //whether or not we are using the console with a GUI
+	
+	//GUI text fields
 	TextField textInputField;
 	TextArea textOutputField;
+	
+	//Buffered reader for parsing input when in console mode
 	BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 	String input = "i";
-	Stack<String> prevCommand = new Stack<String>();
-	Stack<String> commandStack = new Stack<String>();
-	Stack<String> nextCommand = new Stack<String>();
-	String SelectedCommand;
-	String allText;
+	
+	//Fields for use with previous and next command features
+	Stack<String> prevCommand = new Stack<String>(); //The commands called before the currently selected command
+	Stack<String> commandStack = new Stack<String>(); //All the commands executed by the program
+	Stack<String> nextCommand = new Stack<String>(); //The commands called after the currently selected commands
+	String SelectedCommand; //The currently selected command
 
+
+	//Fields for use in setup of configuration
 	int state; //state of configuration setup we are currently in
 	int curString; //the string we are currently setting in the configuration
 	int numStrings; //the total number of strings for configuration
-	boolean setup = false;//parsing commands stright to setup
-	solver.MekString string;
-	solver.MekString[] strings;
-	int lowNote;
+	boolean setup = false;//whether we are parsing commands straight to setup
+	solver.MekString string; //A MekString to work on
+	solver.MekString[] strings;//An array to store completed strings
+	int lowNote; 
 	int highNote;
-	long[] timing;
+	long[] timing; //An array to store string timings
 	String setupName;
 	int i;
-	long prepTime;
-	long prepSize;
+	long prepTime;//Preposition time
+	long prepSize;//Preposition length
 
+	/*
+	 * Start of Dean's code
+	 */
 	// Valid Commands so far:
 	String[] validCommands = { "d", // Sets the configuration to default -
 									// perfect for hysteria.
@@ -72,8 +82,11 @@ public class Console extends OutputStream {
 					// Such benevolence.
 					// ANYTHING ELSE: NAH BRUH.
 	};
+	/*
+	 * End of Dean's code
+	 */
 
-//	int resolution;
+	//int resolution;
 	//boolean fix = false;
 	//List<NoteConflict> listOfNoteConflicts = new ArrayList<NoteConflict>();
 	//Conflict curConflict;
@@ -82,24 +95,19 @@ public class Console extends OutputStream {
 	List<Conflict> listOfConflicts;
 
 	/**
-	 * Create a console using for use within the gui.
+	 * Create a console using for use within the GUI.
 	 *
 	 * @param text
 	 *            The text of the GUI for this console to use
-	 * @param slave
-	 *            The slave instance
 	 */
-	public Console(TextField text, TextArea textOutputField) {
+	public Console(TextField input, TextArea output) {
 		guiMode = true;
-		textInputField = text;
-		this.textOutputField = textOutputField;
+		textInputField = input;
+		textOutputField = output;
 	}
 
 	/**
 	 * Create a console for use without a GUI.
-	 *
-	 * @param slave
-	 *            The slave instance.
 	 */
 	public Console() {
 		guiMode = false;
@@ -109,7 +117,7 @@ public class Console extends OutputStream {
 	/**
 	 * start a loop to check for input from the console.
 	 */
-	protected void startTerminalInput() {
+	private void startTerminalInput() {
 		do {
 			try {
 				input = buf.readLine();
@@ -130,7 +138,6 @@ public class Console extends OutputStream {
 	protected void read(String text) {
 		if (text.equals("") || text == null || text.equals("\n")) {
 			textInputField.setText("No command input");
-
 			textInputField.appendText("");
 			return;
 		}
@@ -151,7 +158,7 @@ public class Console extends OutputStream {
 	 *
 	 * @param text The string of text to parse
 	 */
-	protected void setupParse(String text) {
+	private void setupParse(String text) {
 		switch (state) {
 		case 0:
 			setupName = text;
@@ -221,7 +228,7 @@ public class Console extends OutputStream {
 	 * @param text
 	 *            The string of text to parse
 	 */
-	protected void parse(String rawInput) {
+	private void parse(String rawInput) {
 		String[] input = rawInput.split("\\s+");
 		String command = input[0].toLowerCase();
 		commandStack.push(rawInput);
@@ -310,7 +317,7 @@ public class Console extends OutputStream {
 	 *
 	 * @return GUI mode
 	 */
-	protected boolean getGUIMode() {
+	private boolean getGUIMode() {
 		return guiMode;
 	}
 
@@ -340,7 +347,7 @@ public class Console extends OutputStream {
 	/**
 	 * Save the current configuration as default.csv in the current directory.
 	 */
-	protected void saveConfig() {
+	private void saveConfig() {
 		output("saving config as \"default.csv\" in the current directory");
 		File fi = new File("default.csv");
 		Slave.saveConfig(fi);
@@ -351,7 +358,7 @@ public class Console extends OutputStream {
 	 *
 	 * @param input The saveConfig command of the form "saveConfig <file name>"
 	 */
-	protected void saveConfig(String input) {
+	private void saveConfig(String input) {
 		String fileName = input.substring(10).replace("\"", "").trim();
 		File fi = new File(fileName);
 		Slave.saveConfig(fi);
@@ -362,7 +369,7 @@ public class Console extends OutputStream {
 	 *
 	 * @param input The BassTrack command of the form "basstrack <track number>"
 	 */
-	protected void setBassTrack(String input) {
+	private void setBassTrack(String input) {
 		int track =Slave.getBassTrack();
 		try{
 		track = Integer.parseInt(input.substring(9).replace("\"", "")
@@ -381,7 +388,7 @@ public class Console extends OutputStream {
 	 *
 	 * @param input The save command of the form "save <file path>"
 	 */
-	protected void save(String input) {
+	private void save(String input) {
 		String fileName = input.substring(4).replace("\"", "").trim();
 		Slave.save(fileName);
 	}
@@ -389,7 +396,7 @@ public class Console extends OutputStream {
 	/**
 	 * save the current midi file as the default "out.mid" in the current directory.
 	 */
-	protected void save() {
+	private void save() {
 		output("saving file as \"out.mid\" in the current directory");
 		Slave.save("out.mid");
 	}
@@ -398,7 +405,7 @@ public class Console extends OutputStream {
 	 *
 	 * @param input the file to be solve of the form "solve <file name>
 	 */
-	protected void solve(String input) {
+	private void solve(String input) {
 		String FileName = input.substring(5).replace("\"", "").trim();
 		if (Slave.setCurMIDI(FileName)) {
 			listOfConflicts = Slave.solve();
@@ -484,7 +491,7 @@ public class Console extends OutputStream {
 	 *
 	 * @param text the string of text to output to the appropriate area
 	 */
-	protected void output(String text) {
+	private void output(String text) {
 		for (char c : text.toCharArray()) {
 			try {
 				write((int) c);

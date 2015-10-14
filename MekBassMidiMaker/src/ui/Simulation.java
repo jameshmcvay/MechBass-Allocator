@@ -337,7 +337,7 @@ public class Simulation {
 					gc.setFill(Color.RED);
 					gc.fillRect(left + end-note_tag_width, voff-noff, note_tag_width, note_tag_height);
 					// the string, and note being played
-					gc.fillText(String.format("%d:%d",t, n.note), left+start, voff-noteDiv);
+					gc.fillText(String.format("%d:%d:%d",t, n.note, n.velocity), left+start, voff-noteDiv);
 				}
 			}
 
@@ -433,7 +433,7 @@ public class Simulation {
 					gc.setFill(Color.RED);
 					gc.fillRect(left + end-note_tag_width, voff-noff, note_tag_width, note_tag_height);
 					// the string, and note being played
-					gc.fillText(String.format("%d:%d",t, n.note), left+start, voff-noteDiv);
+					gc.fillText(String.format("%d:%d:%d",t, n.note, n.velocity), left+start, voff-noteDiv);
 				}
 			}
 

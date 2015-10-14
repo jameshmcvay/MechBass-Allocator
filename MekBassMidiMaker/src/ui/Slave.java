@@ -219,11 +219,11 @@ public class Slave {
 	}
 
 	protected static void octaveUp() {
-		OctaveShifter.shiftOctave(curMIDI, 3);
+		OctaveShifter.shiftOctave(curMIDI, 1);
 	}
 
 	protected static void octaveDown() {
-		OctaveShifter.shiftOctave(curMIDI, -3);
+		OctaveShifter.shiftOctave(curMIDI, -1);
 	}
 
 	/**
