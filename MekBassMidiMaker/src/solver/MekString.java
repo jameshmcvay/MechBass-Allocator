@@ -59,8 +59,8 @@ public class MekString {
 	 * Initialises all note delays to i
 	 */
 	public void initTimings(long i){
-		for(long j: interval){
-			j = i;
+		for(int j = 0; j < interval.length; j++){
+			interval[j] = i;
 		}
 	}
 	
@@ -110,7 +110,6 @@ public class MekString {
 	 * @return
 	 */
 	public long differenceTick(int note1, int note2, float scale){
-//		System.out.printf("Difference in ticks: %d\n time: %d\n scale = %d\n", thing, differenceTime(note1,note2),(long)scale);
 		return (long) (differenceTime(note1,note2)*scale);
 	}
 	

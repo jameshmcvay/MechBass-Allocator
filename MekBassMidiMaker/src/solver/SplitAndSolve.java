@@ -93,6 +93,6 @@ public class SplitAndSolve {
 			System.out.println("IO Exception\n");
 			e.printStackTrace();
 		}
-		SplitAndSolve sAndS =  new SplitAndSolve(sequence,4,9);
+		new SplitAndSolve(sequence,4,9);
 	}
 }

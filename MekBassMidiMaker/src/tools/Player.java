@@ -18,20 +18,21 @@ public class Player {
 	 */
 	public static void play(Sequence s) {
 	    if(seq == null || !seq.isRunning()){
-	    	play(s,0);
+	    	play(s,0,true);
 	    }
 	}
 
 	/**
 	 * Start audio playback from a given point along the track.
 	 */
-	public static void play(Sequence s, long microSeconds){
+	public static void play(Sequence s, long microSeconds,boolean clean){
 		assert(s != null);
 		try {
 			seq = MidiSystem.getSequencer();
 			seq.open();
 			seq.setSequence(s);
 			seq.setMicrosecondPosition(microSeconds);
+			seq.setTrackMute(0, !clean);
 
 			seq.start();
 		} catch (MidiUnavailableException | InvalidMidiDataException e) {

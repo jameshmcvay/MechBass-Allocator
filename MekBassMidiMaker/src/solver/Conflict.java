@@ -6,7 +6,7 @@ import java.util.List;
 import javax.sound.midi.MidiEvent;
 
 /**
- * 
+ *
  * @author Andrew Palmer
  *
  */
@@ -14,7 +14,7 @@ public class Conflict {
 	private MidiEvent note;
 	private List<NoteConflict> conflicts;
 	private boolean resolved;
-	
+
 	/**
 	 * Creates a new conflict object relating to dropped note n.
 	 * @param n - The MidiEvent representing the dropped note.
@@ -22,7 +22,7 @@ public class Conflict {
 	public Conflict(MidiEvent n){
 		note = n; conflicts = new ArrayList<NoteConflict>(); resolved = false;
 	}
-	
+
 	/**
 	 * Adds a noteConflict to the conflict list.
 	 * @param con
@@ -30,7 +30,7 @@ public class Conflict {
 	public void addConf(NoteConflict con){
 		conflicts.add(con);
 	}
-	
+
 	/**
 	 * Marks a conflict as resolved.
 	 * @return
@@ -38,7 +38,11 @@ public class Conflict {
 	public boolean resolved(){
 		return resolved;
 	}
-	
+
+	public void markResolved(){
+		resolved  = true;
+	}
+
 	/**
 	 * Returns the dropped note of the conflict.
 	 * @return MidiEvent - Dropped note
@@ -46,7 +50,7 @@ public class Conflict {
 	public MidiEvent getNote(){
 		return note;
 	}
-	
+
 	/**
 	 * Returns the list of NoteConflicts
 	 * @return
@@ -54,7 +58,7 @@ public class Conflict {
 	public List<NoteConflict> getConf(){
 		return conflicts;
 	}
-	
+
 	/**
 	 * Returns the number of different strings the dropped note could be played on,
 	 * if they didn't have conflicting notes on them.
@@ -63,13 +67,13 @@ public class Conflict {
 	public int strings(){
 		return conflicts.size();
 	}
-	
+
 	/**
 	 * Returns the tick of the first note in any of the NoteConflicts contained in
 	 * this conflict.
-	 * 
+	 *
 	 * Use this to determine start time for playback.
-	 * 
+	 *
 	 * @return long - Tick
 	 */
 	public long start(){
@@ -81,12 +85,12 @@ public class Conflict {
 		}
 		return min;
 	}
-	
+
 	/**
 	 * Returns the tick of the last note of any of the NoteConflicts contained in this conflict.
-	 * 
+	 *
 	 * Use this to determine end time for playback.
-	 * 
+	 *
 	 * @return long - Tick
 	 */
 	public long end(){
@@ -98,12 +102,12 @@ public class Conflict {
 		}
 		return max;
 	}
-	
+
 	/**
 	 * Returns a string informing the user of the number of strings the dropped note could be played on.
 	 */
 	public String toString(){
 		return "Conflict containing a note playable on " + conflicts.size() +" strings\n";
 	}
-	
+
 }

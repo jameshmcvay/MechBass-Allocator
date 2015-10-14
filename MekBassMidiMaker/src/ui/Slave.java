@@ -41,6 +41,8 @@ public class Slave {
 
 	private static List<Conflict> setOfConflicts;
 
+	private static boolean cleaned = false;
+
 	public Slave() throws IllegalArgumentException {
 		parse(new File("default.csv"));
 	}
@@ -53,7 +55,7 @@ public class Slave {
 		curMIDI = m;
 	}
 
-	public Console getConsole() {
+	public static Console getConsole() {
 		return console;
 	}
 
@@ -90,7 +92,7 @@ public class Slave {
 		UI = newUi;
 	}
 
-	void setSim(Simulation sim){
+	static void setSim(Simulation sim){
 		Slave.sim = sim;
 	}
 
@@ -98,7 +100,7 @@ public class Slave {
 		console = newConsole;
 	}
 
-	public void playerRelease() {
+	public static void playerRelease() {
 		Player.release();
 	}
 
@@ -113,7 +115,7 @@ public class Slave {
 
 	protected static void play() {
 		if (curMIDI != null && !playing){
-			Player.play(curMIDI,microseconds);
+			Player.play(curMIDI,microseconds,cleaned);
 			playing = true;
 		}
 		if (sim != null) {
@@ -148,7 +150,7 @@ public class Slave {
 	}
 
 	protected static List<Conflict> solve() {
-
+		cleaned = false;
 		if (curMIDI != null)
 			try {
 				Solver greedy = new GreedySolver(setOfStrings);
@@ -182,7 +184,7 @@ public class Slave {
 		}
 	}
 
-	protected List<Conflict> getConflicts(){
+	protected static List<Conflict> getConflicts(){
 		return setOfConflicts;
 	}
 
@@ -200,6 +202,7 @@ public class Slave {
 		try {
 			File fi = new File(path);
 			if (fi != null) {
+				cleaned = false;
 				curMIDI = MidiSystem.getSequence(fi);
 				if (sim!= null) sim.setSequence(curMIDI);
 				System.out.print("successfully opened file \n");
@@ -335,8 +338,8 @@ public class Slave {
 	}
 
 	public static void clean() {
+		cleaned = true;
 		Cleaner.clean(getSequence());
-
 	}
 
 
