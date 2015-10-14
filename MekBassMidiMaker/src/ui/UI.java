@@ -709,7 +709,7 @@ public class UI extends Application{
 
 
 	private FlowPane buildLeftPanel(){
-		double buttonMaxWidth = 8000;
+		double buttonMaxWidth = 300;
 		double buttonMaxHeight = 100;
 	    Button playBtn = new Button();//The play button
 		playBtn.setText("Play");
