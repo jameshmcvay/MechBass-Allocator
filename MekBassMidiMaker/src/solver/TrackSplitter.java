@@ -7,6 +7,8 @@ import javax.sound.midi.Sequence;
 import javax.sound.midi.Track;
 
 /**
+ * Takes an input sequence, a number of tracks, and an index into the 'bass' track.<br>
+ * It then creates an output sequence with the specified number of tracks plus one, and copies all events from the 'bass' track into tracks zero
  *
  * @author Elliot Wilde
  * @author Andrew Palmer
@@ -51,10 +53,6 @@ public class TrackSplitter {
 				}
 			}
 		}
-
-
-		// print some 'useful' information
-		System.out.printf("Missed %d events? of %d\n", inTrack.size()-output.getTracks()[0].size(), inTrack.size() );
 		// then return the new MIDI Sequence
 		return output;
 	}

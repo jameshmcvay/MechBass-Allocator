@@ -10,21 +10,23 @@ import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Sequence;
-import javax.sound.midi.Sequencer;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
 
 import static javax.sound.midi.ShortMessage.*;
-import javafx.scene.*;
 import javafx.scene.paint.*;
 import javafx.scene.text.Font;
 import javafx.scene.canvas.*;
 
-import org.junit.Test;
 
-import solver.GreedySolver;
 import solver.MekString;
 
+/**
+ * This is a Combination Simulation/Visualisation for the MekBass and Midi sequence files.<br>
+ * It switches from Visualisation to Simulation when the number of tracks in the current sequence is equal to the number of strings.
+ * @author Elliot Wilde
+ *
+ */
 public class Simulation {
 
 	private static int note_tag_width = 2;
@@ -34,7 +36,6 @@ public class Simulation {
 	private Sequence seq=null;
 	private List<Note>[] notes = null;
 	private int resolution;
-	private long position;
 	private long drawStartTime;
 
 	private long lastTickTime=0;
@@ -46,15 +47,23 @@ public class Simulation {
 	private boolean playing = false;
 
 	/**
-	 * Creates a new Simulation object. Nothing really actually happens when this is called
+	 * Creates a new Simulation object. This doesn't actually do anything
 	 */
 	public Simulation(){
 	}
 
+	/**
+	 * Is the simulation currently set to be playing?
+	 * @return
+	 */
 	public boolean isPlaying(){
 		return playing;
 	}
 
+	/**
+	 * Set the simulation to use a specific set of strings
+	 * @param newStrings New Strings
+	 */
 	public void setStrings(MekString[] newStrings){
 		if (newStrings==null) return;
 		strings = newStrings;
@@ -162,12 +171,15 @@ public class Simulation {
 	 */
 	public void stop(){
 		playing = false;
-		position = 0;
 		drawStartTime = 0;
 		lastTickTime = 0;
 		setStrings(strings);
 	}
 
+	/**
+	 * Does on simulation tick, with the tick time being the time since the last tick.<br>
+	 * The simulation tick moves the picks between frets based upon timing information present in the strings.
+	 */
 	public void tick(){
 		long time = System.currentTimeMillis();
 		long diff = time-lastTickTime;
@@ -178,25 +190,27 @@ public class Simulation {
 		lastTickTime = time;
 	}
 
+	/**
+	 * This is the actual simulation tick
+	 * @param time
+	 * @return
+	 */
 	private long tick(long time){
 		if (picks==null) return time;
 		// move the picks
 		for (int i=0; i<picks.length; ++i){
 			// if the pick has no target, go to the next string
-			//ystem.out.printf("%.1f\tt:%d\t", picks[i], pickTarget[i]);
 			if (pickTarget[i] == -1) {
 				int c = notes.length - strings.length;
 				Note n;
-				try{
+				try{ // this was the cleanest way of checking whether or not there has been/will be a note
 					n = notes[i+c].get(getIndexAtTime(drawStartTime, notes[i+c]));
 				} catch (IndexOutOfBoundsException e){
-					//ystem.out.println("ex");
 					continue;
 				}
 				if (n.velocity==1){ // this means it is a preposition
 					pickTarget[i] = n.note;
 				} else {
-					//ystem.out.println("nan");
 					continue;
 				}
 			}
@@ -211,15 +225,11 @@ public class Simulation {
 			// have float(pick), int(dest), int(target)
 			// get the velocity (time between frets)
 			int a = (int) Math.round(picks[i]), b = (int) (Math.round(picks[i])+dir);
-//			long delta = 50;
-//			try {
+			// get how far(time) we need to move
 			long delta = strings[i].differenceTime(Math.min(a,b), Math.max(a, b));
-//			} catch (IndexOutOfBoundsException e){
-//				System.err.println("There was a problem getting the time between notes, was one of them out of range of the string?");
-//				System.err.printf("%d\t%d\t%d\t%d\t%d\n", i, a, b, strings[i].lowNote, strings[i].highNote);
-//			}
+			// get how quickly we  can move
 			double move = 1./(delta/(float)time);
-			if (Double.isInfinite(move)) {
+			if (Double.isInfinite(move)) { // if one of the values is zero, stop
 				picks[i] = pickTarget[i];
 				pickTarget[i] = -1;
 				continue;
@@ -231,13 +241,16 @@ public class Simulation {
 				picks[i] = pickTarget[i];
 				pickTarget[i] = -1;
 			}
-
-		}
+		} // we done here
 		return time;
 	}
 
+	/**
+	 * Draws the currently stored sequence, the currently playable note, and the strings.
+	 * @param gc The graphics panel to draw onto
+	 * @param hscale Horizonatal scaling factor
+	 */
 	public void draw(GraphicsContext gc, double hscale){
-//		long time = System.currentTimeMillis();
 		// get the dimensions of the canvas
 		double top = 15.0;
 		double left = 15.0;
@@ -248,35 +261,40 @@ public class Simulation {
 		// draw a vertical line on the right to seperate the pane from the settings
 		gc.setFill(Color.GREY);
 		gc.fillRect(width-1, 1, width, height+top);
-		gc.setFont(Font.font(gc.getFont().getFamily(), 9));;
+		// change the font size to fit better
+		gc.setFont(Font.font(gc.getFont().getFamily(), 9));
 
 		////////////////////////////////////////
 		// Draw timing marks
 		////////////////////////////////////////
-		long u= 0;
+		long increment= 0;
 		gc.setFill(Color.GRAY);
 		do {
 			// this is the increment in ms for the display
-			u+=200;
-			double pos = u;
+			increment+=200;
+			double pos = increment;
 			if ((pos-drawStartTime)*hscale < width && (pos-drawStartTime)*hscale > left-100){
+				// the lines on the bottom
 				gc.fillRect(left + (pos-drawStartTime)*hscale, height+top - 2, 2, height);
-				gc.fillText(String.format("%#.2f", u/1000.0),
-						left+(pos-drawStartTime-10)*hscale, height-10+top-(u%100)/20);
+				// the numbers above them
+				gc.fillText(String.format("%#.2f", increment/1000.0),
+						left+(pos-drawStartTime-10)*hscale, height-10+top-(increment%100)/20);
 			}
-		} while ((u-drawStartTime)*hscale < width);
+		} while ((increment-drawStartTime)*hscale < width);
 		// then, if we don't have a sequence to display, we don't have anything to display
 		if (seq==null) return;
-		strings = Slave.getMekStringArray();
 
-		if (strings !=null){
+		// if for some reason we don't have any strings loaded, revert to a fallback display (else)
+		// if we do have strings loaded, draw normally
+		if (strings.length >= notes.length){
 			// get information from strings
 			int totalnotes = 0;
 			for (int i=0; i<strings.length; ++i){
 				totalnotes += strings[i].noteRange +1;
 			}
 			int offsetNotes = 0;
-			double noteDiv = height / totalnotes;
+			// set the height allocation for each note
+			final double noteDiv = height / totalnotes;
 			double offset = noteDiv;
 
 
@@ -292,36 +310,42 @@ public class Simulation {
 			for (int t=0; t<loopEnd; ++t){
 
 				int length = notes[t+c].size();
-	//			 get the first (fully) visible note
+	//			get the first (fully) visible note
 				int startIndex = 0;
 				// and start at that point
 				// set how far down we start
 				if (t>0) offset += noteDiv*(strings[t-1].noteRange+1);
 				for (int i=startIndex; i<length; ++i){
 					n = notes[t+c].get(i);
-
+					// cache some of the maths done more than once
 					double start = (n.start-drawStartTime)*hscale;
 					double end = (n.end-drawStartTime)*hscale;
+					// if the note would note be displayed, don't do anything else, could probably break the loop here, but meh
+					if (end < left || start > width) continue;
 					int lowNote = strings[t].lowNote;
+					double voff = offset+(n.note-lowNote)*noteDiv;	// vertical offset
+					double noff = (noteDiv/2+note_tag_height/2);	// note offset
 
-					if (n.velocity==1) {
-						gc.setFill(Color.BLANCHEDALMOND);
-					} else {
-						gc.setFill(Color.BLACK);
-					}
-					gc.setFill(Color.grayRgb(n.velocity));
-					gc.fillRect(left + start, offset+(n.note-lowNote)*noteDiv-noteDiv/2 ,n.duration*hscale, note_tag_width);
+					// draw stuff
+					// the length of the note
+					gc.setFill(Color.BLACK);
+					gc.fillRect(left + start, voff-noteDiv/2 ,n.duration*hscale, note_tag_width);
+					// the start tag for the note
 					gc.setFill(Color.GREEN);
-					gc.fillRect(left + start, offset+(n.note-lowNote)*noteDiv-(noteDiv/2+note_tag_height/2), note_tag_width, note_tag_height);
+					gc.fillRect(left + start, voff-noff, note_tag_width, note_tag_height);
+					// the end tag for the note
 					gc.setFill(Color.RED);
-					gc.fillRect(left + end-note_tag_width, offset+(n.note-lowNote)*noteDiv-(noteDiv/2+note_tag_height/2), note_tag_width, note_tag_height);
-					gc.fillText(String.format("%d:%d",t, n.note), left+start, offset+(n.note-lowNote)*noteDiv-noteDiv);
+					gc.fillRect(left + end-note_tag_width, voff-noff, note_tag_width, note_tag_height);
+					// the string, and note being played
+					gc.fillText(String.format("%d:%d",t, n.note), left+start, voff-noteDiv);
 				}
-
 			}
+
+
 			////////////////////////////////////////
 			// Draw the note values on the left
 			////////////////////////////////////////
+			// clear a box on the left
 			gc.clearRect(0, 0, left, height);
 			gc.setFill(Color.GRAY);
 			gc.fillRect(left, 0, 1, height+top);
@@ -339,6 +363,7 @@ public class Simulation {
 				if (offsetNotes < totalnotes) gc.fillRect(0, offset+1-noteDiv, width, 1);
 			}
 
+
 			//////////////////////////////////////////
 			// Draw the picks
 			//////////////////////////////////////////
@@ -355,30 +380,73 @@ public class Simulation {
 			}
 
 
-		} else { /** endif (strings !=null) **/
+		} else { /** endif (strings.length >= notes.length) **/
 
-		// archive for visualisation
+			// get information from strings
+			int lowNote = Integer.MAX_VALUE;
+			int highNote = Integer.MIN_VALUE;
+			for (List<Note> l: notes){
+				for (Note n: l){
+					lowNote = Math.min(lowNote, n.note);
+					highNote = Math.max(highNote, n.note);
+				}
+			}
+			int totalnotes = highNote - lowNote;
+			// set the height allocation for each note
+			final double noteDiv = height / totalnotes;
+			final double ntop = - (lowNote * noteDiv);
+
+			////////////////////////////////////////
+			// Draw the notes
+			////////////////////////////////////////
 			Note n;
-			for (int t=0; t<notes.length; ++t){
-				int length = notes[t].size();
-	//			 get the first (fully) visible note
+			int loopEnd = Math.min(notes.length, strings.length);
+			int c = 0; // this is a correction for if track0 has not yet been removed/cleaned
+			if (notes.length == strings.length+1){
+				c = 1;
+			}
+			for (int t=0; t<loopEnd; ++t){
+
+				int length = notes[t+c].size();
+				//			get the first (fully) visible note
 				int startIndex = 0;
 				// and start at that point
+				// set how far down we start
 				for (int i=startIndex; i<length; ++i){
-					n = notes[t].get(i);
-
+					n = notes[t+c].get(i);
+					// cache some of the maths done more than once
 					double start = (n.start-drawStartTime)*hscale;
 					double end = (n.end-drawStartTime)*hscale;
+					// if the note would note be displayed, don't do anything else, could probably break the loop here, but meh
+					if (end < left || start > width) continue;
+					double voff = n.note*noteDiv + ntop;	// vertical offset
+					double noff = (noteDiv/2+note_tag_height/2);	// note offset
 
-					gc.setFill(Color.color(1.0/(t+1), 1.0-1.0/(t+1), 0.5));
-					gc.fillRect(left + start, note_tag_height*n.note + t*note_tag_height/(double)notes.length ,n.duration*hscale, note_tag_width);
+					// draw stuff
+					// the length of the note
+					gc.setFill(Color.BLACK);
+					gc.fillRect(left + start, voff-noteDiv/2 ,n.duration*hscale, note_tag_width);
+					// the start tag for the note
 					gc.setFill(Color.GREEN);
-					gc.fillRect(left + start, note_tag_height*n.note, note_tag_width, note_tag_height);
+					gc.fillRect(left + start, voff-noff, note_tag_width, note_tag_height);
+					// the end tag for the note
 					gc.setFill(Color.RED);
-					gc.fillRect(left + end-2, note_tag_height*n.note, note_tag_width, note_tag_height);
-	//				}
+					gc.fillRect(left + end-note_tag_width, voff-noff, note_tag_width, note_tag_height);
+					// the string, and note being played
+					gc.fillText(String.format("%d:%d",t, n.note), left+start, voff-noteDiv);
 				}
+			}
 
+			////////////////////////////////////////
+			// Draw the note values on the left
+			////////////////////////////////////////
+			// clear a box on the left
+			gc.clearRect(0, 0, left, height);
+			gc.setFill(Color.GRAY);
+			gc.fillRect(left, 0, 1, height+top);
+			// go through each string
+			for (int i=lowNote; i<=highNote; ++i){
+				gc.fillText(String.format("%d", i), 1, (noteDiv)* i + ntop);
 			}
 		}
 	}
@@ -387,12 +455,12 @@ public class Simulation {
 	 * Gets the index of the note at or the next note after the specified time, or track.size
 	 * @param time
 	 * @param track
-	 * @return
+	 * @return Index of the last note to start playing
 	 */
 	private int getIndexAtTime(long time, List<Note> track){
 		int ind = Arrays.binarySearch(track.toArray(), new Note(0, time, 0, 0));
 		if (ind < 0) ind =  -ind-1;
-		// check the note at the index to see if 'time' fits in, if not, get the index before and check that
+		// check the note at the index to see if 'time' fits in, if not, use the index before
 //		Note n = track.get(ind);
 		if (time < track.get(ind).start){
 				ind--;
