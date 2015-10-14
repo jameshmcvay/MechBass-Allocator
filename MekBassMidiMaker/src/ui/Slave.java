@@ -42,12 +42,15 @@ public class Slave {
 
 	private static List<Conflict> setOfConflicts;
 
+
 	protected static long microseconds = 0;
 	private static int mekStringCursor = 0;
 	
 	/**
 	 * A constructor for the Slave. It loads the default program configuration.
 	 * */
+	private static boolean cleaned = false;
+
 	public Slave() throws IllegalArgumentException {
 		parse(new File("default.csv"));
 	}
@@ -72,7 +75,7 @@ public class Slave {
 	 * Returns the Console.
 	 * @return The Console.
 	 * */
-	public Console getConsole() {
+	public static Console getConsole() {
 		return console;
 	}
 
@@ -80,7 +83,7 @@ public class Slave {
 	 * Returns the UI.
 	 * @return The UI.
 	 * */
-	public UI getUI() {
+	public static UI getUI() {
 		return UI;
 	}
 
@@ -165,7 +168,7 @@ public class Slave {
 	 * Sets the simulation the program should use now.
 	 * @param sim The simulation the program should use now.
 	 * */
-	void setSim(Simulation sim){
+	static void setSim(Simulation sim){
 		Slave.sim = sim;
 	}
 
@@ -181,7 +184,7 @@ public class Slave {
 	 * Signals the Player class to release the resources being used by the 
 	 * Sequencer.
 	 * */
-	public void playerRelease() {
+	public static void playerRelease() {
 		Player.release();
 	}
 
@@ -205,7 +208,7 @@ public class Slave {
 	 * */
 	protected static void play() {
 		if (curMIDI != null && !playing){
-			Player.play(curMIDI,microseconds);
+			Player.play(curMIDI,microseconds,cleaned);
 			playing = true;
 		}
 		if (sim != null) {
@@ -254,7 +257,7 @@ public class Slave {
 	 * @return A List of conflicts.
 	 * */
 	protected static List<Conflict> solve() {
-
+		cleaned = false;
 		if (curMIDI != null)
 			try {
 				Solver greedy = new GreedySolver(setOfStrings);
@@ -294,6 +297,10 @@ public class Slave {
 	 * Saves the MIDI File for use outside the program (such as with Mechbass).
 	 * @param fileName The file the newly saved MIDI file should overwrite.
 	 * */
+	protected static List<Conflict> getConflicts(){
+		return setOfConflicts;
+	}
+
 	protected static void save(File fileName) {
 		if (curMIDI != null) {
 			try {
@@ -302,14 +309,6 @@ public class Slave {
 				System.out.println("Could not save file");
 			}
 		}
-	}
-	
-	/**
-	 * Returns the list of Conflicts.
-	 * @return The list of Conflicts.
-	 * */
-	protected List<Conflict> getConflicts(){
-		return setOfConflicts;
 	}
 
 	/**
@@ -326,6 +325,7 @@ public class Slave {
 		try {
 			File fi = new File(path);
 			if (fi != null) {
+				cleaned = false;
 				curMIDI = MidiSystem.getSequence(fi);
 				if (sim!= null) sim.setSequence(curMIDI);
 				System.out.print("successfully opened file \n");
@@ -346,7 +346,7 @@ public class Slave {
 	 * current MIDI sequence up.
 	 * */
 	protected static void octaveUp() {
-		OctaveShifter.shiftOctave(curMIDI, 3);
+		OctaveShifter.shiftOctave(curMIDI, 1);
 	}
 
 	/**
@@ -354,7 +354,7 @@ public class Slave {
 	 * current MIDI sequence down.
 	 * */
 	protected static void octaveDown() {
-		OctaveShifter.shiftOctave(curMIDI, -3);
+		OctaveShifter.shiftOctave(curMIDI, -1);
 	}
 
 	/**
@@ -423,7 +423,6 @@ public class Slave {
 			}
 			sc.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			return false;
 		}
 
@@ -454,7 +453,6 @@ public class Slave {
 				ps.close();
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -503,8 +501,8 @@ public class Slave {
 	 * Sequence.
 	 * */
 	public static void clean() {
+		cleaned = true;
 		Cleaner.clean(getSequence());
-
 	}
 
 
