@@ -241,6 +241,10 @@ public class UI extends Application{
 						// TODO Auto-generated catch block
 						e.printStackTrace();}}
         	});
+        MenuItem SC = new MenuItem("Save Config");
+        SC.setOnAction(new EventHandler<ActionEvent>() {
+        	public void handle(ActionEvent t) {	saveConfig();	}
+        	});
 	    MenuItem OM = new MenuItem("Open MIDI File");
 	        OM.setOnAction(new EventHandler<ActionEvent>() {
 	        	public void handle(ActionEvent t) {
@@ -272,7 +276,7 @@ public class UI extends Application{
 	        		System.exit(0);
 	        	}
 	        });
-	    menuFile.getItems().addAll(NC, OC, OM, SaM, SoM, Q);
+	    menuFile.getItems().addAll(NC, OC, SC, OM, SaM, SoM, Q);
 	}
 
 	private void setupEditMenu(Menu menuPlay) {
@@ -485,7 +489,7 @@ public class UI extends Application{
 		default:
 			stage.setTitle("WHAT TH- HOW!? WHY?! WHAT DID YOU DO TO ME!?");
 			text.setText("Please forgive me. For you, there is no help. No hope.");
-			System.out.println("Please forgive me. For you, there is no help. No hope.");
+			//system.out.println("Please forgive me. For you, there is no help. No hope.");
 			break;
 		}
 		text.setEditable(false);
@@ -656,11 +660,11 @@ public class UI extends Application{
 					if(textFields.get(i).getText().length() != 0){
 						int j = 0;
 						for(String s : textFields.get(i).getText().split(",")){
-							System.out.println(s + "\n\t\t" + timings.length);
+							//system.out.println(s + "\n\t\t" + timings.length);
 							timings[j] = Long.parseLong(s);
 						}
 
-						System.out.println(timings.toString());
+						//system.out.println(timings.toString());
 						Slave.addToMekString(new MekString(low, high, timings));
 					}
 					else{
@@ -696,7 +700,7 @@ public class UI extends Application{
 
 				String out = "";
 					out = parser.getTrackName(i);
-				System.out.println(out);
+				////system.out.println(out);
 				options.add(i + " - " + out);
 			}
 		}
@@ -736,12 +740,7 @@ public class UI extends Application{
 		loadBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
 			//call to setCurrMIDI
 			@Override
-			public void handle(ActionEvent event){setCurrentMIDI();
-			//Remove and re-add the eventhandler, this is to avoid it being called upon changing the contents of the combobox
-			EventHandler<ActionEvent> temp = BassTrackComboBox.getOnAction();
-			BassTrackComboBox.setOnAction(null);
-			BassTrackComboBox.setItems(populateTrackNumberComboBox());
-			BassTrackComboBox.setOnAction(temp);}});
+			public void handle(ActionEvent event){load();}});
 
 		Button saveBtn = new Button();//The Save Button
 		saveBtn.setText("Save");
@@ -792,7 +791,7 @@ public class UI extends Application{
 		//If no file is loaded, only option is zero.
 		//Due to changable loaded files, the comboBox must be externalised.
 		BassTrackComboBox = new ComboBox<String>();
-		BassTrackComboBox.setPromptText("Bass Track");
+		BassTrackComboBox.setPromptText("Please Select a Bass Track");
 		BassTrackComboBox.setMaxWidth(buttonMaxWidth);
 		BassTrackComboBox.setMaxHeight(buttonMaxHeight);
 		BassTrackComboBox.setItems(populateTrackNumberComboBox());
@@ -802,10 +801,15 @@ public class UI extends Application{
 			public void handle(ActionEvent event) {
 				// TODO Auto-generated method stub
 				if(event.getSource() instanceof ComboBox){
-					Integer bassTrack = Integer.parseInt(((
-							(ComboBox<String>) event.getSource()).getValue().charAt(0) + "")
-							);
+					try{
+						Integer bassTrack = Integer.parseInt(((
+								(ComboBox<String>) event.getSource()).getValue().charAt(0) + "")
+								);
 					Slave.setBassTrack(bassTrack);
+					}
+					catch(NumberFormatException e){
+						load();
+					}
 				}
 			}
 		});
@@ -849,22 +853,15 @@ public class UI extends Application{
 
 
 
-	protected void reload() {
-		try {
-			playerStop();
-			Slave.setSequence(MidiSystem.getSequence(currentFile));
-			sim.setSequence(Slave.getSequence());
-		} catch (InvalidMidiDataException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
-	protected void saveConfig(){
-		File saveFile =  new FileChooser().showSaveDialog(null);
-		if(saveFile != null){
-			Slave.saveConfig(saveFile);
-		}
+	protected void load() {
+		setCurrentMIDI();
+		//Remove and re-add the eventhandler, this is to avoid it being called upon changing the contents of the combobox
+		EventHandler<ActionEvent> temp = BassTrackComboBox.getOnAction();
+		BassTrackComboBox.setOnAction(null);
+		BassTrackComboBox.setItems(populateTrackNumberComboBox());
+		BassTrackComboBox.setOnAction(temp);
+
 	}
 
 	File lastFileLocation;
@@ -904,13 +901,13 @@ public class UI extends Application{
 
 	protected void octaveDown() {
 		Slave.octaveDown();
-		//TODO testme
+		sim.setSequence(Slave.getSequence());
 	}
 
 
 	protected void octaveUp() {
 		Slave.octaveUp();
-		//TODO testme
+		sim.setSequence(Slave.getSequence());
 
 	}
 
@@ -959,6 +956,25 @@ public class UI extends Application{
 		slave.playerStop();
 		slave.playerRelease();
 		timer.cancel();
+	}
+
+
+	protected void reload() {
+		try {
+			playerStop();
+			Slave.setSequence(MidiSystem.getSequence(currentFile));
+			sim.setSequence(Slave.getSequence());
+		} catch (InvalidMidiDataException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	protected void saveConfig(){
+		File saveFile =  new FileChooser().showSaveDialog(null);
+		if(saveFile != null){
+			Slave.saveConfig(saveFile);
+		}
 	}
 
 	public TextField getConsoleTextInput(){
