@@ -30,6 +30,8 @@ public class Slave {
 	private static Console console;
 	private boolean guiMode;
 
+	private static boolean playing = false;
+
 	private static Simulation sim;
 	private static String name = "";
 	private static long prepositionLength;
@@ -100,13 +102,19 @@ public class Slave {
 	}
 
 	public static void playerStop() {
-		Player.stop();
-		microseconds = 0;
-		if (sim!=null) sim.stop();
+		if(playing){
+			Player.stop();
+			microseconds = 0;
+			playing = false;
+			if (sim!=null) sim.stop();
+		}
 	}
 
 	protected static void play() {
-		if (curMIDI != null) Player.play(curMIDI,microseconds);
+		if (curMIDI != null && !playing){
+			Player.play(curMIDI,microseconds);
+			playing = true;
+		}
 		if (sim != null) {
 			if(microseconds == 0){
 				sim.stop();
@@ -118,8 +126,9 @@ public class Slave {
 	protected static long microseconds = 0;
 
 	protected static void pause() {
-			if(curMIDI != null){
+			if(curMIDI != null && playing) {
 				microseconds = Player.pause();
+				playing = false;
 			}
 			if(sim != null){
 				if(sim.isPlaying()){

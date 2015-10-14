@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 
+import main.Parser3;
 import solver.MekString;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -71,6 +72,11 @@ public class UI extends Application{
 	Simulation sim;
 	Timer timer;
 	int timerTime = 1000/60;
+	String saveFileName = " ";
+	ComboBox<String> BassTrackComboBox;
+	Font defaultFont = new Font("FreeSans", 20);
+	Button setupNextBtn;
+	private int remainingStrings = 0;
 
 	//Contains launches the application, for all intents and purposes, this is the contructor
 	@Override
@@ -151,11 +157,11 @@ public class UI extends Application{
 		Slave.setConsole(console);
 
 	    PrintStream ps = new PrintStream(console, true);
-//	    System.setOut(ps);
-//	    System.setErr(ps);
+	    System.setOut(ps);
+	    System.setErr(ps);
 	    textInputConsole.requestFocus();
 
-	    primaryStage.setTitle("Windows Live");//primaryStage.setTitle("MIDIAllocator");
+	    primaryStage.setTitle("Gazoogle");//primaryStage.setTitle("MIDIAllocator");
 	    primaryStage.setScene(scene);
 
 	    primaryStage.show();
@@ -326,7 +332,6 @@ public class UI extends Application{
 
 	}
 
-
 	private void helpPopUps(int type){
 		// Set the Scene, and the stage.
 		Stage stage = new Stage();
@@ -488,10 +493,6 @@ public class UI extends Application{
 		text.setVisible(true);
 		stage.showAndWait();
 	}
-
-	Button setupNextBtn;
-	private int remainingStrings = 0;
-
 
 	private void doSetupWindow() {
 		Stage stage = new Stage();
@@ -661,76 +662,6 @@ public class UI extends Application{
 	}
 
 
-	String saveFileName = " ";
-	ComboBox<Integer> BassTrackComboBox;
-	Font defaultFont = new Font("FreeSans", 20);
-
-	private GridPane buildLeftGUI() {
-		GridPane GPane = new GridPane();
-
-//		//----------------------------------
-//		//Define name input entry
-//		//
-//		Label nameLabel = new Label("File Name: ");
-//		nameLabel.setFont(defaultFont);
-//		//
-//		//The input Field (String Based)
-//		TextField nameTextField =  new TextField();
-//		nameTextField.setOnKeyReleased(new EventHandler<KeyEvent>() {
-//			@Override
-//			public void handle(KeyEvent event) {
-//				handleNameKeyEvent(event);}});
-//		//
-//		//--------------------------------
-//
-//
-//		//--------------------------------
-//		//Define BassTrack selection entry
-//		//
-		Label bassTrackLabel = new Label("Select Bass Track: ");
-		bassTrackLabel.setFont(defaultFont);
-		//TODO Add to GPane
-		//The inputfield, a combobox. Box is enumerated with an observableList with each of the tracks available
-		//If no file is loaded, only option is zero.
-		//Due to changable loaded files, the comboBox must be externalised.
-//		BassTrackComboBox = new ComboBox<Integer>();
-//		BassTrackComboBox.setItems(populateTrackNumberComboBox());
-//		BassTrackComboBox.setOnAction(new EventHandler<ActionEvent>() {
-//			@SuppressWarnings("unchecked")
-//			@Override
-//			public void handle(ActionEvent event) {
-//				// TODO Auto-generated method stub
-//				if(event.getSource() instanceof ComboBox){
-//					Slave.setBassTrack(((ComboBox<Integer>) event.getSource()).getValue());
-//				}
-//			}
-//		});
-//		//
-//		//--------------------------------
-//
-//
-//		//Input the number of strings, this will notify the main pane that Strings still need to be defined
-//		Label stringLabel = new Label("Input Number of Strings: ");
-//		stringLabel.setFont(defaultFont);
-//
-//		TextField stringsTextField = new TextField();
-//		stringsTextField.setUserData("TextString");
-//		stringsTextField.setOnKeyReleased(new EventHandler<KeyEvent>(){
-//			@Override
-//			public void handle(KeyEvent event) {
-//				handleNameKeyEvent(event);}});
-//
-//		//Add all above elems to the GridPane
-//		GPane.add(nameLabel, 0, 0);
-//		GPane.add(nameTextField, 1, 0);
-//		GPane.add(bassTrackLabel,0,1);
-//		GPane.add(BassTrackComboBox, 1, 1);
-//		GPane.add(stringLabel, 0, 2);
-//		GPane.add(stringsTextField,1,2);
-
-		return GPane;
-	}
-
 	/**
 	 * Returns an Observable list of integers.
 	 * Integers are derived from the current loaded MIDI file. Range is 0 - number of tracks.
@@ -738,41 +669,28 @@ public class UI extends Application{
 	 *
 	 * @return
 	 */
-	private ObservableList<Integer> populateTrackNumberComboBox(){
-		ObservableList<Integer> options;
+	private ObservableList<String> populateTrackNumberComboBox(){
+
+		ObservableList<String> options;
 		if(Slave.getSequence() != null){
 
 			options = FXCollections.observableArrayList();
-
+			Parser3 parser =  new Parser3(Slave.getSequence());
 			for(int i = 0; i < Slave.getSequence().getTracks().length; i++){
-//				System.out.println(Slave.getSequence().getTracks()[i].get(0).);
 
-
-				System.out.println(i);
-				options.add(i);
+				String out = "";
+					out = parser.getTrackName(i);
+				System.out.println(out);
+				options.add(i + " - " + out);
 			}
 		}
 		else{
-			options = FXCollections.observableArrayList(0);
+			options = FXCollections.observableArrayList("Please upload a MIDI");
 		}
 		return options;
 	}
 
-	protected void solve() {
-		Slave.solve();
-	}
 
-	protected void pause() {
-		Slave.pause();
-	}
-
-	protected void playerStop() {
-		Slave.playerStop();
-	}
-
-	protected void play() {
-		Slave.play();
-	}
 
 	private FlowPane buildLeftPanel(){
 		double buttonMaxWidth = 8000;
@@ -835,13 +753,29 @@ public class UI extends Application{
 			@Override
 			public void handle(ActionEvent event) {pause();}});
 
+		Button octaveUpBtn = new Button();
+		octaveUpBtn.setMaxWidth(buttonMaxWidth);
+		octaveUpBtn.setText("Raise Octave");
+		octaveUpBtn.setMaxHeight(buttonMaxHeight);
+		octaveUpBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {octaveUp();}});
+
+		Button octaveDownBtn = new Button();
+		octaveDownBtn.setMaxWidth(buttonMaxWidth);
+		octaveDownBtn.setText("Lower Octave");
+		octaveDownBtn.setMaxHeight(buttonMaxHeight);
+		octaveDownBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {octaveDown();}});
+
 		Label bassTrackLabel = new Label("Select Bass Track: ");
 		bassTrackLabel.setFont(defaultFont);
 		//TODO Add to GPane
 		//The inputfield, a combobox. Box is enumerated with an observableList with each of the tracks available
 		//If no file is loaded, only option is zero.
 		//Due to changable loaded files, the comboBox must be externalised.
-		BassTrackComboBox = new ComboBox<Integer>();
+		BassTrackComboBox = new ComboBox<String>();
 		BassTrackComboBox.setPromptText("Bass Track");
 		BassTrackComboBox.setMaxWidth(buttonMaxWidth);
 		BassTrackComboBox.setMaxHeight(buttonMaxHeight);
@@ -852,7 +786,9 @@ public class UI extends Application{
 			public void handle(ActionEvent event) {
 				// TODO Auto-generated method stub
 				if(event.getSource() instanceof ComboBox){
-					Integer bassTrack = ((ComboBox<Integer>) event.getSource()).getValue();
+					Integer bassTrack = Integer.parseInt(((
+							(ComboBox<String>) event.getSource()).getValue().charAt(0) + "")
+							);
 					Slave.setBassTrack(bassTrack);
 				}
 			}
@@ -864,63 +800,101 @@ public class UI extends Application{
 			@Override
 			public void handle(ActionEvent event) {clean();}});
 
+		Button reloadBtn = new Button("Reload");
+		reloadBtn.setMaxWidth(buttonMaxWidth);
+		reloadBtn.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				reload();
+
+			}
+		});
+
 
 		FlowPane buttonPanel =  new FlowPane(Orientation.VERTICAL);
 		buttonPanel.setColumnHalignment(HPos.LEFT);
 		buttonPanel.setPadding(new Insets(3, 0, 0, 3));
-		buttonPanel.getChildren().addAll( playBtn, pauseBtn, stpBtn, saveBtn, loadBtn, solveBtn, cleanButton, BassTrackComboBox);
+		buttonPanel.getChildren().addAll(
+				reloadBtn,
+				playBtn,
+				pauseBtn,
+				stpBtn,
+				saveBtn,
+				loadBtn,
+				solveBtn,
+				cleanButton,
+				octaveUpBtn,
+				octaveDownBtn,
+				BassTrackComboBox
+				);
 
 		return buttonPanel;
 	}
 
-	protected void clean() {
-		Slave.clean();
+
+
+	protected void reload() {
+		try {
+			playerStop();
+			Slave.setSequence(MidiSystem.getSequence(currentFile));
+			sim.setSequence(Slave.getSequence());
+		} catch (InvalidMidiDataException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
-//	private void drawShapes(GraphicsContext gc) {
-//			Random rand =  new Random();
-//
-//			gc.setFill(Color.color(rand.nextDouble(), rand.nextDouble(), rand.nextDouble()));
-//            gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
-//
-//            gc.setFill(Color.GREEN);
-//            gc.setStroke(Color.BLUE);
-//            gc.setLineWidth(5);
-//            gc.strokeLine(40, 10, 10, 40);
-//            gc.fillOval(10, 60, 30, 30);
-//            gc.strokeOval(60, 60, 30, 30);
-//            gc.fillRoundRect(110, 60, 30, 30, 10, 10);
-//            gc.strokeRoundRect(160, 60, 30, 30, 10, 10);
-//            gc.fillArc(10, 110, 30, 30, 45, 240, ArcType.OPEN);
-//            gc.fillArc(60, 110, 30, 30, 45, 240, ArcType.CHORD);
-//            gc.fillArc(110, 110, 30, 30, 45, 240, ArcType.ROUND);
-//            gc.strokeArc(10, 160, 30, 30, 45, 240, ArcType.OPEN);
-//            gc.strokeArc(60, 160, 30, 30, 45, 240, ArcType.CHORD);
-//            gc.strokeArc(110, 160, 30, 30, 45, 240, ArcType.ROUND);
-//            gc.fillPolygon(new double[]{10, 40, 10, 40},
-//                             new double[]{210, 210, 240, 240}, 4);
-//            gc.strokePolygon(new double[]{60, 90, 60, 90},
-//                               new double[]{210, 210, 240, 240}, 4);
-//            gc.strokePolyline(new double[]{110, 140, 110, 140},
-//                                new double[]{210, 210, 240, 240}, 4);
-//	}
+
 
 	File lastFileLocation;
+	File currentFile;
 	private double leftCanvasWidth;
 
 	//Load a new Sequence
 	protected void setCurrentMIDI(){
 		try {
-			File fi = fileChooser("Select a MIDI file to open");
+			currentFile = fileChooser("Select a MIDI file to open");
 
-			if(fi != null){
-				Slave.setSequence(MidiSystem.getSequence(fi));
+			if(currentFile != null){
+				Slave.setSequence(MidiSystem.getSequence(currentFile));
 				sim.setSequence(Slave.getSequence());
 			}
 
 		} catch (InvalidMidiDataException | IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	protected void solve() {
+		Slave.solve();
+	}
+
+	protected void pause() {
+		Slave.pause();
+	}
+
+	protected void playerStop() {
+		Slave.playerStop();
+	}
+
+	protected void play() {
+		Slave.play();
+	}
+
+	protected void octaveDown() {
+		Slave.octaveDown();
+		//TODO testme
+	}
+
+
+	protected void octaveUp() {
+		Slave.octaveUp();
+		//TODO testme
+
+	}
+
+	protected void clean() {
+		Slave.clean();
 	}
 
 
@@ -951,7 +925,6 @@ public class UI extends Application{
 			fiChoo.setInitialDirectory(lastFileLocation);
 		}
 
-
 		File fi = fiChoo.showOpenDialog(null);
 
 		if(fi!= null){
@@ -967,12 +940,9 @@ public class UI extends Application{
 		timer.cancel();
 	}
 
-
 	public TextField getConsoleTextInput(){
 		return textInputConsole;
 	}
-
-
 
 	private TextArea getConsoleOutput() {
 		return textOutputConsole;
