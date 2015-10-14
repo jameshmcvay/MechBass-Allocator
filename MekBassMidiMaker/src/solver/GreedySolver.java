@@ -63,8 +63,6 @@ public class GreedySolver implements Solver {
 		// loop through
 		for (int i=0; i<tr.size(); ++i){
 			MidiMessage midmsg = tr.get(i).getMessage();
-//			System.out.println(tr.get(i).getTick());
-			//ystem.out.printf("%d %d: ",i,tr.get(i).getTick());
 			// check what type of message it is
 			if (midmsg instanceof ShortMessage){
 				ShortMessage shrtmsg = (ShortMessage) midmsg;
@@ -86,16 +84,12 @@ public class GreedySolver implements Solver {
 							}
 						}
 					}
-//					int ran = Long.hashCode(System.nanoTime());
-//					if (rightStrings.isEmpty()) System.out.println(ran + " strings empty");
-//					if (stringInUse != -1) System.out.println(ran + "  string used");
 
 					// if there is nothing in the list of strings AND lastString is not '-1' AND the stringInUse flag has been raised
 					// we want to look at the last note added, and see if it could go on another string instead
 					// then try again
 					rearrangeFailure:
 					if (rightStrings.isEmpty() && stringInUse != -1){
-						//ystem.out.println("String in Use, attempting to move previous note");
 						// get the string/track
 						Track lst = seq.getTracks()[stringInUse+1];
 						// get the event
@@ -104,9 +98,7 @@ public class GreedySolver implements Solver {
 						MidiMessage lstmsg = null;
 						// this skips past metamessages and escape when it has the offending event
 						do {
-							//ystem.out.println(lst.size() + " " + dec);
 							if (dec >lst.size()) {
-								//ystem.out.println("Breaking");
 								break rearrangeFailure;
 							}
 							lstEvent = lst.get(lst.size()-dec);
@@ -125,7 +117,6 @@ public class GreedySolver implements Solver {
 								}
 							}
 						}
-						//ystem.out.printf("No. of valid Strings: [%d]\n", lastStrings.size());
 						// pick the most suitable string (last used longest time ago)
 
 						long minTime = Long.MAX_VALUE;
@@ -137,7 +128,6 @@ public class GreedySolver implements Solver {
 							}
 						}
 
-						//ystem.out.printf("Usestring (old): [%d]\n", useString);
 						if (useString == -1) { // if it cant fit on any strings, dont go any further in the conflict resolution
 							break;
 						}
@@ -154,8 +144,6 @@ public class GreedySolver implements Solver {
 								}
 							}
 						}
-						//ystem.out.printf("No. of valid Strings (fix): [%d]\n", rightStrings.size());
-
 						// and now that we are done here(hopefully), we continue on our merry way
 					}
 
@@ -174,18 +162,9 @@ public class GreedySolver implements Solver {
 						// put it there if it is valid
 						moveEvent(tr,seq.getTracks()[useString+1],tr.get(i));
 						i--;
-						//ystem.out.printf("Note %d moved\n", note);
 						// put it in last note for that string
 						lastNote[useString] = note;
 						lastString = useString;
-					}
-					else{
-						if (useString == -1){
-							//ystem.out.printf("Note %d not moved, No string available.\n", note);
-						}
-						else if (useString > strings.length){
-							//ystem.out.printf("Note %d not moved, string num too high, this shouldn't occur.\n", note);
-						}
 					}
 					break;
 					// if the if was false, then it is actually a note off
@@ -196,7 +175,6 @@ public class GreedySolver implements Solver {
 						if (lastNote[j]==note) useString=j;
 					}
 					if (useString==-1){
-						//ystem.out.printf("Note off %d not stopped, not played first\n", note);
 						break; // if the note wasn't played, dont do anything with it
 					}
 					// now we have the correct string
@@ -204,7 +182,6 @@ public class GreedySolver implements Solver {
 					// so we add the noteoff to the correct track
 					moveEvent(tr,seq.getTracks()[useString+1],tr.get(i));
 					i--;
-					//System.out.printf("Note off %d moved\n", note);
 
 					// and set the other stuff to nothing
 					lastNote[useString] = -1;
@@ -225,24 +202,12 @@ public class GreedySolver implements Solver {
 						moveEvent(tr,seq.getTracks()[lastString+1],tr.get(i));
 						i--;
 					}
-					else{
-						//ystem.out.printf("other event not moved\n");
-					}
 				}
 			}
 			else{
-//				moveEvent(tr,seq.getTracks()[1],tr.get(i));
-//				i--;
+				// this copies all meta messages (other than end of track) to all other tracks
 				MetaMessage m = (MetaMessage) midmsg;
-				if (m.getType() == 0x51){
-					System.out.print(tr.get(i).getTick() + " tempo");
-					for (int me: m.getMessage()){
-						System.out.print(" 0x" + Integer.toHexString((int)(me & 0xFF)));
-					}
-					System.out.println();
-				}
 				if (m.getType() == 0x2f) break;
-				System.out.printf("0x%x\n", m.getType());
 				for (int j = 1; j <= strings.length; j++){
 					seq.getTracks()[j].add(tr.get(i));
 				}

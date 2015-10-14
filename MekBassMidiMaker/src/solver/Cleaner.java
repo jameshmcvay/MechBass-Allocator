@@ -127,7 +127,6 @@ public class Cleaner {
 								//increment conflicts if this note and the previous one are conflicting.
 								noteOff = (ShortMessage) cur.get(prevIndex).getMessage();
 								int note2 = noteOff.getData1();
-//								System.out.println("stuff\n");
 								if(strings[i].conflicting(note1, note2, cur.get(prevIndex).getTick() - cur.get(j).getTick(), tickScaling)) conflicts++;
 							}
 						}
@@ -189,12 +188,7 @@ public class Cleaner {
 			for (int j = 0; j < tr.size(); j++){
 				MidiEvent event = tr.get(j);
 				if(event.getTick() > 0 || event.getMessage() instanceof ShortMessage){
-//					System.out.printf("Moved event %d from %d to %d\n",j,event.getTick(),event.getTick() + ticks);
 					event.setTick(event.getTick() + ticks);
-				}
-				else{
-					//uncomment the following line to give console output for each event that is not moved (could be alot)
-//					System.out.printf("didnt move event %d, Short: %b Meta: %b Tick: %d\n",j,event.getMessage() instanceof ShortMessage,event.getMessage() instanceof MetaMessage, event.getTick() );
 				}
 			}
 		}
@@ -224,10 +218,8 @@ public class Cleaner {
 		long preTicks = (long) (tickScaling * preTime);
 		for(int i = 1; i < seq.getTracks().length; i++){
 			Track cur = seq.getTracks()[i];
-//			System.out.printf("Track %d\n", i);
 			//add a prepos event for each note that is not consecutive
 			for(int j = 0; j < cur.size(); j++){
-//				System.out.printf("Index %d\n ",j);
 				MidiMessage midNoteOn = cur.get(j).getMessage();
 				if (midNoteOn instanceof ShortMessage){
 					ShortMessage noteOn = (ShortMessage) midNoteOn;
@@ -238,25 +230,19 @@ public class Cleaner {
 							//find the previous note off
 							ShortMessage noteOff;
 							int prevIndex = getPrev(j,cur);
-//							System.out.printf("prev index %d\n", prevIndex);
 							if(prevIndex > 0){
 								noteOff = (ShortMessage) cur.get(prevIndex).getMessage();
 								int note2 = noteOff.getData1();
 								//if the note is different and they don't clash
 								if(note2 != note1){
 									//uncomment the following two lines to print the amount of time between each note pair. 
-//									long difference = cur.get(j).getTick() - cur.get(prevIndex).getTick();
-//									System.out.printf("Difference of %d\n", difference);								
 										try {
 											long tick = cur.get(j).getTick() - strings[i-1].differenceTick(note1, note2, tickScaling);
-//											System.out.printf("\nTick for prepos = %d, Tick for prev note = %d", tick, cur.get(prevIndex).getTick());
 											if(tick - preTicks < cur.get(prevIndex).getTick()){
-//												System.out.printf("Warning: note overlap detected, %d previous note tick, %d prepos tick, Dropping note \n",cur.get(prevIndex).getTick(),(cur.get(j).getTick() - strings[i-1].differenceTick(note1, note2, tickScaling)) - preTicks);
 												drop:
 												for(int k = j; k < cur.size(); k++){
 													//if the notes are conflicting move all events related to the second note into track 0
 													if(cur.get(k).getMessage() instanceof ShortMessage){
-//														System.out.printf("Dropping note: %d", k);
 														ShortMessage off = (ShortMessage) cur.get(k).getMessage();
 														seq.getTracks()[0].add(cur.get(k));
 														cur.remove(cur.get(k));
@@ -276,22 +262,16 @@ public class Cleaner {
 												time -= strings[i-1].differenceTick(note1, note2, tickScaling);
 												time -= preTicks;
 												//for some reason adding these on the same line ends up with the wrong note off time
-//												System.out.printf("Added Prepos for %d at: Note On %d note Off %d\n", note2, time, time + length);
 												cur.add(new MidiEvent(new ShortMessage(NOTE_ON,noteOn.getChannel(),noteOn.getData1(),1) , time));
 												cur.add(new MidiEvent(new ShortMessage(NOTE_OFF,noteOn.getChannel(),noteOn.getData1(),0) , time +  length));
 												//index incremented as we added things, purely time saving here. 
 												j++;
 											}
 										} catch (ArrayIndexOutOfBoundsException e) {
-//											System.out.println(e + "\n");
 											e.printStackTrace();
 										} catch (InvalidMidiDataException e) {
-//											System.out.println(e + "\n");
 											e.printStackTrace();
 										}
-								}
-								else{
-//									System.out.printf("Notes are the same (%d and %d)",note1,note2);
 								}
 							}
 							else if(prevIndex == 0){
@@ -319,7 +299,6 @@ public class Cleaner {
 						tickScaling = 1000*seq.getResolution();
 						tickScaling = tickScaling / tempo;
 						preTicks = (long) (tickScaling * preTime);
-//						System.out.printf("timing changed.");
 					}
 				}
 			}
@@ -404,7 +383,6 @@ public class Cleaner {
 				ShortMessage note = (ShortMessage) current.getMessage();
 				if(note.getCommand() == NOTE_ON){
 					Conflict con = new Conflict(current);
-//					System.out.printf("DropTrack event %d conflict building\n", i);
 					//if there is a note on add it and all related events to a list
 					ArrayList<MidiEvent> dropped = new ArrayList<MidiEvent>();
 					dropped.add(current);
@@ -416,23 +394,18 @@ public class Cleaner {
 							ShortMessage nextNote = (ShortMessage) next.getMessage();
 							if(nextNote.getData1() == note.getData1() && nextNote.getChannel() == note.getChannel()){
 								dropped.add(next);
-//								System.out.printf("Adding event %d to conflict\n", j);
 								if(nextNote.getCommand() == NOTE_OFF){
-//									System.out.printf("NoteOff added\n");
 									break addEvents;
 								}
 							}
 						}
 					}
 					for(int k = 1; k < seq.getTracks().length; k++){
-//						System.out.printf("Looking for conflicts on string %d\n",k-1);
 						Track track = seq.getTracks()[k];
 						//look for conficts on each string that can play the note.
 						if(strings[k-1].playable(note.getData1())){
-//							System.out.printf("Playable on string %d\n", k-1);
 							//this adds all related events of the note before the conflicting note to a list
 							int conflictIndex = findEvent(track, current.getTick(), NOTE_ON);
-//							System.out.printf("Conflicting with event number %d\n",conflictIndex);
 							if(conflictIndex >= 0){
 								ShortMessage conflict1 = (ShortMessage) track.get(conflictIndex).getMessage();
 								List<MidiEvent> play1 = new ArrayList<MidiEvent>();
@@ -443,10 +416,8 @@ public class Cleaner {
 										ShortMessage nextMessage = (ShortMessage) next.getMessage();
 										if(nextMessage.getData1() == conflict1.getData1() && nextMessage.getChannel() == conflict1.getChannel()){
 											play1.add(next);
-//											System.out.printf("Added event %d on to conflict\n",j);
 											if(nextMessage.getCommand() == NOTE_OFF){
 												conflictIndex = j;
-//												System.out.printf("First note of conflict complete\n");
 												break addConf1;
 											}
 										}
@@ -456,7 +427,6 @@ public class Cleaner {
 								List<MidiEvent> play2 = new ArrayList<MidiEvent>();
 								addConf2:
 								for(int j = conflictIndex; j < seq.getTracks()[k].size(); j++){
-//									System.out.printf("Started last note of conflict");
 									MidiEvent next = track.get(j);
 									if(next.getMessage() instanceof ShortMessage){
 										ShortMessage nextMessage = (ShortMessage) next.getMessage();
@@ -471,9 +441,7 @@ public class Cleaner {
 								
 								//add the note notes to the conflict
 								NoteConflict conflict = new NoteConflict(dropped, play1, play2, track, dropTrack, k-1);
-//								System.out.print(conflict.toString());
 								con.addConf(conflict);
-//								System.out.print(con.toString());
 							}
 						}
 					}
