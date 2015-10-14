@@ -3,7 +3,6 @@ package solver;
 import java.util.List;
 
 import javax.sound.midi.MidiEvent;
-import javax.sound.midi.Sequence;
 import javax.sound.midi.Track;
 
 /**

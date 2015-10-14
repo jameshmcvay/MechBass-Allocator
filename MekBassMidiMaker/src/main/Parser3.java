@@ -1,7 +1,7 @@
 /**
  * authors: Dean Newberry, Dylan Macdonald
- * UPDATE: This Parser will be more "User-Driven" - 
- * It will Parse when the USER wants it to parse
+ * UPDATE: This Parser will be more "User-Driven" - It will parse upon 
+ * creation, and also when the user wants it to parse.
  * */
 
 package main;
@@ -29,6 +29,7 @@ public class Parser3 {
 	public static final int NOTE_OFF = 0x80;
 	public static final int PROGRAM_CHANGE = 0xC0;
 
+	// A list of all the instruments; use VOICES[xxx] to get the instrument.
 	public static final String[] VOICES = {
 		"UNDEFINED",
 		"Acoustic Grand Piano",
@@ -548,12 +549,10 @@ public class Parser3 {
 		try {
 			sequencer.setSequence(MidiSystem.getSequence(midiFile));
 		} catch (InvalidMidiDataException e) {
-			// TODO Auto-generated catch block
 			System.out.println("There is a problem with this MIDI file!");
 			problem = true;
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// ... And store the sequence.
@@ -792,7 +791,7 @@ public class Parser3 {
 	 *
 	 * @param message - a MidiMessage.
 	 * @param event - the MidiEvent the MidiMessage came from. Mainly used for the "tick" data printout.
-	 * @param quietMode 
+	 * @param verbose - a boolean flag indicating whether extra information should be printed out. 
 	 * @returns A list of every single byte in the message that was passed.
 	 *
 	 * REQUIRES: a MidiEvent and the corresponding MidiMessage that is compatible with MetaMessage methods 
@@ -838,7 +837,7 @@ public class Parser3 {
 	 *
 	 * @param message - a MidiMessage.
 	 * @param event - the MidiEvent the MidiMessage came from. Mainly used for the "tick" data printout.
-	 * @param c 
+	 * @param verbose - a boolean flag indicating whether extra information should be printed out.
 	 * @returns A list of every single byte in the message that was passed.
 	 *
 	 * REQUIRES: a MidiEvent and the corresponding MidiMessage that is compatible with ShortMessage methods 
@@ -931,9 +930,13 @@ public class Parser3 {
 			return;
 		}
 		else{
+			/* Go through the process of extracting the Sequence from a file */
+			// Set up variables (sequencer, sequence and File).
 			Sequencer seq = null;
 			Sequence s = null;
 			File file = new File(args[0].toString());
+			
+			// Get Sequencer
 			try {
 				seq = MidiSystem.getSequencer();
 			} catch (MidiUnavailableException e) {
@@ -955,16 +958,28 @@ public class Parser3 {
 			catch (NullPointerException e){
 				e.printStackTrace();
 			}
+			
+			// Now instantiate the parser using a sequence.
 			Parser3 p = new Parser3(s);
+			// It should automatically parse the file.
+			
+			// print the list of the track names given.
 			System.out.println("Track Names:\n");
 			for (String st : p.getTrackNames())
 				System.out.println("\t" + st);
-			System.out.println();
-			System.out.println("=====");
-			System.out.println();
+			
+			// formating neatness stuffs.
+			System.out.println("\n=====\n");
+			
+			// print the list of the list of track instruments.
 			System.out.println("Track Instruments:\n");
-			for (ArrayList<String> st : p.getTrackInstruments())
-				System.out.println("\t" + st);
+			int count = 0; // This keeps track of which track we're in.
+			for (ArrayList<String> st : p.getTrackInstruments()){
+				System.out.println("\t" + count++ + ":");
+				for (String str : st){
+					System.out.println("\t\t" + str);
+				}
+			}
 		}
 	}
 
