@@ -70,6 +70,7 @@ public class Slave {
 	}
 
 	public static void setNumberOfStrings(int i){
+		mekStringCursor = 0;
 		setOfStrings = new MekString[i];
 	}
 
@@ -269,7 +270,7 @@ public class Slave {
 					time[j] = Long.parseLong(values[j].trim());
 				}
 				setOfStrings[i] = new MekString(low, high, time);
-				mekStringLength++;
+				mekStringCursor++;
 			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -321,10 +322,10 @@ public class Slave {
 		}
 	}
 
-	private static int mekStringLength = 0;
+	private static int mekStringCursor = 0;
 
 	public static void addToMekString(MekString mekString) {
-		setOfStrings[mekStringLength++] = mekString;
+		setOfStrings[mekStringCursor++] = mekString;
 
 	}
 
