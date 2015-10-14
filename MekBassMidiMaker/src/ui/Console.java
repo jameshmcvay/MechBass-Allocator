@@ -31,7 +31,6 @@ public class Console extends OutputStream {
 	TextArea textOutputField;
 	BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 	String input = "i";
-	Slave slave;
 	Stack<String> prevCommand = new Stack<String>();
 	Stack<String> commandStack = new Stack<String>();
 	Stack<String> nextCommand = new Stack<String>();
@@ -96,11 +95,10 @@ public class Console extends OutputStream {
 	 * @param slave
 	 *            The slave instance
 	 */
-	public Console(TextField text, TextArea textOutputField, Slave slave) {
+	public Console(TextField text, TextArea textOutputField) {
 		guiMode = true;
 		textInputField = text;
 		this.textOutputField = textOutputField;
-		this.slave = slave;
 	}
 
 	/**
@@ -109,9 +107,8 @@ public class Console extends OutputStream {
 	 * @param slave
 	 *            The slave instance.
 	 */
-	public Console(Slave slave) {
+	public Console() {
 		guiMode = false;
-		this.slave = slave;
 		startTerminalInput();
 	}
 
@@ -247,7 +244,7 @@ public class Console extends OutputStream {
 				listOfConflicts = Slave.solve();
 			break;
 		case "fix":
-			listOfConflicts = slave.getConflicts();
+			listOfConflicts = Slave.getConflicts();
 			correctError(rawInput);
 			break;
 		case "play":
