@@ -286,6 +286,12 @@ public class UI extends Application{
 	        		play();
 	        	}
 	        });
+	    MenuItem Pa = new MenuItem("Pause");
+	        Pa.setOnAction(new EventHandler<ActionEvent>() {
+	        	public void handle(ActionEvent t) {
+	        		pause();
+	        	}
+	        });
 	    MenuItem St = new MenuItem("Stop");
 	        St.setOnAction(new EventHandler<ActionEvent>() {
 	        	public void handle(ActionEvent t) {
@@ -304,7 +310,7 @@ public class UI extends Application{
 	        		Slave.shiftOctave(-1);
 	        	}
 	        });
-	    menuPlay.getItems().addAll(Pl, St, OU, OD);
+	    menuPlay.getItems().addAll(Pl, Pa, St, OU, OD);
 	}
 
 	private void setupHelpMenu(Menu menuHelp) {
