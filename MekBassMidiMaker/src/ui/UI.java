@@ -746,12 +746,7 @@ public class UI extends Application{
 		loadBtn.setOnAction(new EventHandler<ActionEvent>() {//when pushed
 			//call to setCurrMIDI
 			@Override
-			public void handle(ActionEvent event){setCurrentMIDI();
-			//Remove and re-add the eventhandler, this is to avoid it being called upon changing the contents of the combobox
-			EventHandler<ActionEvent> temp = BassTrackComboBox.getOnAction();
-			BassTrackComboBox.setOnAction(null);
-			BassTrackComboBox.setItems(populateTrackNumberComboBox());
-			BassTrackComboBox.setOnAction(temp);}});
+			public void handle(ActionEvent event){load();}});
 
 		Button saveBtn = new Button();//The Save Button
 		saveBtn.setText("Save");
@@ -802,7 +797,7 @@ public class UI extends Application{
 		//If no file is loaded, only option is zero.
 		//Due to changable loaded files, the comboBox must be externalised.
 		BassTrackComboBox = new ComboBox<String>();
-		BassTrackComboBox.setPromptText("Bass Track");
+		BassTrackComboBox.setPromptText("Please Select a Bass Track");
 		BassTrackComboBox.setMaxWidth(buttonMaxWidth);
 		BassTrackComboBox.setMaxHeight(buttonMaxHeight);
 		BassTrackComboBox.setItems(populateTrackNumberComboBox());
@@ -812,10 +807,15 @@ public class UI extends Application{
 			public void handle(ActionEvent event) {
 				// TODO Auto-generated method stub
 				if(event.getSource() instanceof ComboBox){
-					Integer bassTrack = Integer.parseInt(((
-							(ComboBox<String>) event.getSource()).getValue().charAt(0) + "")
-							);
+					try{
+						Integer bassTrack = Integer.parseInt(((
+								(ComboBox<String>) event.getSource()).getValue().charAt(0) + "")
+								);
 					Slave.setBassTrack(bassTrack);
+					}
+					catch(NumberFormatException e){
+						load();
+					}
 				}
 			}
 		});
@@ -859,6 +859,16 @@ public class UI extends Application{
 
 
 
+
+	protected void load() {
+		setCurrentMIDI();
+		//Remove and re-add the eventhandler, this is to avoid it being called upon changing the contents of the combobox
+		EventHandler<ActionEvent> temp = BassTrackComboBox.getOnAction();
+		BassTrackComboBox.setOnAction(null);
+		BassTrackComboBox.setItems(populateTrackNumberComboBox());
+		BassTrackComboBox.setOnAction(temp);
+
+	}
 
 	File lastFileLocation;
 	File currentFile;
