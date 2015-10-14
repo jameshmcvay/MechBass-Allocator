@@ -157,8 +157,8 @@ public class UI extends Application{
 		Slave.setConsole(console);
 
 	    PrintStream ps = new PrintStream(console, true);
-	    System.setOut(ps);
-	    System.setErr(ps);
+//	    System.setOut(ps);
+//	    System.setErr(ps);
 	    textInputConsole.requestFocus();
 
 	    primaryStage.setTitle("Gazoogle");//primaryStage.setTitle("MIDIAllocator");
@@ -557,15 +557,18 @@ public class UI extends Application{
 		setupNextBtn.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				Slave.setName(             nameTxtFld.                             getText()  );
-				Slave.setPrepositionLength(Long.parseLong  (prepositionTxtFld.     getText() ));
-				Slave.setPrepositionDelay( Long.parseLong  (PrepositionDelayTxtFld.getText() ));
-				Slave.setNumberOfStrings(  Integer.parseInt(numberOfStringsTxtFld. getText() ));
-				remainingStrings = Integer.parseInt(numberOfStringsTxtFld.getText());
+				tempName              = (nameTxtFld.                             getText()  );
+				tempPrepositionLength = (Long.parseLong  (prepositionTxtFld.     getText() ));
+				tempPrepositionDelay  = (Long.parseLong  (PrepositionDelayTxtFld.getText() ));
+				tempNumberOfStrings   = (Integer.parseInt(numberOfStringsTxtFld. getText() ));
+				remainingStrings = tempNumberOfStrings;
+
 				if(remainingStrings > 0){
 //					((Stage)((Button)event.getSource()).getScene().getWindow()).close();
-						defineMekStringWindow(((Stage)((Button)event.getSource()).getScene().getWindow()));
+					defineMekStringWindow(((Stage)((Button)event.getSource()).getScene().getWindow()));
+
 				}
+				stage.close();
 			}
 		});
 		//Add to gPane
@@ -573,6 +576,12 @@ public class UI extends Application{
 
 		stage.show();
 	}
+
+	String tempName = "";
+	Long tempPrepositionLength;
+	Long tempPrepositionDelay;
+	int tempNumberOfStrings;
+
 
 	private void defineMekStringWindow(Stage stage2) {
 //		stage2.hide();
@@ -593,9 +602,9 @@ public class UI extends Application{
 		TextField highNoteTxtFld, lowNoteTxtFld, timingsTxtFld;
 		String titleString = "Mekstring #";
 		int gridYAxis = 0;
-
+		int i = 0;
 		while(remainingStrings > 0){
-			titleLabel = new Label(titleString + (Slave.getNumberOfStrings() - remainingStrings));
+			titleLabel = new Label(titleString + i++);
 			lowNoteLabel  = new Label("Lowest MIDI Note: "     );
 			highNoteLabel = new Label("Highest MIDI Note: "    );
 			timingsLabel  = new Label("Timings between notes: ");
@@ -630,6 +639,11 @@ public class UI extends Application{
 			@Override
 			public void handle(ActionEvent event) {
 
+				Slave.setName(tempName);
+				Slave.setPrepositionDelay(tempPrepositionDelay);
+				Slave.setPrepositionDelay(tempPrepositionLength);
+				Slave.setNumberOfStrings(tempNumberOfStrings);
+
 				int low = 0;
 				int high = 0 ;
 				long[] timings;
@@ -645,6 +659,8 @@ public class UI extends Application{
 							System.out.println(s + "\n\t\t" + timings.length);
 							timings[j] = Long.parseLong(s);
 						}
+
+						System.out.println(timings.toString());
 						Slave.addToMekString(new MekString(low, high, timings));
 					}
 					else{
@@ -652,7 +668,7 @@ public class UI extends Application{
 					}
 
 				}
-				((Stage)stage.getOwner()).close();
+				stage.close();
 			}
 		});
 		mekStringGPane.add(but, 2, gridYAxis);
@@ -693,7 +709,7 @@ public class UI extends Application{
 
 
 	private FlowPane buildLeftPanel(){
-		double buttonMaxWidth = 8000;
+		double buttonMaxWidth = 300;
 		double buttonMaxHeight = 100;
 	    Button playBtn = new Button();//The play button
 		playBtn.setText("Play");
@@ -844,7 +860,12 @@ public class UI extends Application{
 		}
 	}
 
-
+	protected void saveConfig(){
+		File saveFile =  new FileChooser().showSaveDialog(null);
+		if(saveFile != null){
+			Slave.saveConfig(saveFile);
+		}
+	}
 
 	File lastFileLocation;
 	File currentFile;
