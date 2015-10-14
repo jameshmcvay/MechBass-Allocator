@@ -16,92 +16,180 @@ import javax.sound.midi.Sequence;
 
 import solver.Cleaner;
 import solver.Conflict;
-import solver.GraphSolver;
 import solver.MekString;
 import solver.GreedySolver;
 import solver.Solver;
 import solver.TrackSplitter;
 import tools.Player;
 
+/**
+ * Slave is a Go-between class; it works closely with other classes to make the
+ * program work.
+ * */
 public class Slave {
 
-	private static Sequence curMIDI;
-	private static UI UI;
-	private static Console console;
-	private boolean guiMode;
-
-	private static boolean playing = false;
+	private static Sequence curMIDI; // The Current MIDI Sequence (NOT file)
+	private static UI UI; 
+	private static Console console;  
+	private static boolean playing = false; // Whether the UI is playing a file right now or not.
 
 	private static Simulation sim;
-	private static String name = "";
-	private static long prepositionLength;
+	private static String name = ""; // Name of the MIDI file.
+	private static long prepositionLength; 
 	private static long prepositionDelay;
-	private static MekString[] setOfStrings;
-	private static int bassTrack = 2;
+	private static MekString[] setOfStrings; 
+	private static int bassTrack = 2; // The currently selected Bass Track
 
 	private static List<Conflict> setOfConflicts;
 
+	protected static long microseconds = 0;
+	private static int mekStringCursor = 0;
+	
+	/**
+	 * A constructor for the Slave. It loads the default program configuration.
+	 * */
 	public Slave() throws IllegalArgumentException {
 		parse(new File("default.csv"));
 	}
 
+	/**
+	 * Returns the current MIDI Sequence the program is using.
+	 * @return The current MIDI Sequence the program is using.
+	 * */
 	public static Sequence getSequence(){
 		return curMIDI;
 	}
 
+	/**
+	 * Sets the current MIDI Sequence the program is using.
+	 * @param m The MIDI Sequence the program should use now.
+	 * */
 	public static void setSequence(Sequence m){
 		curMIDI = m;
 	}
 
+	/**
+	 * Returns the Console.
+	 * @return The Console.
+	 * */
 	public Console getConsole() {
 		return console;
 	}
 
+	/**
+	 * Returns the UI.
+	 * @return The UI.
+	 * */
 	public UI getUI() {
 		return UI;
 	}
 
+	/**
+	 * Returns the length of note prepositions. This is used with
+	 * James McVay's Mechbass.
+	 * @return The length of note prepositions.
+	 * */
+	public static long getPrepositionLength(){
+		return prepositionLength;
+	}
+	
+	/**
+	 * Sets the length of note prepositions. This is used with
+	 * James McVay's Mechbass.
+	 * @param l The note preposition length the program should use now.
+	 * */
 	public static void setPrepositionLength(long l){
 		prepositionLength = l;
 	}
 
+	/**
+	 * Returns the Delay of note prepositions. This is used with
+	 * James McVay's Mechbass.
+	 * @return The Delay of note prepositions.
+	 * */
+	public static long getPrepositionDelay(){
+		return prepositionDelay;
+	}
+	
+	/**
+	 * Returns the delay of note prepositions. This is used with
+	 * James McVay's Mechbass.
+	 * @param l The note preposition delay the program should use now.
+	 * */
 	public static void setPrepositionDelay(long l){
 		prepositionDelay = l;
 	}
 
+	/**
+	 * Returns the number of MekStrings being used in the program now.
+	 * @return The number of MekStrings being used by the program now.
+	 * */
+	public static int getNumberOfStrings(){
+		return setOfStrings.length;
+	}
+	
+	/**
+	 * Sets the number of MekStrings to use in the program.
+	 * @param i The number of MekStrings the program should use now.
+	 * */
 	public static void setNumberOfStrings(int i){
 		mekStringCursor = 0;
 		setOfStrings = new MekString[i];
 	}
 
-	public static int getNumberOfStrings(){
-		return setOfStrings.length;
-	}
-
+	/**
+	 * Returns the array of MekStrings being used in the program now.
+	 * @return The array MekStrings being used by the program now.
+	 * */
 	public static MekString[] getMekStringArray(){
 		return setOfStrings;
 	}
 
+	/**
+	 * Sets the name the MIDI File should be called now.
+	 * @param n The name the MIDI File should be called now.
+	 * */
 	public static void setName(String n){
 		name = n;
 	}
 
+	/**
+	 * Sets the new UI the program should use.
+	 * @param newUI The new UI the program should use.
+	 * */
 	public static void setUI(UI newUi) {
 		UI = newUi;
 	}
 
+	/**
+	 * Sets the simulation the program should use now.
+	 * @param sim The simulation the program should use now.
+	 * */
 	void setSim(Simulation sim){
 		Slave.sim = sim;
 	}
 
+	/**
+	 * Sets the simulation the program should use now.
+	 * @param sim The simulation the program should use now.
+	 * */
 	static void setConsole(Console newConsole) {
 		console = newConsole;
 	}
 
+	/**
+	 * Signals the Player class to release the resources being used by the 
+	 * Sequencer.
+	 * */
 	public void playerRelease() {
 		Player.release();
 	}
 
+	/**
+	 * Signals the Player class to stop playing the current MIDI sequence and 
+	 * set it to be ready to play from the beginning. IF it was playing in the 
+	 * first place.
+	 * */
 	public static void playerStop() {
 		if(playing){
 			Player.stop();
@@ -111,6 +199,10 @@ public class Slave {
 		}
 	}
 
+	/**
+	 * Signals the Player class to start playing the currently selected MIDI 
+	 * Sequence.
+	 * */
 	protected static void play() {
 		if (curMIDI != null && !playing){
 			Player.play(curMIDI,microseconds);
@@ -124,38 +216,50 @@ public class Slave {
 		}
 	}
 
-	protected static long microseconds = 0;
-
+	/**
+	 * Signals the Player class to stop playing the currently selected MIDI 
+	 * Sequence, but preserve its position.
+	 * */
 	protected static void pause() {
-			if(curMIDI != null && playing) {
-				microseconds = Player.pause();
-				playing = false;
+		if(curMIDI != null && playing) {
+			microseconds = Player.pause();
+			playing = false;
+		}
+		if(sim != null){
+			if(sim.isPlaying()){
+				sim.pause();
 			}
-			if(sim != null){
-				if(sim.isPlaying()){
-					sim.pause();
-				}
-			}
-
+		}
 	}
 
+	/**
+	 * Returns the currently selected bass track.
+	 * @return The currently selected bass track.
+	 * */
+	public static int getBassTrack(){
+		return bassTrack;
+	}
+	
+	/**
+	 * Sets the bass track the program should use now.
+	 * @param i The bass track the program should use now.
+	 * */
 	public static void setBassTrack(int i){
 		bassTrack = i;
 	}
 
-	public static int getBassTrack(){
-		return bassTrack;
-	}
-
+	/**
+	 * Solves the currently selected MIDI File for use with Mechbass.
+	 * Splits the track across four tracks, then assigns each note a string.
+	 * @return A List of conflicts.
+	 * */
 	protected static List<Conflict> solve() {
 
 		if (curMIDI != null)
 			try {
 				Solver greedy = new GreedySolver(setOfStrings);
-				Solver graph = new GraphSolver(setOfStrings);
 				curMIDI = TrackSplitter.split(curMIDI, setOfStrings.length, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
-//				curMIDI = graph.solve(curMIDI);
 				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);
 
 				//serve users valid choices
@@ -172,6 +276,10 @@ public class Slave {
 		return null;
 	}
 
+	/**
+	 * Saves the MIDI File for use outside the program (such as with Mechbass).
+	 * @param fileName The name the newly saved MIDI file should be saved as.
+	 * */
 	protected static void save(String fileName) {
 		if (curMIDI != null) {
 			try {
@@ -182,10 +290,10 @@ public class Slave {
 		}
 	}
 
-	protected List<Conflict> getConflicts(){
-		return setOfConflicts;
-	}
-
+	/**
+	 * Saves the MIDI File for use outside the program (such as with Mechbass).
+	 * @param fileName The file the newly saved MIDI file should overwrite.
+	 * */
 	protected static void save(File fileName) {
 		if (curMIDI != null) {
 			try {
@@ -195,7 +303,25 @@ public class Slave {
 			}
 		}
 	}
+	
+	/**
+	 * Returns the list of Conflicts.
+	 * @return The list of Conflicts.
+	 * */
+	protected List<Conflict> getConflicts(){
+		return setOfConflicts;
+	}
 
+	/**
+	 * Sets the current MIDI sequence.
+	 * 
+	 * NOT to be confused with setSequence(Sequence m), this method gets the 
+	 * current MIDI sequence to be from the supplied file, returning the true
+	 * upon success and false upon failure.
+	 * 
+	 * @param path The filepath of the MIDI File we want the sequence from.
+	 * @return True if the file was successfully opened and the sequence used as the current sequence - False otherwise.
+	 * */
 	protected static boolean setCurMIDI(String path) {
 		try {
 			File fi = new File(path);
@@ -215,10 +341,18 @@ public class Slave {
 		return false;
 	}
 
+	/**
+	 * Signals the OctaveShifter class to shift all of the notes in the 
+	 * current MIDI sequence up.
+	 * */
 	protected static void octaveUp() {
 		OctaveShifter.shiftOctave(curMIDI, 3);
 	}
 
+	/**
+	 * Signals the OctaveShifter class to shift all of the notes in the 
+	 * current MIDI sequence down.
+	 * */
 	protected static void octaveDown() {
 		OctaveShifter.shiftOctave(curMIDI, -3);
 	}
@@ -232,6 +366,15 @@ public class Slave {
 		OctaveShifter.shiftOctave(curMIDI, i);
 	}
 
+	/**
+	 * Sets the name to call the MIDI File, the length of the prepositions, 
+	 * the delay of the prepositions and the array of MekStrings used by the 
+	 * program.
+	 * @param n The name the MIDI File should be called now.
+	 * @param prepTime The note preposition delay the program should use now.
+	 * @param prepSize The note preposition length the program should use now.
+	 * @param strings The array of MekStrings the program should use now.
+	 * */
 	public static void setSettings(String n, long prepTime, long prepSize,MekString[] strings){
 		name = n;
 		setOfStrings = strings;
@@ -239,7 +382,13 @@ public class Slave {
 		prepositionDelay = prepTime;
 	}
 
-
+	/**
+	 * Parses a Configuration File (a .csv file), and sets the Slave's data to 
+	 * the inside the file.
+	 * 
+	 * @param fi The File to parse and load data from.
+	 * @return True if the file is successfully loaded and the data set - False otherwise.
+	 * */
 	public static boolean parse(File fi){
 		try {
 			Scanner sc =  new Scanner(fi);
@@ -272,6 +421,7 @@ public class Slave {
 				setOfStrings[i] = new MekString(low, high, time);
 				mekStringCursor++;
 			}
+			sc.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			return false;
@@ -280,6 +430,10 @@ public class Slave {
 		return true;
 	}
 
+	/**
+	 * Saves the current configuration as a file that can be reopened by this 
+	 * program.
+	 * */
 	public static void saveConfig(File fi){
 		try {
 
@@ -297,6 +451,7 @@ public class Slave {
 					output += setOfStrings[i].interval[j] + ", ";
 				}
 				ps.println(output);
+				ps.close();
 			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -305,6 +460,9 @@ public class Slave {
 
 	}
 
+	/**
+	 * Prints the current Configuration to System.out.
+	 * */
 	public static void getConfig(){
 		System.out.println("Name = " + name);
 		System.out.println("PrepositionLength = " + prepositionLength);
@@ -322,18 +480,28 @@ public class Slave {
 		}
 	}
 
-	private static int mekStringCursor = 0;
-
+	/**
+	 * Adds a MekString
+	 * @param mekString The MekString to add.
+	 * */
 	public static void addToMekString(MekString mekString) {
 		setOfStrings[mekStringCursor++] = mekString;
 
 	}
 
+	/**
+	 * Returns a copy of an Array of MekStrings.
+	 * @return A copy of an Array of MekStrings.
+	 * */
 	public static MekString[] getStringConfig(){
 		if (setOfStrings != null) return Arrays.copyOf(setOfStrings, setOfStrings.length);
 		else return null;
 	}
 
+	/**
+	 * Signals the the Cleaner class to clean the currently selected MIDI
+	 * Sequence.
+	 * */
 	public static void clean() {
 		Cleaner.clean(getSequence());
 
