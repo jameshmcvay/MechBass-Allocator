@@ -80,7 +80,7 @@ public class Player {
 		File midFile = new File("resources/stairway.mid");
 		try {
 			Sequence s = MidiSystem.getSequence(midFile);
-			play(s,400000000);
+			play(s,400000000,true);
 
 		} catch (InvalidMidiDataException e) {
 			System.err.println("File is an invalid midi file");
