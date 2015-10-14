@@ -29,15 +29,15 @@ import tools.Player;
 public class Slave {
 
 	private static Sequence curMIDI; // The Current MIDI Sequence (NOT file)
-	private static UI UI; 
-	private static Console console;  
+	private static UI UI;
+	private static Console console;
 	private static boolean playing = false; // Whether the UI is playing a file right now or not.
 
 	private static Simulation sim;
 	private static String name = ""; // Name of the MIDI file.
-	private static long prepositionLength; 
+	private static long prepositionLength;
 	private static long prepositionDelay;
-	private static MekString[] setOfStrings; 
+	private static MekString[] setOfStrings;
 	private static int bassTrack = 2; // The currently selected Bass Track
 
 	private static List<Conflict> setOfConflicts;
@@ -47,7 +47,7 @@ public class Slave {
 	private static int mekStringCursor = 0;
 	private static boolean cleaned = false;
 
-	
+
 	/**
 	 * A constructor for the Slave. It loads the default program configuration.
 	 * */
@@ -95,7 +95,7 @@ public class Slave {
 	public static long getPrepositionLength(){
 		return prepositionLength;
 	}
-	
+
 	/**
 	 * Sets the length of note prepositions. This is used with
 	 * James McVay's Mechbass.
@@ -113,7 +113,7 @@ public class Slave {
 	public static long getPrepositionDelay(){
 		return prepositionDelay;
 	}
-	
+
 	/**
 	 * Returns the delay of note prepositions. This is used with
 	 * James McVay's Mechbass.
@@ -130,7 +130,7 @@ public class Slave {
 	public static int getNumberOfStrings(){
 		return setOfStrings.length;
 	}
-	
+
 	/**
 	 * Sets the number of MekStrings to use in the program.
 	 * @param i The number of MekStrings the program should use now.
@@ -181,7 +181,7 @@ public class Slave {
 	}
 
 	/**
-	 * Signals the Player class to release the resources being used by the 
+	 * Signals the Player class to release the resources being used by the
 	 * Sequencer.
 	 * */
 	public static void playerRelease() {
@@ -189,8 +189,8 @@ public class Slave {
 	}
 
 	/**
-	 * Signals the Player class to stop playing the current MIDI sequence and 
-	 * set it to be ready to play from the beginning. IF it was playing in the 
+	 * Signals the Player class to stop playing the current MIDI sequence and
+	 * set it to be ready to play from the beginning. IF it was playing in the
 	 * first place.
 	 * */
 	public static void playerStop() {
@@ -203,7 +203,7 @@ public class Slave {
 	}
 
 	/**
-	 * Signals the Player class to start playing the currently selected MIDI 
+	 * Signals the Player class to start playing the currently selected MIDI
 	 * Sequence.
 	 * */
 	protected static void play() {
@@ -220,7 +220,7 @@ public class Slave {
 	}
 
 	/**
-	 * Signals the Player class to stop playing the currently selected MIDI 
+	 * Signals the Player class to stop playing the currently selected MIDI
 	 * Sequence, but preserve its position.
 	 * */
 	protected static void pause() {
@@ -242,7 +242,7 @@ public class Slave {
 	public static int getBassTrack(){
 		return bassTrack;
 	}
-	
+
 	/**
 	 * Sets the bass track the program should use now.
 	 * @param i The bass track the program should use now.
@@ -313,11 +313,11 @@ public class Slave {
 
 	/**
 	 * Sets the current MIDI sequence.
-	 * 
-	 * NOT to be confused with setSequence(Sequence m), this method gets the 
+	 *
+	 * NOT to be confused with setSequence(Sequence m), this method gets the
 	 * current MIDI sequence to be from the supplied file, returning the true
 	 * upon success and false upon failure.
-	 * 
+	 *
 	 * @param path The filepath of the MIDI File we want the sequence from.
 	 * @return True if the file was successfully opened and the sequence used as the current sequence - False otherwise.
 	 * */
@@ -327,6 +327,7 @@ public class Slave {
 			if (fi != null) {
 				cleaned = false;
 				curMIDI = MidiSystem.getSequence(fi);
+				curMIDI = Cleaner.fixStupidity(curMIDI);
 				if (sim!= null) sim.setSequence(curMIDI);
 				System.out.print("successfully opened file \n");
 				return true;
@@ -342,7 +343,7 @@ public class Slave {
 	}
 
 	/**
-	 * Signals the OctaveShifter class to shift all of the notes in the 
+	 * Signals the OctaveShifter class to shift all of the notes in the
 	 * current MIDI sequence up.
 	 * */
 	protected static void octaveUp() {
@@ -350,7 +351,7 @@ public class Slave {
 	}
 
 	/**
-	 * Signals the OctaveShifter class to shift all of the notes in the 
+	 * Signals the OctaveShifter class to shift all of the notes in the
 	 * current MIDI sequence down.
 	 * */
 	protected static void octaveDown() {
@@ -367,8 +368,8 @@ public class Slave {
 	}
 
 	/**
-	 * Sets the name to call the MIDI File, the length of the prepositions, 
-	 * the delay of the prepositions and the array of MekStrings used by the 
+	 * Sets the name to call the MIDI File, the length of the prepositions,
+	 * the delay of the prepositions and the array of MekStrings used by the
 	 * program.
 	 * @param n The name the MIDI File should be called now.
 	 * @param prepTime The note preposition delay the program should use now.
@@ -383,9 +384,9 @@ public class Slave {
 	}
 
 	/**
-	 * Parses a Configuration File (a .csv file), and sets the Slave's data to 
+	 * Parses a Configuration File (a .csv file), and sets the Slave's data to
 	 * the inside the file.
-	 * 
+	 *
 	 * @param fi The File to parse and load data from.
 	 * @return True if the file is successfully loaded and the data set - False otherwise.
 	 * */
@@ -430,7 +431,7 @@ public class Slave {
 	}
 
 	/**
-	 * Saves the current configuration as a file that can be reopened by this 
+	 * Saves the current configuration as a file that can be reopened by this
 	 * program.
 	 * */
 	public static void saveConfig(File fi){

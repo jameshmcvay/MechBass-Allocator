@@ -110,26 +110,26 @@ public class Simulation {
 					ShortMessage shrt = (ShortMessage) mid;
 					switch (shrt.getCommand()){
 					case NOTE_ON: // if the note is a note on, store its index, so we can get it back
-						progress.put(shrt.getData1(), i);
-						break;
+						if (shrt.getData2()>0){ // if the note is actually a note off, skip the note on stuff
+							progress.put(shrt.getData1(), i);
+							break;
+						}
 					case NOTE_OFF: // if the note is a notes off, get the note on, make a Note, and add it the the notes list
-						MidiEvent on = tr.get(progress.get(shrt.getData1()));
+						int last = shrt.getData1();
+						int prog = progress.get(last);
+						MidiEvent on = tr.get(prog);
+
 						if (on == null){
-//							System.out.println("Note: " + shrt.getData1() + ", No corresponding note on");
 							break;
 						}
 						Note n = new Note(shrt.getData1(), // the maths is to convert MIDI ticks to ms
 										  (long) (on.getTick() * (60000. / (bpm * resolution))),
 										  (long) (tr.get(i).getTick()* (60000. / (bpm * resolution))),
 										  on.getMessage().getMessage()[2]);
-//						System.out.print(on.getMessage().getMessage()[2] + "\t");
-//						System.out.println(shrt.getData2());
-//						System.out.println(n.velocity);
 						notes[j].add(n);
 						break;
 
 						default:
-//							System.out.println("other note");
 					}
 				} else if (mid instanceof MetaMessage){
 					// get the bpm changes
