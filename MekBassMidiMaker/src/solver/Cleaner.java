@@ -2,7 +2,6 @@ package solver;
 
 import static javax.sound.midi.ShortMessage.NOTE_OFF;
 import static javax.sound.midi.ShortMessage.NOTE_ON;
-import static javax.sound.midi.ShortMessage.PITCH_BEND;
 
 import java.util.ArrayList;
 import java.util.List;
