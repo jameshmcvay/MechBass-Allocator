@@ -5,17 +5,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import solver.Conflict;
 import solver.MekString;
-import solver.NoteConflict;
 
 /**
  * The console used in both the GUI and non-GUI modes, it is responsible for
@@ -38,10 +34,10 @@ public class Console extends OutputStream {
 	String SelectedCommand;
 	String allText;
 
-	int state;
-	int curString;
-	int numStrings;
-	boolean setup = false;
+	int state; //state of configuration setup we are currently in
+	int curString; //the string we are currently setting in the configuration
+	int numStrings; //the total number of strings for configuration
+	boolean setup = false;//parsing commands stright to setup
 	solver.MekString string;
 	solver.MekString[] strings;
 	int lowNote;
@@ -78,13 +74,11 @@ public class Console extends OutputStream {
 					// ANYTHING ELSE: NAH BRUH.
 	};
 
-	int resolution;
-	boolean fix = false;
-	List<NoteConflict> listOfNoteConflicts = new ArrayList<NoteConflict>();
-	Conflict curConflict;
-	Map<Integer, NoteConflict> corrections = new HashMap<Integer, NoteConflict>();
-	// int numString = 0;
-	// List<Integer> listOfStrings = new ArrayList<Integer>();
+//	int resolution;
+	//boolean fix = false;
+	//List<NoteConflict> listOfNoteConflicts = new ArrayList<NoteConflict>();
+	//Conflict curConflict;
+	//Map<Integer, NoteConflict> corrections = new HashMap<Integer, NoteConflict>();
 
 	List<Conflict> listOfConflicts;
 
@@ -115,6 +109,9 @@ public class Console extends OutputStream {
 		startTerminalInput();
 	}
 
+	/**
+	 * start a loop to check for input from the console.
+	 */
 	protected void startTerminalInput() {
 		do {
 			try {
@@ -123,15 +120,20 @@ public class Console extends OutputStream {
 					read(input);
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} while (!input.equals("END"));
 	}
 
+	/**
+	 * parse input to check for and redirect special cases.
+	 *
+	 * @param text The string of text to parse
+	 */
 	protected void read(String text) {
 		if (text.equals("") || text == null || text.equals("\n")) {
 			textInputField.setText("No command input");
+
 			textInputField.appendText("");
 			return;
 		}
@@ -142,13 +144,16 @@ public class Console extends OutputStream {
 		}
 		if (setup) {
 			setupParse(rawInput);
-		} else if (fix) {
-			correctError(rawInput);
 		} else {
 			parse(rawInput);
 		}
 	}
 
+	/**
+	 * run through the setup process.
+	 *
+	 * @param text The string of text to parse
+	 */
 	protected void setupParse(String text) {
 		switch (state) {
 		case 0:
@@ -214,10 +219,10 @@ public class Console extends OutputStream {
 	}
 
 	/**
-	 * Parse a block of input
+	 * Parse regular commands from the input.
 	 *
 	 * @param text
-	 *            The block of input
+	 *            The string of text to parse
 	 */
 	protected void parse(String rawInput) {
 		String[] input = rawInput.split("\\s+");
@@ -246,10 +251,11 @@ public class Console extends OutputStream {
 			} else
 				listOfConflicts = Slave.solve();
 			break;
-		case "fix":
-			listOfConflicts = slave.getConflicts();
-			correctError(rawInput);
-			break;
+//		case "fix":
+//			listOfConflicts = slave.getConflicts();
+//			fix = true;
+//			correctError(rawInput);
+//			break;
 		case "play":
 			Slave.play();
 			break;
@@ -281,6 +287,9 @@ public class Console extends OutputStream {
 		case "config":
 			Slave.getConfig();
 			break;
+		case "clean":
+			Slave.clean();
+			break;
 		case "basstrack":
 			if (input.length > 1) {
 				this.setBassTrack(rawInput);
@@ -289,8 +298,9 @@ public class Console extends OutputStream {
 			break;
 		case "help":
 			output("There is no help all hope is lost");
-		case "END":
+		case "end":
 			System.exit(0);
+			break;
 		default:
 			output("Command not recongnized");
 		}
@@ -299,7 +309,7 @@ public class Console extends OutputStream {
 	}
 
 	/**
-	 * Returns whether or not the console is set to GUI mode
+	 * Returns whether or not the console is set to GUI mode.
 	 *
 	 * @return GUI mode
 	 */
@@ -307,11 +317,21 @@ public class Console extends OutputStream {
 		return guiMode;
 	}
 
+	/**
+	 * Parse a open command to extract the file and open it.
+	 *
+	 * @param input The open command of the form "open <file path>"
+	 */
 	protected void open(String input) {
 		String FileName = input.substring(4).replace("\"", "").trim();
 		Slave.setCurMIDI(FileName);
 	}
 
+	/**
+	 * Parse an openConfig command to extract the configuration file to open and set the configuration file.
+	 *
+	 * @param input The openConfig command of the form "openConfig <file path>"
+	 */
 	protected void openConfig(String input) {
 		String FileName = input.substring(10).replace("\"", "").trim();
 		File fi = new File(FileName);
@@ -320,35 +340,67 @@ public class Console extends OutputStream {
 		}
 	}
 
+	/**
+	 * Save the current configuration as default.csv in the current directory.
+	 */
 	protected void saveConfig() {
 		output("saving config as \"default.csv\" in the current directory");
 		File fi = new File("default.csv");
 		Slave.saveConfig(fi);
 	}
 
+	/**
+	 * Save the current configuration as the file specified.
+	 *
+	 * @param input The saveConfig command of the form "saveConfig <file name>"
+	 */
 	protected void saveConfig(String input) {
 		String fileName = input.substring(10).replace("\"", "").trim();
 		File fi = new File(fileName);
 		Slave.saveConfig(fi);
 	}
 
+	/**
+	 * set the bass track to the specified number.
+	 *
+	 * @param input The BassTrack command of the form "basstrack <track number>"
+	 */
 	protected void setBassTrack(String input) {
-		int track = Integer.parseInt(input.substring(9).replace("\"", "")
+		int track =Slave.getBassTrack();
+		try{
+		track = Integer.parseInt(input.substring(9).replace("\"", "")
 				.trim());
+		}
+		catch (NumberFormatException e){
+			output("you done goofed");
+			return;
+		}
 		Slave.setBassTrack(track);
 		output("Bass Track is now set to track " + track);
 	}
 
+	/**
+	 * save the current MIDI file as the file specified.
+	 *
+	 * @param input The save command of the form "save <file path>"
+	 */
 	protected void save(String input) {
 		String fileName = input.substring(4).replace("\"", "").trim();
 		Slave.save(fileName);
 	}
 
+	/**
+	 * save the current midi file as the default "out.mid" in the current directory.
+	 */
 	protected void save() {
 		output("saving file as \"out.mid\" in the current directory");
 		Slave.save("out.mid");
 	}
-
+	/**
+	 * load the a MIDI into current MIDI and solve it.
+	 *
+	 * @param input the file to be solve of the form "solve <file name>
+	 */
 	protected void solve(String input) {
 		String FileName = input.substring(5).replace("\"", "").trim();
 		if (Slave.setCurMIDI(FileName)) {
@@ -356,83 +408,84 @@ public class Console extends OutputStream {
 		}
 	}
 
-	protected void correctError(String input) {
-		if (listOfConflicts.size() == 0) {
-			output("No conflicts founds, no need to fix");
-			fix = false;
-			return;
-		}
-		switch (resolution) {
-		case 0:
-			Boolean solved = true;
-			for (Conflict c : listOfConflicts) {
-				if (!c.resolved() && c.strings() != 0) {
-					curConflict = c;
-					listOfNoteConflicts = c.getConf();
-					resolution++;
-					c.resolved();
-					break;
-				}
-			}
-			if (!solved) {
-				fix = false;
-				output("all errors fixed");
-				return;
-			}
-		case 1:
-			output("The note "
-					+ curConflict.getNote().getMessage().getMessage()[1]
-					+ " is conflicting");
-			output("The options are to:");
-			int i = 1;
-			corrections.clear();
-			for (NoteConflict nc : listOfNoteConflicts) {
-				corrections.put(i, nc);
-				corrections.put(i + 1, nc);
-				corrections.put(i + 2, nc);
-				corrections.put(i + 3, nc);
-				output("option " + i + ", drop the note before in track "
-						+ nc.getTrack());
-				output("option " + (i + 1) + ", drop the note after in track "
-						+ nc.getTrack());
-				output("option " + (i + 2)
-						+ ", advance the end of the note before in track "
-						+ nc.getTrack());
-				output("option " + (i + 3)
-						+ ", delay the start of the note after in track "
-						+ nc.getTrack());
-				i = i + 4;
-			}
-			output("type in the number of the option you would like to carryout");
-			resolution++;
-			return;
-		case 2:
-			int opt = Integer.parseInt(input);
-			int Action = opt % 4;
-			NoteConflict nCon = corrections.get(opt);
-			switch (Action) {
-			case 0:
-				nCon.dropFirst();
-				break;
-			case 1:
-				nCon.dropLast();
-				break;
-			case 2:
-				// TODO nCon.delayFirstEnd();
-				break;
-			case 3:
-				// TODO nCon.delaySecondStart();
-				break;
-			}
-			resolution = 0;
-			correctError("");
-		}
-	}
+//	protected void correctError(String input) {
+//		if (listOfConflicts.size() == 0) {
+//			output("No conflicts founds, no need to fix");
+//			fix = false;
+//			return;
+//		}
+//		switch (resolution) {
+//		case 0:
+//			Boolean solving = false;
+//			for (Conflict c : listOfConflicts) {
+//				if ((!c.resolved()) && (c.strings() != 0)) {
+//					solving =true;
+//					curConflict = c;
+//					listOfNoteConflicts = c.getConf();
+//					resolution++;
+//					c.markResolved();
+//					break;
+//				}
+//			}
+//			if (!solving) {
+//				fix = false;
+//				output("all errors fixed");
+//				return;
+//			}
+//		case 1:
+//			output("The note "
+//					+ curConflict.getNote().getMessage().getMessage()[1]
+//					+ " is conflicting");
+//			output("The options are to:");
+//			int i = 1;
+//			corrections.clear();
+//			for (NoteConflict nc : listOfNoteConflicts) {
+//				corrections.put(i, nc);
+//				corrections.put(i + 1, nc);
+//				corrections.put(i + 2, nc);
+//				corrections.put(i + 3, nc);
+//				output("option " + i + ", drop the note before in track "
+//						+ nc.string());
+//				output("option " + (i + 1) + ", drop the note after in track "
+//						+ nc.string());
+//				output("option " + (i + 2)
+//						+ ", advance the end of the note before in track "
+//						+ nc.string());
+//				output("option " + (i + 3)
+//						+ ", delay the start of the note after in track "
+//						+ nc.string());
+//				i = i + 4;
+//			}
+//			output("type in the number of the option you would like to carryout");
+//			resolution++;
+//			return;
+//		case 2:
+//			int opt = Integer.parseInt(input);
+//			int Action = opt % 4;
+//			NoteConflict nCon = corrections.get(opt);
+//			switch (Action) {
+//			case 0:
+//				nCon.dropFirst();
+//				break;
+//			case 1:
+//				nCon.dropLast();
+//				break;
+//			case 2:
+//				nCon.delayFirstEnd(1);
+//				break;
+//			case 3:
+//				nCon.delaySecondStart(1);
+//				break;
+//			}
+//			resolution = 0;
+//			correctError("");
+//		}
+//	}
 
 	/**
-	 * Output the string to the appropriate area
+	 * Output the string to the appropriate area.
 	 *
-	 * @param text
+	 * @param text the string of text to output to the appropriate area
 	 */
 	protected void output(String text) {
 		for (char c : text.toCharArray()) {
@@ -445,11 +498,12 @@ public class Console extends OutputStream {
 		try {
 			write('\n');
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			System.out.write('\n');
 		}
 	}
-
+	/**
+	 * set the command in the input field to be the command issued previous to the one currently displayed there.
+	 */
 	protected void CallPrevious() {
 		if (!prevCommand.isEmpty()) {
 			nextCommand.push(textInputField.getText());
@@ -458,7 +512,9 @@ public class Console extends OutputStream {
 			textInputField.positionCaret(textInputField.getLength());
 		}
 	}
-
+	/**
+	 * set the command in the input field to be the command issued after the one currently displayed
+	 */
 	protected void callNext(){
 		if (!nextCommand.isEmpty()) {
 			prevCommand.push(textInputField.getText());
