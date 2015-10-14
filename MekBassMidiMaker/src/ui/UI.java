@@ -882,6 +882,24 @@ public class UI extends Application{
 		BassTrackComboBox.setOnAction(temp);
 	}
 
+	public void consoleLoad(String fileName) {
+		currentFile = new File(fileName);
+
+		try {
+			Slave.setSequence(MidiSystem.getSequence(currentFile));
+		} catch (InvalidMidiDataException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		sim.setSequence(Slave.getSequence());
+		//Remove and re-add the eventhandler, this is to avoid it being called upon changing the contents of the combobox
+		EventHandler<ActionEvent> temp = BassTrackComboBox.getOnAction();
+		BassTrackComboBox.setOnAction(null);
+		BassTrackComboBox.setItems(populateTrackNumberComboBox());
+		BassTrackComboBox.setOnAction(temp);
+	}
+
 	File lastFileLocation;
 	File currentFile;
 

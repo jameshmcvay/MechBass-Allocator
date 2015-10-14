@@ -23,15 +23,15 @@ import solver.MekString;
 public class Console extends OutputStream {
 
 	boolean guiMode; //whether or not we are using the console with a GUI
-	
+
 	//GUI text fields
 	TextField textInputField;
 	TextArea textOutputField;
-	
+
 	//Buffered reader for parsing input when in console mode
 	BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 	String input = "i";
-	
+
 	//Fields for use with previous and next command features
 	Stack<String> prevCommand = new Stack<String>(); //The commands called before the currently selected command
 	Stack<String> commandStack = new Stack<String>(); //All the commands executed by the program
@@ -46,7 +46,7 @@ public class Console extends OutputStream {
 	boolean setup = false;//whether we are parsing commands straight to setup
 	solver.MekString string; //A MekString to work on
 	solver.MekString[] strings;//An array to store completed strings
-	int lowNote; 
+	int lowNote;
 	int highNote;
 	long[] timing; //An array to store string timings
 	String setupName;
@@ -328,7 +328,12 @@ public class Console extends OutputStream {
 	 */
 	protected void open(String input) {
 		String FileName = input.substring(4).replace("\"", "").trim();
-		Slave.setCurMIDI(FileName);
+		if(guiMode){
+			Slave.getUI().consoleLoad(FileName);
+		}
+		else{
+			Slave.setCurMIDI(FileName);
+		}
 	}
 
 	/**

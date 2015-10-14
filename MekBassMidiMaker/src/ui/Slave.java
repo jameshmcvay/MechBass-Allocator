@@ -59,7 +59,7 @@ public class Slave {
 		return console;
 	}
 
-	public UI getUI() {
+	public static UI getUI() {
 		return UI;
 	}
 
