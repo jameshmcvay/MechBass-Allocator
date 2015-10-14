@@ -61,7 +61,7 @@ public class OctaveShifter {
 	 * 		- In this case, a warning will be displayed and the note will
 	 * 		  be shifted to the minimum/maximum octave possible.
 	 * @param seq A Sequence with playable notes.
-	 * @param shift An integer for the number of octaves to shift (between 0 - 10 (inclusive))
+	 * @param shift An integer for the number of octaves to shift
 	 * @return The passed in Sequence
 	 * @author Dean Newberry
 	 * */
@@ -74,19 +74,33 @@ public class OctaveShifter {
 		return seq;
 	}
 
+	/**
+	 * This method shifts a single note up or down a number of octaves.
+	 * 
+	 * @param seq A Sequence with playable notes.
+	 * @param shift An integer for the number of octaves to shift
+	 * @param t The track we're getting the event and message from.
+	 * @param i The index of the event we want inside t.
+	 * @return The passed in Sequence
+	 * @author Dean Newberry
+	 * */
 	private static void shift_A_Note(Sequence seq, int shift, Track t, int i){
-		MidiEvent event = t.get(i);
-		MidiMessage message = event.getMessage();
-		if (message instanceof ShortMessage) {
-			ShortMessage sm = (ShortMessage) message;
-			if (sm.getCommand() == ShortMessage.NOTE_OFF||
+		MidiEvent event = t.get(i); // grab the event from the track...
+		MidiMessage message = event.getMessage(); // ... grab the Message from the event...
+		if (message instanceof ShortMessage) { // ... if the Message is a ShortMessage...
+			ShortMessage sm = (ShortMessage) message; // ... make the Message a ShortMessage.
+			// ONLY do something else IFF the ShortMessage is a about a pitch bend or a note on/off.
+			if (sm.getCommand() == ShortMessage.NOTE_OFF|| 
 				sm.getCommand() == ShortMessage.NOTE_ON	||
 				sm.getCommand() == ShortMessage.POLY_PRESSURE){
-				boolean warnUser = false;
+				boolean warnUser = false; // Set up a flag in case we want to warn the user.
+				// Warnings occur when the user tries to shift a note too far.
 				int tempShift = shift;
+				// If we can shift the octave...
 				if (sm.getData1() + (tempShift * 12) >= 0 &&
 						sm.getData1() + (tempShift * 12) <= 127){
 					try {
+						// ... set the ShortMessage to itself, with the octave shifted.
 						sm.setMessage(sm.getCommand(), sm.getChannel(),
 						sm.getData1() + (tempShift * 12), sm.getData2());
 					} catch (InvalidMidiDataException e) {
@@ -96,10 +110,14 @@ public class OctaveShifter {
 								+ "NOTE_ON or POLY_PRESSURE (Pitch Bend).");
 					}
 				}
+				// If we can't shift the octave... 
 				else if ((sm.getData1() + (tempShift * 12) < 0 ||
 						sm.getData1() + (tempShift * 12) > 127)){
+					// Warn the user.
 					warnUser = true;
 					if (tempShift > 0){
+						// Keep trying to shift the octave up until you hit 0 
+						// or you succeed.
 						while(tempShift > 0){
 							tempShift--;
 							if (sm.getData1() + (tempShift * 12) >= 0 &&
@@ -117,6 +135,8 @@ public class OctaveShifter {
 						}
 					}
 					else{
+						// Keep trying to shift the octave down until you hit 0
+						// or you succeed.
 						while(tempShift < 0){
 							tempShift++;
 							if (sm.getData1() + (tempShift * 12) >= 0 &&
@@ -135,6 +155,7 @@ public class OctaveShifter {
 						}
 					}
 				}
+				// Warn the user if we aren't able to shift the desired number of octaves.
 				if (warnUser){
 					System.out.printf("!!!\tWARNING! FAILED TO SHIFT NOTE "
 					+ "%d OCTAVES! SHIFTED THE NOTE %d OCTAVES INSTEAD!\n!!!",
