@@ -1,0 +1,14 @@
+# eclipse
+.classpath
+.settings/
+.project
+
+# java
+bin/
+*.class
+
+# temp files
+*~
+.#*
+*.swp
+*.swo
