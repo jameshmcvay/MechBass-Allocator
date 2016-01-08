@@ -229,7 +229,7 @@ public class Simulation {
 			// get the velocity (time between frets)
 			int a = (int) Math.round(picks[i]), b = (int) (Math.round(picks[i])+dir);
 			// get how far(time) we need to move
-			long delta = strings[i].differenceTime(Math.min(a,b), Math.max(a, b));
+			long delta = strings[i].differenceTime(a, b);
 			// get how quickly we  can move
 			double move = 1./(delta/(float)time);
 			if (Double.isInfinite(move)) { // if one of the values is zero, stop
@@ -305,21 +305,16 @@ public class Simulation {
 			// Draw the notes
 			////////////////////////////////////////
 			Note n;
-			int loopEnd = Math.min(notes.length, strings.length);
-			int c = 0; // this is a correction for if track0 has not yet been removed/cleaned
-			if (notes.length == strings.length+1){
-				c = 1;
-			}
-			for (int t=0; t<loopEnd; ++t){
+			for (int t=0; t<Math.min(notes.length,strings.length); ++t){
 
-				int length = notes[t+c].size();
+				int length = notes[t].size();
 	//			get the first (fully) visible note
 				int startIndex = 0;
 				// and start at that point
 				// set how far down we start
-				if (t>0) offset += noteDiv*(strings[t-1].noteRange+1);
+				if (t>0) offset += noteDiv*(strings[t].noteRange+1);
 				for (int i=startIndex; i<length; ++i){
-					n = notes[t+c].get(i);
+					n = notes[t].get(i);
 					// cache some of the maths done more than once
 					double start = (n.start-drawStartTime)*hscale;
 					double end = (n.end-drawStartTime)*hscale;
@@ -403,20 +398,15 @@ public class Simulation {
 			// Draw the notes
 			////////////////////////////////////////
 			Note n;
-			int loopEnd = Math.min(notes.length, strings.length);
-			int c = 0; // this is a correction for if track0 has not yet been removed/cleaned
-			if (notes.length == strings.length+1){
-				c = 1;
-			}
-			for (int t=0; t<loopEnd; ++t){
+			for (int t=0; t<strings.length; ++t){
 
-				int length = notes[t+c].size();
+				int length = notes[t].size();
 				//			get the first (fully) visible note
 				int startIndex = 0;
 				// and start at that point
 				// set how far down we start
 				for (int i=startIndex; i<length; ++i){
-					n = notes[t+c].get(i);
+					n = notes[t].get(i);
 					// cache some of the maths done more than once
 					double start = (n.start-drawStartTime)*hscale;
 					double end = (n.end-drawStartTime)*hscale;

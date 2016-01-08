@@ -127,4 +127,8 @@ public class MekString {
 		if(i>=lowNote && i<=highNote) return true;
 		return false;
 	}
+
+	public String toString(){
+		return "(" + lowNote + "," + this.highNote + ")";
+	}
 }

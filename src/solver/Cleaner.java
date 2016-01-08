@@ -215,7 +215,7 @@ public class Cleaner {
 		//for each track
 		float tickScaling = 1;
 		long preTicks = (long) (tickScaling * preTime);
-		for(int i = 0; i < seq.getTracks().length-1; i++){
+		for(int i = 0; i <strings.length; i++){
 			Track cur = seq.getTracks()[i];
 			//add a prepos event for each note that is not consecutive
 			for(int j = 0; j < cur.size(); j++){
@@ -243,7 +243,7 @@ public class Cleaner {
 													//if the notes are conflicting move all events related to the second note into track 0
 													if(cur.get(k).getMessage() instanceof ShortMessage){
 														ShortMessage off = (ShortMessage) cur.get(k).getMessage();
-														seq.getTracks()[0].add(cur.get(k));
+														seq.getTracks()[strings.length].add(cur.get(k));
 														cur.remove(cur.get(k));
 														//index decremented as we are removing objects from the track
 														k--;
@@ -373,7 +373,7 @@ public class Cleaner {
 	 * @return
 	 */
 	public static List<Conflict> getConflicts(Sequence seq, MekString[] strings){
-		Track dropTrack = seq.getTracks()[0];
+		Track dropTrack = seq.getTracks()[strings.length];
 		List<Conflict> conflicts = new ArrayList<Conflict>();
 		//For each note in the dropped note track
 		for(int i = 0; i < dropTrack.size(); i++){
@@ -399,10 +399,10 @@ public class Cleaner {
 							}
 						}
 					}
-					for(int k = 1; k < seq.getTracks().length; k++){
+					for(int k = 0; k < strings.length; k++){
 						Track track = seq.getTracks()[k];
 						//look for conficts on each string that can play the note.
-						if(strings[k-1].playable(note.getData1())){
+						if(strings[k].playable(note.getData1())){
 							//this adds all related events of the note before the conflicting note to a list
 							int conflictIndex = findEvent(track, current.getTick(), NOTE_ON);
 							if(conflictIndex >= 0){

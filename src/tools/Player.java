@@ -32,7 +32,7 @@ public class Player {
 			seq.open();
 			seq.setSequence(s);
 			seq.setMicrosecondPosition(microSeconds);
-			seq.setTrackMute(0, !clean);
+			seq.setTrackMute(s.getTracks().length-1, !clean);
 
 			seq.start();
 		} catch (MidiUnavailableException | InvalidMidiDataException e) {
