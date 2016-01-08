@@ -22,37 +22,42 @@ import solver.MekString;
  */
 public class Console extends OutputStream {
 
-	boolean guiMode; //whether or not we are using the console with a GUI
+	boolean guiMode; // whether or not we are using the console with a GUI
 
-	//GUI text fields
+	// GUI text fields
 	TextField textInputField;
 	TextArea textOutputField;
 
-	//Buffered reader for parsing input when in console mode
+	// Buffered reader for parsing input when in console mode
 	BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 	String input = "i";
 
-	//Fields for use with previous and next command features
-	Stack<String> prevCommand = new Stack<String>(); //The commands called before the currently selected command
-	Stack<String> commandStack = new Stack<String>(); //All the commands executed by the program
-	Stack<String> nextCommand = new Stack<String>(); //The commands called after the currently selected commands
-	String SelectedCommand; //The currently selected command
+	// Fields for use with previous and next command features
+	Stack<String> prevCommand = new Stack<String>(); // The commands called
+														// before the currently
+														// selected command
+	Stack<String> commandStack = new Stack<String>(); // All the commands
+														// executed by the
+														// program
+	Stack<String> nextCommand = new Stack<String>(); // The commands called
+														// after the currently
+														// selected commands
+	String SelectedCommand; // The currently selected command
 
-
-	//Fields for use in setup of configuration
-	int state; //state of configuration setup we are currently in
-	int curString; //the string we are currently setting in the configuration
-	int numStrings; //the total number of strings for configuration
-	boolean setup = false;//whether we are parsing commands straight to setup
-	solver.MekString string; //A MekString to work on
-	solver.MekString[] strings;//An array to store completed strings
+	// Fields for use in setup of configuration
+	int state; // state of configuration setup we are currently in
+	int curString; // the string we are currently setting in the configuration
+	int numStrings; // the total number of strings for configuration
+	boolean setup = false;// whether we are parsing commands straight to setup
+	solver.MekString string; // A MekString to work on
+	solver.MekString[] strings;// An array to store completed strings
 	int lowNote;
 	int highNote;
-	long[] timing; //An array to store string timings
+	long[] timing; // An array to store string timings
 	String setupName;
 	int i;
-	long prepTime;//Preposition time
-	long prepSize;//Preposition length
+	long prepTime;// Preposition time
+	long prepSize;// Preposition length
 
 	/*
 	 * Start of Dean's code
@@ -86,11 +91,12 @@ public class Console extends OutputStream {
 	 * End of Dean's code
 	 */
 
-	//int resolution;
-	//boolean fix = false;
-	//List<NoteConflict> listOfNoteConflicts = new ArrayList<NoteConflict>();
-	//Conflict curConflict;
-	//Map<Integer, NoteConflict> corrections = new HashMap<Integer, NoteConflict>();
+	// int resolution;
+	// boolean fix = false;
+	// List<NoteConflict> listOfNoteConflicts = new ArrayList<NoteConflict>();
+	// Conflict curConflict;
+	// Map<Integer, NoteConflict> corrections = new HashMap<Integer,
+	// NoteConflict>();
 
 	List<Conflict> listOfConflicts;
 
@@ -133,7 +139,8 @@ public class Console extends OutputStream {
 	/**
 	 * parse input to check for and redirect special cases.
 	 *
-	 * @param text The string of text to parse
+	 * @param text
+	 *            The string of text to parse
 	 */
 	protected void read(String text) {
 		if (text.equals("") || text == null || text.equals("\n")) {
@@ -156,7 +163,8 @@ public class Console extends OutputStream {
 	/**
 	 * run through the setup process.
 	 *
-	 * @param text The string of text to parse
+	 * @param text
+	 *            The string of text to parse
 	 */
 	private void setupParse(String text) {
 		switch (state) {
@@ -189,8 +197,7 @@ public class Console extends OutputStream {
 			break;
 		case 5:
 			highNote = Integer.parseInt(text);
-			output("Please input the timing between note " + lowNote + " and "
-					+ (lowNote + 1) + " on string " + curString);
+			output("Please input the timing between note " + lowNote + " and " + (lowNote + 1) + " on string " + curString);
 			state++;
 			timing = new long[highNote - lowNote];
 			i = 0;
@@ -199,17 +206,14 @@ public class Console extends OutputStream {
 			if (i < timing.length - 1) {
 				timing[i] = Long.parseLong(text);
 				i++;
-				output("Please input the timing between note " + (lowNote + i)
-						+ " and " + (lowNote + i + 1) + " on string "
-						+ curString);
+				output("Please input the timing between note " + (lowNote + i) + " and " + (lowNote + i + 1) + " on string " + curString);
 			} else {
 				timing[i] = Long.parseLong(text);
 				string = new MekString(lowNote, highNote, timing);
 				strings[curString - 1] = string;
 				if (curString < numStrings) {
 					curString++;
-					output("Please input the lowest note of string "
-							+ curString);
+					output("Please input the lowest note of string " + curString);
 					state = 4;
 				} else {
 					state = 0;
@@ -255,11 +259,11 @@ public class Console extends OutputStream {
 			} else
 				listOfConflicts = Slave.solve();
 			break;
-//		case "fix":
-//			listOfConflicts = slave.getConflicts();
-//			fix = true;
-//			correctError(rawInput);
-//			break;
+		// case "fix":
+		// listOfConflicts = slave.getConflicts();
+		// fix = true;
+		// correctError(rawInput);
+		// break;
 		case "play":
 			Slave.play();
 			break;
@@ -324,22 +328,24 @@ public class Console extends OutputStream {
 	/**
 	 * Parse a open command to extract the file and open it.
 	 *
-	 * @param input The open command of the form "open <file path>"
+	 * @param input
+	 *            The open command of the form "open <file path>"
 	 */
 	protected void open(String input) {
 		String FileName = input.substring(4).replace("\"", "").trim();
-		if(guiMode){
+		if (guiMode) {
 			Slave.getUI().consoleLoad(FileName);
-		}
-		else{
+		} else {
 			Slave.setCurMIDI(FileName);
 		}
 	}
 
 	/**
-	 * Parse an openConfig command to extract the configuration file to open and set the configuration file.
+	 * Parse an openConfig command to extract the configuration file to open and
+	 * set the configuration file.
 	 *
-	 * @param input The openConfig command of the form "openConfig <file path>"
+	 * @param input
+	 *            The openConfig command of the form "openConfig <file path>"
 	 */
 	protected void openConfig(String input) {
 		String FileName = input.substring(10).replace("\"", "").trim();
@@ -361,7 +367,8 @@ public class Console extends OutputStream {
 	/**
 	 * Save the current configuration as the file specified.
 	 *
-	 * @param input The saveConfig command of the form "saveConfig <file name>"
+	 * @param input
+	 *            The saveConfig command of the form "saveConfig <file name>"
 	 */
 	private void saveConfig(String input) {
 		String fileName = input.substring(10).replace("\"", "").trim();
@@ -372,15 +379,14 @@ public class Console extends OutputStream {
 	/**
 	 * set the bass track to the specified number.
 	 *
-	 * @param input The BassTrack command of the form "basstrack <track number>"
+	 * @param input
+	 *            The BassTrack command of the form "basstrack <track number>"
 	 */
 	private void setBassTrack(String input) {
-		int track =Slave.getBassTrack();
-		try{
-		track = Integer.parseInt(input.substring(9).replace("\"", "")
-				.trim());
-		}
-		catch (NumberFormatException e){
+		int track = Slave.getBassTrack();
+		try {
+			track = Integer.parseInt(input.substring(9).replace("\"", "").trim());
+		} catch (NumberFormatException e) {
 			output("you done goofed");
 			return;
 		}
@@ -391,7 +397,8 @@ public class Console extends OutputStream {
 	/**
 	 * save the current MIDI file as the file specified.
 	 *
-	 * @param input The save command of the form "save <file path>"
+	 * @param input
+	 *            The save command of the form "save <file path>"
 	 */
 	private void save(String input) {
 		String fileName = input.substring(4).replace("\"", "").trim();
@@ -399,16 +406,19 @@ public class Console extends OutputStream {
 	}
 
 	/**
-	 * save the current midi file as the default "out.mid" in the current directory.
+	 * save the current midi file as the default "out.mid" in the current
+	 * directory.
 	 */
 	private void save() {
 		output("saving file as \"out.mid\" in the current directory");
 		Slave.save("out.mid");
 	}
+
 	/**
 	 * load the a MIDI into current MIDI and solve it.
 	 *
-	 * @param input the file to be solve of the form "solve <file name>
+	 * @param input
+	 *            the file to be solve of the form "solve <file name>
 	 */
 	private void solve(String input) {
 		String FileName = input.substring(5).replace("\"", "").trim();
@@ -417,86 +427,88 @@ public class Console extends OutputStream {
 		}
 	}
 
-//	protected void correctError(String input) {
-//		if (listOfConflicts.size() == 0) {
-//			output("No conflicts founds, no need to fix");
-//			fix = false;
-//			return;
-//		}
-//		switch (resolution) {
-//		case 0:
-//			Boolean solving = false;
-//			for (Conflict c : listOfConflicts) {
-//				if ((!c.resolved()) && (c.strings() != 0)) {
-//					solving =true;
-//					curConflict = c;
-//					listOfNoteConflicts = c.getConf();
-//					resolution++;
-//					c.markResolved();
-//					break;
-//				}
-//			}
-//			if (!solving) {
-//				fix = false;
-//				output("all errors fixed");
-//				return;
-//			}
-//		case 1:
-//			output("The note "
-//					+ curConflict.getNote().getMessage().getMessage()[1]
-//					+ " is conflicting");
-//			output("The options are to:");
-//			int i = 1;
-//			corrections.clear();
-//			for (NoteConflict nc : listOfNoteConflicts) {
-//				corrections.put(i, nc);
-//				corrections.put(i + 1, nc);
-//				corrections.put(i + 2, nc);
-//				corrections.put(i + 3, nc);
-//				output("option " + i + ", drop the note before in track "
-//						+ nc.string());
-//				output("option " + (i + 1) + ", drop the note after in track "
-//						+ nc.string());
-//				output("option " + (i + 2)
-//						+ ", advance the end of the note before in track "
-//						+ nc.string());
-//				output("option " + (i + 3)
-//						+ ", delay the start of the note after in track "
-//						+ nc.string());
-//				i = i + 4;
-//			}
-//			output("type in the number of the option you would like to carryout");
-//			resolution++;
-//			return;
-//		case 2:
-//			int opt = Integer.parseInt(input);
-//			int Action = opt % 4;
-//			NoteConflict nCon = corrections.get(opt);
-//			switch (Action) {
-//			case 0:
-//				nCon.dropFirst();
-//				break;
-//			case 1:
-//				nCon.dropLast();
-//				break;
-//			case 2:
-//				nCon.delayFirstEnd(1);
-//				break;
-//			case 3:
-//				nCon.delaySecondStart(1);
-//				break;
-//			}
-//			resolution = 0;
-//			correctError("");
-//		}
-//	}
+	// protected void correctError(String input) {
+	// if (listOfConflicts.size() == 0) {
+	// output("No conflicts founds, no need to fix");
+	// fix = false;
+	// return;
+	// }
+	// switch (resolution) {
+	// case 0:
+	// Boolean solving = false;
+	// for (Conflict c : listOfConflicts) {
+	// if ((!c.resolved()) && (c.strings() != 0)) {
+	// solving =true;
+	// curConflict = c;
+	// listOfNoteConflicts = c.getConf();
+	// resolution++;
+	// c.markResolved();
+	// break;
+	// }
+	// }
+	// if (!solving) {
+	// fix = false;
+	// output("all errors fixed");
+	// return;
+	// }
+	// case 1:
+	// output("The note "
+	// + curConflict.getNote().getMessage().getMessage()[1]
+	// + " is conflicting");
+	// output("The options are to:");
+	// int i = 1;
+	// corrections.clear();
+	// for (NoteConflict nc : listOfNoteConflicts) {
+	// corrections.put(i, nc);
+	// corrections.put(i + 1, nc);
+	// corrections.put(i + 2, nc);
+	// corrections.put(i + 3, nc);
+	// output("option " + i + ", drop the note before in track "
+	// + nc.string());
+	// output("option " + (i + 1) + ", drop the note after in track "
+	// + nc.string());
+	// output("option " + (i + 2)
+	// + ", advance the end of the note before in track "
+	// + nc.string());
+	// output("option " + (i + 3)
+	// + ", delay the start of the note after in track "
+	// + nc.string());
+	// i = i + 4;
+	// }
+	// output("type in the number of the option you would like to carryout");
+	// resolution++;
+	// return;
+	// case 2:
+	// int opt = Integer.parseInt(input);
+	// int Action = opt % 4;
+	// NoteConflict nCon = corrections.get(opt);
+	// switch (Action) {
+	// case 0:
+	// nCon.dropFirst();
+	// break;
+	// case 1:
+	// nCon.dropLast();
+	// break;
+	// case 2:
+	// nCon.delayFirstEnd(1);
+	// break;
+	// case 3:
+	// nCon.delaySecondStart(1);
+	// break;
+	// }
+	// resolution = 0;
+	// correctError("");
+	// }
+	// }
 
 	/**
 	 * Output the string to the appropriate area.
 	 *
-	 * @param text the string of text to output to the appropriate area
+	 * @param text
+	 *            the string of text to output to the appropriate area
 	 */
 	private void output(String text) {
+
 		for (char c : text.toCharArray()) {
 			try {
 				write((int) c);
@@ -510,8 +522,10 @@ public class Console extends OutputStream {
 			System.out.write('\n');
 		}
 	}
+
 	/**
-	 * set the command in the input field to be the command issued previous to the one currently displayed there.
+	 * set the command in the input field to be the command issued previous to
+	 * the one currently displayed there.
 	 */
 	protected void CallPrevious() {
 		if (!prevCommand.isEmpty()) {
@@ -521,10 +535,12 @@ public class Console extends OutputStream {
 			textInputField.positionCaret(textInputField.getLength());
 		}
 	}
+
 	/**
-	 * set the command in the input field to be the command issued after the one currently displayed
+	 * set the command in the input field to be the command issued after the one
+	 * currently displayed
 	 */
-	protected void callNext(){
+	protected void callNext() {
 		if (!nextCommand.isEmpty()) {
 			prevCommand.push(textInputField.getText());
 			String command = nextCommand.pop();
@@ -535,9 +551,10 @@ public class Console extends OutputStream {
 
 	@Override
 	public void write(int i) throws IOException {
-		if (guiMode)
+		if (guiMode) {
 			textOutputField.appendText(String.valueOf((char) i));
-		else
+		} else {
 			System.out.write(i);
+		}
 	}
 }

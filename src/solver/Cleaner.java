@@ -27,7 +27,7 @@ public class Cleaner {
 	 * @return the cleaned Sequence
 	 */
 	public static Sequence clean(Sequence seq){
-		seq.deleteTrack(seq.getTracks()[0]);
+		seq.deleteTrack(seq.getTracks()[seq.getTracks().length-1]); // Remove the last one!
 		return seq;
 	}
 
@@ -76,6 +76,7 @@ public class Cleaner {
 			Track tr = seq.getTracks()[i];
 				for(int j = 0; j < tr.size(); j++){
 					MidiEvent event = tr.get(j);
+
 					if(event.getMessage() instanceof ShortMessage){
 						ShortMessage shrt = (ShortMessage) event.getMessage();
 						try {
@@ -172,7 +173,7 @@ public class Cleaner {
 	}
 
 	/**
-	 * Adds time to the start of the sequence (doesn't move metamessages with 0 ticks.)
+	 * Adds time to the start of the sequence
 	 * Currently adds weird display error.
 	 *
 	 * @param seq
@@ -184,9 +185,9 @@ public class Cleaner {
 			Track tr = seq.getTracks()[i];
 			for (int j = 0; j < tr.size(); j++){
 				MidiEvent event = tr.get(j);
-				if(event.getTick() > 0 || event.getMessage() instanceof ShortMessage){
+//				if(event.getTick() > 0 || event.getMessage() instanceof ShortMessage){
 					event.setTick(event.getTick() + ticks);
-				}
+//				}
 			}
 		}
 		return seq;
@@ -208,12 +209,13 @@ public class Cleaner {
 	 * @return
 	 */
 	public static Sequence prePos(Sequence in, long preTime, MekString[] strings, long length){
-		Sequence seq = fixChannel(in);
+//		Sequence seq = fixChannel(in);
+		Sequence seq = in;
 		Cleaner.addTicks(seq, 800);
 		//for each track
 		float tickScaling = 1;
 		long preTicks = (long) (tickScaling * preTime);
-		for(int i = 1; i < seq.getTracks().length; i++){
+		for(int i = 0; i < seq.getTracks().length-1; i++){
 			Track cur = seq.getTracks()[i];
 			//add a prepos event for each note that is not consecutive
 			for(int j = 0; j < cur.size(); j++){
@@ -234,7 +236,7 @@ public class Cleaner {
 								if(note2 != note1){
 									//uncomment the following two lines to print the amount of time between each note pair.
 										try {
-											long tick = cur.get(j).getTick() - strings[i-1].differenceTick(note1, note2, tickScaling);
+											long tick = cur.get(j).getTick() - strings[i].differenceTick(note1, note2, tickScaling);
 											if(tick - preTicks < cur.get(prevIndex).getTick()){
 												drop:
 												for(int k = j; k < cur.size(); k++){
@@ -256,7 +258,7 @@ public class Cleaner {
 											else{
 												//if the prepositioning fits between the notes:
 												long time = cur.get(j).getTick();
-												time -= strings[i-1].differenceTick(note1, note2, tickScaling);
+												time -= strings[i].differenceTick(note1, note2, tickScaling);
 												time -= preTicks;
 												//for some reason adding these on the same line ends up with the wrong note off time
 												cur.add(new MidiEvent(new ShortMessage(NOTE_ON,noteOn.getChannel(),noteOn.getData1(),1) , time));
@@ -272,7 +274,7 @@ public class Cleaner {
 								}
 							}
 							else if(prevIndex == 0){
-								//if this is the first note in the track add the preositioning at 0.
+								//if this is the first note in the track add the prepositioning at 0.
 								try {
 									cur.add(new MidiEvent(new ShortMessage(NOTE_ON,0,noteOn.getData1(),1) , 0));
 									cur.add(new MidiEvent(new ShortMessage(NOTE_OFF,0,noteOn.getData1(),0) , length));

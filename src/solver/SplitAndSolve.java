@@ -40,7 +40,7 @@ public class SplitAndSolve {
 			for(MekString m: strings){
 				m.initTimings(300);
 			}
-			Solver blah =  new GreedySolver();
+			Solver blah =  new OOGreedySolver();
 			Sequence out = TrackSplitter.split(seq,tracks,bass);
 			out = blah.solve(out);
 			int moved = 0;

@@ -116,8 +116,11 @@ public class Simulation {
 						}
 					case NOTE_OFF: // if the note is a notes off, get the note on, make a Note, and add it the the notes list
 						int last = shrt.getData1();
-						int prog = progress.get(last);
-						MidiEvent on = tr.get(prog);
+						Integer prog = progress.get(last);
+						MidiEvent on = null;
+						if(prog != null){
+							on = tr.get(prog);
+						}
 
 						if (on == null){
 							break;

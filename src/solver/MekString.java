@@ -22,6 +22,7 @@ public class MekString {
 	 * The Highest note minus the Lowest note in MIDI notation that the string can play;
 	 */
 	public final int noteRange;
+
 	/**
 	 * The Interval (in ms) between adjacent frets.<br>
 	 * The time between the first and second frets would be in index 0
@@ -54,7 +55,7 @@ public class MekString {
 		this.noteRange = highNote - lowNote;
 		this.interval = new long[this.noteRange];
 	}
-	
+
 	/**
 	 * Initialises all note delays to i
 	 */
@@ -63,7 +64,7 @@ public class MekString {
 			interval[j] = i;
 		}
 	}
-	
+
 	/**
 	 * returns the sum of all intervals between start and stop.
 	 * @param start
@@ -98,10 +99,14 @@ public class MekString {
 	 * @return the min time between note1 and note2
 	 */
 	public long differenceTime(int note1, int note2){
-		if(note1<note2) return addIntervals(note1-lowNote,note2-lowNote);
+		if(note1 == note2) return 0;
+		if(note1 < this.lowNote || note1 > this.highNote || note2 < this.lowNote || note2 > this.highNote){
+			throw new RuntimeException("Invalid notes on String");
+		}
+		if(note1 < note2) return addIntervals(note1-lowNote, note2 -lowNote);
 		else return addIntervals(note2-lowNote, note1-lowNote);
 	}
-	
+
 	/**
 	 * Checks the minimum number of ticks between the specified notes on this string.
 	 * @param note1
@@ -112,7 +117,7 @@ public class MekString {
 	public long differenceTick(int note1, int note2, float scale){
 		return (long) (differenceTime(note1,note2)*scale);
 	}
-	
+
 	/**
 	 * Returns true if this string can play the specified note.
 	 * @param i

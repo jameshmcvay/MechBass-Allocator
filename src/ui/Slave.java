@@ -18,6 +18,7 @@ import solver.Cleaner;
 import solver.Conflict;
 import solver.MekString;
 import solver.GreedySolver;
+import solver.OOGreedySolver;
 import solver.Solver;
 import solver.TrackSplitter;
 import tools.Player;
@@ -52,7 +53,7 @@ public class Slave {
 	 * A constructor for the Slave. It loads the default program configuration.
 	 * */
 	public Slave() throws IllegalArgumentException {
-		parse(new File("default.csv"));
+		parse(new File("default.cfg"));
 	}
 
 	/**
@@ -260,7 +261,7 @@ public class Slave {
 		cleaned = false;
 		if (curMIDI != null)
 			try {
-				Solver greedy = new GreedySolver(setOfStrings);
+				Solver greedy = new OOGreedySolver(setOfStrings);
 				curMIDI = TrackSplitter.split(curMIDI, setOfStrings.length, bassTrack);
 				curMIDI = greedy.solve(curMIDI);
 				setOfConflicts = Cleaner.getConflicts(curMIDI, setOfStrings);

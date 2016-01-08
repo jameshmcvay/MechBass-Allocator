@@ -92,7 +92,7 @@ public class UI extends Application{
 	 */
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		Slave.parse(new File("default.csv")); //Set Slave to have a default mekbass Setup
+		Slave.parse(new File("default.cfg")); //Set Slave to have a default mekbass Setup
 
 		primaryStage.setResizable(false);
 
