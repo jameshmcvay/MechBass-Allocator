@@ -23,6 +23,7 @@ import static javax.sound.midi.ShortMessage.*;
  * @author Elliot Wilde
  * @author Andrew Palmer
  * @author Roma Klapaukh
+ * @author James McVay
  */
 public class OOGreedySolver implements Solver {
 
@@ -33,7 +34,8 @@ public class OOGreedySolver implements Solver {
 	}
 
 	public OOGreedySolver() {
-		this(new MekString[] { new MekString(43, 56), new MekString(38, 51), new MekString(33, 46), new MekString(28, 41) });
+		this(new MekString[] { new MekString(43, 56), new MekString(38, 51), new MekString(33, 46),
+				new MekString(28, 41) });
 	}
 
 	/**
@@ -60,16 +62,23 @@ public class OOGreedySolver implements Solver {
 
 		// This is where all the notes and data are now.
 		Track tr = seq.getTracks()[0];
-
+		float tickScaling = (float)seq.getMicrosecondLength()/10000;
+		tickScaling = tickScaling/(float)seq.getTickLength();
 		// This is the current allocation of the string
 		// -1 denotes that the string is currently free
-		int[] currentNote = new int[strings.length];
-		int[] lastNote = new int[strings.length];
+		int[] currentNote = new int[strings.length + 1];
+		int[] lastNote = new int[strings.length + 1];
+		long[] freeSince = new long[strings.length + 1];
 		for (int i = 0; i < strings.length; ++i) {
 			currentNote[i] = -1;
+			freeSince[i] = -1;
 			lastNote[i] = strings[i].lowNote;
 		}
-
+		
+		//These are for the dump string
+		currentNote[strings.length] = -1;
+		lastNote[strings.length] = -1;
+		
 		// Assume that events come in time order, but that multiple events can
 		// happen at the same instant
 		List<MidiEvent> currentMoment = new ArrayList<MidiEvent>();
@@ -81,7 +90,7 @@ public class OOGreedySolver implements Solver {
 			long now = e.getTick();
 
 			// Get what happens
-			MidiMessage msg = e.getMessage();
+			//MidiMessage msg = e.getMessage();
 
 			// Clear our list of current events and add a new one
 			currentMoment.clear();
@@ -105,7 +114,7 @@ public class OOGreedySolver implements Solver {
 			// 1. All control messages
 			Iterator<MidiEvent> msgs = currentMoment.iterator();
 
-			loopOne: while(msgs.hasNext()){
+			loopOne: while (msgs.hasNext()) {
 				MidiEvent currentEvent = msgs.next();
 				MidiMessage current = currentEvent.getMessage();
 				if (current instanceof ShortMessage) {
@@ -120,7 +129,8 @@ public class OOGreedySolver implements Solver {
 					default:
 						// these get copied ONLY to the solved tracks
 						for (int j = 0; j < strings.length; j++) {
-							MidiEvent newCurrentEvent = new MidiEvent((MidiMessage) currentEvent.getMessage().clone(), currentEvent.getTick());
+							MidiEvent newCurrentEvent = new MidiEvent((MidiMessage) currentEvent.getMessage().clone(),
+									currentEvent.getTick());
 							newTrack.getTracks()[j].add(newCurrentEvent);
 						}
 					}
@@ -129,12 +139,13 @@ public class OOGreedySolver implements Solver {
 					// that nothing bad happens. We do this even if it's end of
 					// track because why not?
 					MetaMessage m = (MetaMessage) current;
-					if (m.getType() == 0x2f){
+					if (m.getType() == 0x2f) {
 						msgs.remove();
 						continue loopOne;
 					}
 					for (int j = 0; j < strings.length + 1; j++) {
-						MidiEvent newCurrentEvent = new MidiEvent((MidiMessage) currentEvent.getMessage().clone(), currentEvent.getTick());
+						MidiEvent newCurrentEvent = new MidiEvent((MidiMessage) currentEvent.getMessage().clone(),
+								currentEvent.getTick());
 						newTrack.getTracks()[j].add(newCurrentEvent);
 					}
 				}
@@ -144,7 +155,7 @@ public class OOGreedySolver implements Solver {
 			// 2. Note Off events with a matching previous Note ON
 			msgs = currentMoment.iterator();
 
-			loopTwo: while(msgs.hasNext()){
+			loopTwo: while (msgs.hasNext()) {
 				MidiEvent currentEvent = msgs.next();
 				MidiMessage current = currentEvent.getMessage();
 				if (!(current instanceof ShortMessage)) {
@@ -157,10 +168,11 @@ public class OOGreedySolver implements Solver {
 					if (m.getData2() == 0) {
 						// This is a secret note OFF
 						int note = m.getData1();
-						for (int string = 0; string < strings.length; string++) {
+						for (int string = 0; string < strings.length + 1; string++) {
 							if (currentNote[string] == note) {
 								lastNote[string] = currentNote[string];
 								currentNote[string] = -1;
+								freeSince[string] = now;
 								newTrack.getTracks()[string].add(currentEvent);
 								msgs.remove();
 								continue loopTwo;
@@ -171,10 +183,11 @@ public class OOGreedySolver implements Solver {
 				case NOTE_OFF:
 					// This is actually a Note OFF
 					int note = m.getData1();
-					for (int string = 0; string < strings.length; string++) {
+					for (int string = 0; string < strings.length + 1; string++) {
 						if (currentNote[string] == note) {
 							lastNote[string] = currentNote[string];
 							currentNote[string] = -1;
+							freeSince[string] = now;
 							newTrack.getTracks()[string].add(currentEvent);
 							msgs.remove();
 							continue loopTwo;
@@ -190,7 +203,7 @@ public class OOGreedySolver implements Solver {
 			// 3. All Note ON events
 			msgs = currentMoment.iterator();
 
-			loopThree: while(msgs.hasNext()){
+			loopThree: while (msgs.hasNext()) {
 				MidiEvent currentEvent = msgs.next();
 				MidiMessage current = currentEvent.getMessage();
 				if (!(current instanceof ShortMessage)) {
@@ -212,17 +225,21 @@ public class OOGreedySolver implements Solver {
 					int bestIdx = -1;
 					long bestDist = Integer.MAX_VALUE;
 					for (int string = 0; string < strings.length; string++) {
-						if (currentNote[string] == -1 && note >= strings[string].lowNote && note <= strings[string].highNote) {
-							long dist = strings[string].differenceTime(note,lastNote[string]);
+						// Is it physically playable on this string?
+						if (currentNote[string] == -1 && strings[string].playable(note)){//note >= strings[string].lowNote && note <= strings[string].highNote) {
+							if((now - freeSince[string]) >= strings[string].differenceTick(note,lastNote[string],tickScaling) || lastNote[string] == note){
+							long dist = strings[string].differenceTime(note, lastNote[string]);
 							if (dist < bestDist) {
 								bestIdx = string;
 								bestDist = dist;
+							}
 							}
 						}
 					}
 					if (bestIdx == -1) {
 						// This note could not be assigned.
 						newTrack.getTracks()[strings.length].add(currentEvent);
+						currentNote[strings.length] = note;
 					} else {
 						newTrack.getTracks()[bestIdx].add(currentEvent);
 						currentNote[bestIdx] = note;
@@ -239,10 +256,11 @@ public class OOGreedySolver implements Solver {
 
 			}
 
-			// 4. Note Off events with a matching previous Note ON - unmatched are dropped FOREVER
+			// 4. Note Off events with a matching previous Note ON - unmatched
+			// are dropped FOREVER
 			msgs = currentMoment.iterator();
 
-			loopFour: while(msgs.hasNext()){
+			loopFour: while (msgs.hasNext()) {
 				MidiEvent currentEvent = msgs.next();
 				MidiMessage current = currentEvent.getMessage();
 				if (!(current instanceof ShortMessage)) {
@@ -255,10 +273,11 @@ public class OOGreedySolver implements Solver {
 					if (m.getData2() == 0) {
 						// This is a secret note OFF
 						int note = m.getData1();
-						for (int string = 0; string < strings.length; string++) {
+						for (int string = 0; string < strings.length + 1; string++) {
 							if (currentNote[string] == note) {
 								lastNote[string] = currentNote[string];
 								currentNote[string] = -1;
+								freeSince[string] = now;								
 								newTrack.getTracks()[string].add(currentEvent);
 								msgs.remove();
 								continue loopFour;
@@ -269,10 +288,11 @@ public class OOGreedySolver implements Solver {
 				case NOTE_OFF:
 					// This is actually a Note OFF
 					int note = m.getData1();
-					for (int string = 0; string < strings.length; string++) {
+					for (int string = 0; string < strings.length + 1; string++) {
 						if (currentNote[string] == note) {
 							lastNote[string] = currentNote[string];
 							currentNote[string] = -1;
+							freeSince[string] = now;
 							newTrack.getTracks()[string].add(currentEvent);
 							msgs.remove();
 							continue loopFour;
